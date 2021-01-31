@@ -24,6 +24,8 @@ import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import AdaBoostRegressor
 
+# TODO switch to work on classification problems instead of regression
+
 # Create the dataset
 rng = np.random.RandomState(1)
 X = np.linspace(0, 6, 100)[:, np.newaxis]
