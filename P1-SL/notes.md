@@ -1,6 +1,8 @@
-# OH
+# Notes
 
-## data sets
+## OH
+
+### data sets
 
 - one could have many features
   - curse of dimensionality
@@ -16,7 +18,7 @@
   - decision tree works poorly but ANN works well
   - linear kernel for SVM is poor but another one works well
 
-## Hyperparameter tuning
+### Hyperparameter tuning
 
 - coarse grid search to find neighborhoods of good parameters
   - prevent overfitting
@@ -36,20 +38,20 @@
   - demonstrate that you know how to analyze these graphs and how specific hyper params affect complexity
   - look into bias variance equations to see how they relate to over/under fitting
 
-## bagging and boosting
+### bagging and boosting
 
 - bagging is high variance
   - overfitting on each learner
 - boosting is high bias
   - weak learner starts with high bias
 
-## charts
+### charts
 
 - plots or tables, so long as trend is visible, plot may be easier with less writing
 - learning curve, model complexity curve, plus anything additional that ability to answer assignment's question
 - talk about bias and variance
 
-## hyper parameter tuning
+### hyper parameter tuning
 
 - don't need every step
 - show important steps
@@ -71,7 +73,7 @@
     - then it is more important to not make that error
 
 
-## metrics to plot
+### metrics to plot
 
 - makes sense for problem
   - accuracy is a good place to start
@@ -87,3 +89,10 @@
   - bias variance
   - performance and generalizability of the model
 - compare and contrast
+
+## Readings
+
+### Boosting
+
+- can fail given insufficient data, overly complex base classifiers or base classifiers that are too weak
+- especially susceptible to noise
