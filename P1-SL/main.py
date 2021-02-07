@@ -238,7 +238,7 @@ def run_dt_1():
 
 def run_dt_2():
     # read in dataset from file
-    with open(DATASET_1, 'r') as f:
+    with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
     data, labels = data[:,:-1], data[:,-1]
