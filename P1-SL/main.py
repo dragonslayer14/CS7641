@@ -18,6 +18,8 @@ import matplotlib.pyplot as plt
 
 DATASET_1 = "data/wine.csv"
 DATASET_2 = "data/winequality.csv"
+DATASET_1_NAME = "Wine"
+DATASET_2_NAME = "Wine Quality"
 
 
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
@@ -208,7 +210,7 @@ def run_dt_1():
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (Decision tree) ({DATASET_1_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -220,7 +222,7 @@ def run_dt_1():
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with DT ({DATASET_1_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
@@ -275,7 +277,7 @@ def run_dt_2():
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (Decision tree) ({DATASET_2_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -287,7 +289,7 @@ def run_dt_2():
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with DT ({DATASET_2_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
