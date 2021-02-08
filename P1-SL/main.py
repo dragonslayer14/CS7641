@@ -1,14 +1,20 @@
+import warnings
+
 import numpy as np
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import train_test_split
-from sklearn import datasets
-from sklearn import svm
+from sklearn import neighbors
 import matplotlib
+from sklearn.neural_network import MLPClassifier
+from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.experimental import enable_halving_search_cv  # noqa
 from sklearn.model_selection import HalvingGridSearchCV
 from sklearn.model_selection import learning_curve
 from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import validation_curve
+from datetime import datetime
 
 # show popup for graphs on mac
 
@@ -22,6 +28,7 @@ DATASET_1_NAME = "Wine"
 DATASET_2_NAME = "Wine Quality"
 
 
+# TODO split out plots so they can be used separately as needed?
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
                         n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
     """
@@ -83,11 +90,12 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
         to be big enough to contain at least one sample from each class.
         (default: np.linspace(0.1, 1.0, 5))
     """
-    plt.figure()
     if axes is None:
         _, axes = plt.subplots(1, 3, figsize=(20, 5))
 
-    axes[0].set_title(title)
+    plt.title(title)
+
+    axes[0].set_title("Learning Curve")
     if ylim is not None:
         axes[0].set_ylim(*ylim)
     axes[0].set_xlabel("Training examples")
@@ -171,7 +179,8 @@ def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, para
     plt.legend(loc="best")
 
 
-def run_dt_1():
+# TODO reduplicate to other algos, change base, and clear param space to get baselines
+def run_dt_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -199,12 +208,11 @@ def run_dt_1():
         # ccp alpha for pruning as opposed to max depth, post vs pre pruning
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = DecisionTreeClassifier(criterion="entropy", random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
@@ -218,6 +226,12 @@ def run_dt_1():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
@@ -229,7 +243,13 @@ def run_dt_1():
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -238,7 +258,7 @@ def run_dt_1():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_dt_2():
+def run_dt_2(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -262,16 +282,15 @@ def run_dt_2():
     # define hyper parameter space to check over
     param_grid = {
         "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
+        "min_samples_split": [2, 3, 4],
         # ccp alpha for pruning as opposed to max depth, post vs pre pruning
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = DecisionTreeClassifier(criterion="entropy", random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=3, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
@@ -282,8 +301,13 @@ def run_dt_2():
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.0, 1.01),
                         cv=cv, n_jobs=4)
+
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
 
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
@@ -296,7 +320,13 @@ def run_dt_2():
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -305,7 +335,7 @@ def run_dt_2():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_boost_1():
+def run_boost_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -319,7 +349,8 @@ def run_boost_1():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = AdaBoostClassifier(n_estimators=300, random_state=0)
+    clf = AdaBoostClassifier(random_state=0)
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -328,23 +359,21 @@ def run_boost_1():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # depth of decision classifier? or just optimize number of depth 1 stumps?
+        # learning rate
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (Boosted Decision tree) ({DATASET_1_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -352,18 +381,30 @@ def run_boost_1():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with Boosted DT ({DATASET_1_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -372,7 +413,7 @@ def run_boost_1():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_boost_2():
+def run_boost_2(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -386,7 +427,8 @@ def run_boost_2():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = AdaBoostClassifier(n_estimators=300, random_state=0)
+    clf = AdaBoostClassifier(random_state=0)
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -395,23 +437,21 @@ def run_boost_2():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # depth of decision classifier? or just optimize number of depth 1 stumps?
+        # learning rate
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (Boosted Decision tree) ({DATASET_2_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -419,18 +459,30 @@ def run_boost_2():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with Boosted DT ({DATASET_2_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -439,7 +491,7 @@ def run_boost_2():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_svm_1():
+def run_svm_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -453,7 +505,7 @@ def run_svm_1():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = SVC(random_state=0)
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -462,23 +514,22 @@ def run_svm_1():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # at least kernels
+        # C?
+        # gamma?
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = SVC(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (SVM) ({DATASET_1_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -486,18 +537,30 @@ def run_svm_1():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with SVM ({DATASET_1_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -506,7 +569,7 @@ def run_svm_1():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_svm_2():
+def run_svm_2(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -520,7 +583,7 @@ def run_svm_2():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = SVC(random_state=0)
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -529,23 +592,22 @@ def run_svm_2():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # at least kernels
+        # C?
+        # gamma?
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = SVC(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (SVM) ({DATASET_2_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -553,18 +615,30 @@ def run_svm_2():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with SVM ({DATASET_2_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -573,7 +647,7 @@ def run_svm_2():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_knn_1():
+def run_knn_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -587,7 +661,7 @@ def run_knn_1():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = neighbors.KNeighborsClassifier(random_state=0)
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -596,23 +670,22 @@ def run_knn_1():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # neighbors (k)
+        # weights (uniform, distance)
+        # p (1 = manhattan, 2 = euclidian)
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = neighbors.KNeighborsClassifier(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (KNN) ({DATASET_1_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -620,18 +693,30 @@ def run_knn_1():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with KNN ({DATASET_1_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -640,7 +725,7 @@ def run_knn_1():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_knn_2():
+def run_knn_2(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -654,7 +739,7 @@ def run_knn_2():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = neighbors.KNeighborsClassifier(random_state=0)
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -663,23 +748,22 @@ def run_knn_2():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # neighbors (k)
+        # weights (uniform, distance)
+        # p (1 = manhattan, 2 = euclidian)
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = neighbors.KNeighborsClassifier(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (KNN) ({DATASET_2_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -687,18 +771,30 @@ def run_knn_2():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with KNN ({DATASET_2_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -707,7 +803,7 @@ def run_knn_2():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_ann_1():
+def run_ann_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -721,7 +817,17 @@ def run_ann_1():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
+                        solver='sgd', verbose=10, random_state=0,
+                        learning_rate_init=.1)
+    clf = MLPClassifier()
+
+    # pulled from sklearn plot mnist example
+    # this example won't converge because of CI's time constraints, so we catch the
+    # warning and are ignore it here
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                module="sklearn")
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -730,23 +836,24 @@ def run_ann_1():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # hidden layers?
+        # alpha
+        # learning rate
+        # momentum
+        # solver
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = MLPClassifier().fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (ANN) ({DATASET_1_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -754,18 +861,30 @@ def run_ann_1():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with ANN ({DATASET_1_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -774,7 +893,7 @@ def run_ann_1():
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_ann_2():
+def run_ann_2(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -788,7 +907,17 @@ def run_ann_2():
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
+                        solver='sgd', verbose=10, random_state=0,
+                        learning_rate_init=.1)
+    clf = MLPClassifier()
+
+    # pulled from sklearn plot mnist example
+    # this example won't converge because of CI's time constraints, so we catch the
+    # warning and are ignore it here
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                module="sklearn")
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -797,23 +926,24 @@ def run_ann_2():
 
     # define hyper parameter space to check over
     param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
+        # hidden layers?
+        # alpha
+        # learning rate
+        # momentum
+        # solver
     }
 
-    basic = DecisionTreeClassifier().fit(data_train, label_train)
+    basic = MLPClassifier().fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2,
-                             max_resources=30).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = "Learning Curves (Decision tree)"
+    title = f"Learning Curves (ANN) ({DATASET_2_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
@@ -821,18 +951,30 @@ def run_ann_2():
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
                         cv=cv, n_jobs=4)
 
+    if fig_name is not None:
+        now = datetime.now()
+        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+        plt.savefig(f"{fig_name}_learn_{dt_string}")
+
+
     # based off sklearn validation curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = "Validation Curve with DT"
+    title = f"Validation Curve with ANN ({DATASET_2_NAME})"
     x_lab = "Depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
                           param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
 
-    plt.show()
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    if show_plots:
+        plt.show()
+
+    plt.close('all')
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -842,13 +984,13 @@ def run_ann_2():
 
 
 if __name__ == '__main__':
-    run_dt_1()
-    run_dt_2()
-    run_ann_1()
-    run_ann_2()
-    run_knn_1()
-    run_knn_2()
-    run_svm_1()
-    run_svm_2()
-    run_boost_1()
-    run_boost_2()
+    run_dt_1("charts/DT_1_notune")
+    run_dt_2("charts/DT_2_notune", True)
+    # run_ann_1()
+    # run_ann_2()
+    # run_knn_1()
+    # run_knn_2()
+    # run_svm_1()
+    # run_svm_2()
+    # run_boost_1()
+    # run_boost_2()
