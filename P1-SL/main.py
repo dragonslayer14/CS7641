@@ -350,8 +350,6 @@ def run_ada_1(fig_name = None, show_plots = False):
     clf = AdaBoostClassifier(n_estimators=300, random_state=0)
     clf = AdaBoostClassifier(random_state=0)
 
-    # TODO run cost complexity pruning code to find alpha for ccp
-
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
@@ -429,8 +427,6 @@ def run_ada_2(fig_name = None, show_plots = False):
     clf = AdaBoostClassifier(n_estimators=300, random_state=0)
     clf = AdaBoostClassifier(random_state=0)
 
-    # TODO run cost complexity pruning code to find alpha for ccp
-
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
@@ -507,8 +503,6 @@ def run_svm_1(fig_name = None, show_plots = False):
     # fix hyperparameters as needed to avoid unneeded grid search
     clf = SVC(random_state=0)
 
-    # TODO run cost complexity pruning code to find alpha for ccp
-
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
@@ -578,8 +572,6 @@ def run_svm_2(fig_name = None, show_plots = False):
     # fix hyperparameters as needed to avoid unneeded grid search
     clf = SVC(random_state=0)
 
-    # TODO run cost complexity pruning code to find alpha for ccp
-
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
@@ -643,8 +635,6 @@ def run_knn_1(fig_name = None, show_plots = False):
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
     clf = neighbors.KNeighborsClassifier()
-
-    # TODO run cost complexity pruning code to find alpha for ccp
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
@@ -724,8 +714,6 @@ def run_knn_2(fig_name = None, show_plots = False):
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
     clf = neighbors.KNeighborsClassifier()
-
-    # TODO run cost complexity pruning code to find alpha for ccp
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
@@ -816,8 +804,6 @@ def run_ann_1(fig_name = None, show_plots = False):
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
 
-    # TODO run cost complexity pruning code to find alpha for ccp
-
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
@@ -906,8 +892,6 @@ def run_ann_2(fig_name = None, show_plots = False):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
-
-    # TODO run cost complexity pruning code to find alpha for ccp
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
