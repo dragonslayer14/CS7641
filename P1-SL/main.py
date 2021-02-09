@@ -28,7 +28,6 @@ DATASET_1_NAME = "Wine"
 DATASET_2_NAME = "Wine Quality"
 
 
-# TODO split out plots so they can be used separately as needed?
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
                         n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
     """
@@ -179,8 +178,7 @@ def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, para
     plt.legend(loc="best")
 
 
-# TODO reduplicate to other algos, change base, and clear param space to get baselines
-def run_dt_1(fig_name = None, show_plots = False):
+def run_dtc_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
