@@ -221,7 +221,7 @@ def run_dtc_1(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -376,7 +376,7 @@ def run_ada_1(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -454,7 +454,7 @@ def run_ada_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -532,7 +532,7 @@ def run_svm_1(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -610,7 +610,7 @@ def run_svm_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -688,7 +688,7 @@ def run_knn_1(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -766,7 +766,7 @@ def run_knn_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -856,7 +856,7 @@ def run_ann_1(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -946,7 +946,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0.7, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
