@@ -359,11 +359,12 @@ def run_ada_1(fig_name = None, show_plots = False):
     param_grid = {
         # depth of decision classifier? or just optimize number of depth 1 stumps?
         # learning rate
+        # "n_estimators": range(10,500, 10)
     }
 
     basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', factor=2).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', max_resources=500, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -390,11 +391,11 @@ def run_ada_1(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with Boosted DT ({DATASET_1_NAME})"
-    x_lab = "Depth"
+    x_lab = "n_estimators"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+                          param_name="n_estimators", param_range=range(10, 500, 10), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -437,11 +438,12 @@ def run_ada_2(fig_name = None, show_plots = False):
     param_grid = {
         # depth of decision classifier? or just optimize number of depth 1 stumps?
         # learning rate
+        # "n_estimators": range(10,500,10)
     }
 
     basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', factor=2).fit(data_train, label_train)
+    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', max_resources=500, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -468,11 +470,11 @@ def run_ada_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with Boosted DT ({DATASET_2_NAME})"
-    x_lab = "Depth"
+    x_lab = "n_estimators"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+                          param_name="n_estimators", param_range=range(10, 500,10), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -515,6 +517,7 @@ def run_svm_1(fig_name = None, show_plots = False):
         # at least kernels
         # C?
         # gamma?
+        # "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"]
     }
 
     basic = SVC(random_state=0).fit(data_train, label_train)
@@ -540,20 +543,12 @@ def run_svm_1(fig_name = None, show_plots = False):
         dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
         plt.savefig(f"{fig_name}_learn_{dt_string}")
 
-
-    # based off sklearn validation curve example
-    # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
-
-    # plot validation curve
-    title = f"Validation Curve with SVM ({DATASET_1_NAME})"
-    x_lab = "Depth"
-    y_lab = "Score"
-
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
-
-    if fig_name is not None:
-        plt.savefig(f"{fig_name}_val_{dt_string}")
+    # validation curve won't really work here, just use a table
+    for kernel in ["linear", "poly", "rbf", "sigmoid", "precomputed"]:
+        # train svc with given kernel
+        # cv sets to get average per kernel
+        # dump results for table
+        pass
 
     if show_plots:
         plt.show()
@@ -619,19 +614,7 @@ def run_svm_2(fig_name = None, show_plots = False):
         plt.savefig(f"{fig_name}_learn_{dt_string}")
 
 
-    # based off sklearn validation curve example
-    # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
-
-    # plot validation curve
-    title = f"Validation Curve with SVM ({DATASET_2_NAME})"
-    x_lab = "Depth"
-    y_lab = "Score"
-
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
-
-    if fig_name is not None:
-        plt.savefig(f"{fig_name}_val_{dt_string}")
+    # validation curve isn't helpful here, pull table code once svm1 is done
 
     if show_plots:
         plt.show()
@@ -659,7 +642,7 @@ def run_knn_1(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = neighbors.KNeighborsClassifier(random_state=0)
+    clf = neighbors.KNeighborsClassifier()
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -669,8 +652,11 @@ def run_knn_1(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     param_grid = {
         # neighbors (k)
+        "n_neighbors": range(1,len(data_train), 5),
         # weights (uniform, distance)
+        "weights": ["uniform", "distance"],
         # p (1 = manhattan, 2 = euclidian)
+        "p": [1,2]
     }
 
     basic = neighbors.KNeighborsClassifier(random_state=0).fit(data_train, label_train)
@@ -702,11 +688,11 @@ def run_knn_1(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with KNN ({DATASET_1_NAME})"
-    x_lab = "Depth"
+    x_lab = "Neighbors"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+                          param_name="n_neighbors", param_range=range(1, len(data_train), 5), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -747,11 +733,14 @@ def run_knn_2(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     param_grid = {
         # neighbors (k)
+        "n_neighbors": range(1, len(data_train), 5),
         # weights (uniform, distance)
+        "weights": ["uniform", "distance"],
         # p (1 = manhattan, 2 = euclidian)
+        "p": [1, 2]
     }
 
-    basic = neighbors.KNeighborsClassifier(random_state=0).fit(data_train, label_train)
+    basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
 
     sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
@@ -780,11 +769,11 @@ def run_knn_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with KNN ({DATASET_2_NAME})"
-    x_lab = "Depth"
+    x_lab = "Neighbors"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+                          param_name="n_neighbors", param_range=range(1, len(data_train),5), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -818,7 +807,7 @@ def run_ann_1(fig_name = None, show_plots = False):
     clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
                         solver='sgd', verbose=10, random_state=0,
                         learning_rate_init=.1)
-    clf = MLPClassifier()
+    clf = MLPClassifier(random_state=0)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
@@ -835,6 +824,7 @@ def run_ann_1(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     param_grid = {
         # hidden layers?
+        "hidden_layer_sizes": [(i,) for i in range(5,50,5)]
         # alpha
         # learning rate
         # momentum
@@ -870,11 +860,11 @@ def run_ann_1(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with ANN ({DATASET_1_NAME})"
-    x_lab = "Depth"
+    x_lab = "hidden_layer_sizes"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(5,50,5)], ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -908,7 +898,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
                         solver='sgd', verbose=10, random_state=0,
                         learning_rate_init=.1)
-    clf = MLPClassifier()
+    clf = MLPClassifier(random_state=0)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
@@ -925,6 +915,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     param_grid = {
         # hidden layers?
+        "hidden_layer_sizes": [(i,) for i in range(5,50,5)]
         # alpha
         # learning rate
         # momentum
@@ -960,11 +951,11 @@ def run_ann_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with ANN ({DATASET_2_NAME})"
-    x_lab = "Depth"
+    x_lab = "hidden_layer_sizes"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(5,50,5)], ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
