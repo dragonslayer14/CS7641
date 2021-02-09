@@ -659,7 +659,7 @@ def run_knn_1(fig_name = None, show_plots = False):
         "p": [1,2]
     }
 
-    basic = neighbors.KNeighborsClassifier(random_state=0).fit(data_train, label_train)
+    basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
 
     sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
@@ -723,7 +723,7 @@ def run_knn_2(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = neighbors.KNeighborsClassifier(random_state=0)
+    clf = neighbors.KNeighborsClassifier()
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
