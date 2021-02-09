@@ -256,7 +256,7 @@ def run_dtc_1(fig_name = None, show_plots = False):
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_dt_2(fig_name = None, show_plots = False):
+def run_dtc_2(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -333,7 +333,7 @@ def run_dt_2(fig_name = None, show_plots = False):
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_boost_1(fig_name = None, show_plots = False):
+def run_ada_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -411,7 +411,7 @@ def run_boost_1(fig_name = None, show_plots = False):
     # track accuracy and variance so later report can pull numbers as needed
 
 
-def run_boost_2(fig_name = None, show_plots = False):
+def run_ada_2(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -982,13 +982,16 @@ def run_ann_2(fig_name = None, show_plots = False):
 
 
 if __name__ == '__main__':
-    run_dt_1("charts/DT_1_notune")
-    run_dt_2("charts/DT_2_notune", True)
-    # run_ann_1()
-    # run_ann_2()
-    # run_knn_1()
-    # run_knn_2()
-    # run_svm_1()
-    # run_svm_2()
-    # run_boost_1()
-    # run_boost_2()
+    # dataset 1
+    run_dtc_1("charts/dtc_1_notune")
+    run_ada_1("charts/ada_1_notune")
+    run_svm_1("charts/svm_1_notune")
+    run_knn_1("charts/knn_1_notune")
+    run_ann_1("charts/ann_1_notune")
+
+    # dataset 2
+    run_dtc_2("charts/dtc_2_notune")
+    run_ada_2("charts/ada_2_notune")
+    run_svm_2("charts/svm_2_notune")
+    run_knn_2("charts/knn_2_notune")
+    run_ann_2("charts/ann_2_notune")
