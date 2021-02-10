@@ -165,6 +165,11 @@ def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, para
     plt.xlabel(x_lab)
     plt.ylabel(y_lab)
     lw = 2
+
+    # special case for ann passing tuples for hidden layer sizes
+    if type(param_range[0]) is list or type(param_range[0]) is tuple:
+        param_range = [r[0] for r in param_range]
+
     plt.plot(param_range, train_scores_mean, label="Training score",
                  color="darkorange", lw=lw)
     plt.fill_between(param_range, train_scores_mean - train_scores_std,
@@ -642,7 +647,7 @@ def run_knn_1(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     param_grid = {
         # neighbors (k)
-        "n_neighbors": range(1,len(data_train), 5),
+        # "n_neighbors": range(1,len(data_train), 5),
         # weights (uniform, distance)
         "weights": ["uniform", "distance"],
         # p (1 = manhattan, 2 = euclidian)
@@ -651,7 +656,10 @@ def run_knn_1(fig_name = None, show_plots = False):
 
     basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # 4 of the 5 folds use to train
+    max_neigh = int(len(data_train)*0.8)
+
+    sh = HalvingGridSearchCV(clf, param_grid, resource="n_neighbors", max_resources=max_neigh, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -682,7 +690,7 @@ def run_knn_1(fig_name = None, show_plots = False):
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="n_neighbors", param_range=range(1, len(data_train), 5), ylim=(0.0, 1.1))
+                          param_name="n_neighbors", param_range=range(1, max_neigh), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -721,7 +729,7 @@ def run_knn_2(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     param_grid = {
         # neighbors (k)
-        "n_neighbors": range(1, len(data_train), 5),
+        # "n_neighbors": range(1, len(data_train), 5),
         # weights (uniform, distance)
         "weights": ["uniform", "distance"],
         # p (1 = manhattan, 2 = euclidian)
@@ -730,7 +738,10 @@ def run_knn_2(fig_name = None, show_plots = False):
 
     basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
 
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # 4 of the 5 folds use to train
+    max_neigh = int(len(data_train)*0.8)
+
+    sh = HalvingGridSearchCV(clf, param_grid, resource="n_neighbors",max_resources=max_neigh, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -761,7 +772,7 @@ def run_knn_2(fig_name = None, show_plots = False):
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="n_neighbors", param_range=range(1, len(data_train),5), ylim=(0.0, 1.1))
+                          param_name="n_neighbors", param_range=range(1, max_neigh,5), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -796,13 +807,6 @@ def run_ann_1(fig_name = None, show_plots = False):
                         solver='sgd', verbose=10, random_state=0,
                         learning_rate_init=.1)
     clf = MLPClassifier(random_state=0)
-
-    # pulled from sklearn plot mnist example
-    # this example won't converge because of CI's time constraints, so we catch the
-    # warning and are ignore it here
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=ConvergenceWarning,
-                                module="sklearn")
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
@@ -958,15 +962,25 @@ def run_ann_2(fig_name = None, show_plots = False):
 
 if __name__ == '__main__':
     # dataset 1
-    run_dtc_1("charts/dtc_1_notune")
-    run_ada_1("charts/ada_1_notune")
-    run_svm_1("charts/svm_1_notune")
-    run_knn_1("charts/knn_1_notune")
-    run_ann_1("charts/ann_1_notune")
+    # run_dtc_1("charts/dtc_1_notune")
+    # run_ada_1("charts/ada_1_notune")
+    # run_svm_1("charts/svm_1_notune")
+    # run_knn_1("charts/knn_1_notune")
+
+    # pulled from sklearn plot mnist example
+    # this example won't converge because of CI's time constraints, so we catch the
+    # warning and are ignore it here
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                module="sklearn")
+        run_ann_1("charts/ann_1_notune")
 
     # dataset 2
     run_dtc_2("charts/dtc_2_notune")
     run_ada_2("charts/ada_2_notune")
     run_svm_2("charts/svm_2_notune")
     run_knn_2("charts/knn_2_notune")
-    run_ann_2("charts/ann_2_notune")
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                module="sklearn")
+        run_ann_2("charts/ann_2_notune")
