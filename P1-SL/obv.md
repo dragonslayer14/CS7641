@@ -17,16 +17,30 @@ but surprisingly high validation fitting around 89%
 - very small dataset, so without more data points, this seems to be the best
 - it is unclear why the suboptimal are being given as optimal, but the better one by score, overfit, will be kept
     - this is likely only working because of the very small dataset and the accuracy would drop given more data
+- this is about as heavily biased to the data as it can be, but the attempts at generalization showed no improvement
+    - will probably run "best" depth 3 against the test data as well, to see if the general rule to generalize a bit applies here
+    or the data are simply so similar and in such small number that overfitting matches the "universe" of the problem
 
 ### Boosting
 
 #### basic
 
 - does ok, decline start around 45 examples, still to about 90% accuracy in training data, but ends about 77% on cv
+    - plumments at 65 examples
 - cv peaks around when training decline starts
 - likely hitting the limit of the default 50 learners it was allocated
 - validation curve shows accuracy on training data constant at about 90% and cv in the 80's
     - across the entire span, something is messed up and isn't running correctly
+
+#### tuning
+
+- seems to get about 35 learners, then stop improving as more are added
+- also need to look at the base learner, allowing more of a tree instead of a stump could result in better performance
+- over 97% with DT depth 4, 300 estimators, and .1 ccp
+- 99% with dt depth 2, 10 estimators, and .1 ccp
+    - very small set, so not many needed with minimal pruning
+    - probably good enough
+    - run with 150 estimators to check for improvement, but no significant change was found so the simpler model is better here
 
 ### KNN
 
