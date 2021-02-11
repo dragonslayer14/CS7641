@@ -3,7 +3,7 @@ import warnings
 import numpy as np
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn import neighbors
 import matplotlib
 from sklearn.neural_network import MLPClassifier
@@ -205,16 +205,19 @@ def run_dtc_1(fig_name = None, show_plots = False):
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 5, 10],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
-    }
-
-    basic = DecisionTreeClassifier(criterion="entropy", random_state=0).fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     "max_depth": range(1,10),
+    #     "min_samples_split": [2, 5, 10],
+    #     "ccp_alpha": [0,0.1,0.2,0.3,0.4,0.5],
+    #     "min_samples_leaf": range(1,10)
+    # }
+    #
+    # basic = DecisionTreeClassifier(criterion="entropy", random_state=0).fit(data_train, label_train)
+    #
+    # cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
+    #
+    # sh = GridSearchCV(clf, param_grid, cv=5).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -224,15 +227,14 @@ def run_dtc_1(fig_name = None, show_plots = False):
     title = f"Learning Curves (Decision tree) ({DATASET_1_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
-                        cv=cv, n_jobs=4)
+                        cv=5, n_jobs=4)
 
     if fig_name is not None:
         now = datetime.now()
         dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
-        plt.savefig(f"{fig_name}_learn_{dt_string}")
+        # plt.savefig(f"{fig_name}_learn_{dt_string}")
 
 
     # based off sklearn validation curve example
@@ -243,8 +245,8 @@ def run_dtc_1(fig_name = None, show_plots = False):
     x_lab = "Depth"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, cv=5,
+                          param_name="max_depth", param_range=range(1, 10), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -353,35 +355,36 @@ def run_ada_1(fig_name = None, show_plots = False):
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
     clf = AdaBoostClassifier(n_estimators=300, random_state=0)
-    clf = AdaBoostClassifier(random_state=0)
+    clf = AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0)
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # depth of decision classifier? or just optimize number of depth 1 stumps?
-        # learning rate
-        # "n_estimators": range(10,500, 10)
-    }
-
-    basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', max_resources=500, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     # depth of decision classifier? or just optimize number of depth 1 stumps?
+    #     # learning rate
+    #     "n_estimators": range(10, 300, 10),
+    #     # "base_estimator": [DecisionTreeClassifier(max_depth=i) for i in range(1,6)]
+    # }
+    #
+    # basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
+    #
+    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
     # plot learning curve for current model
-    title = f"Learning Curves (Boosted Decision tree) ({DATASET_1_NAME})"
+    learn_title = f"Learning Curves (Boosted Decision tree) ({DATASET_1_NAME})"
     # Cross validation with 100 iterations to get smoother mean test and train
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
-                        cv=cv, n_jobs=4)
+    plot_learning_curve(clf, learn_title, data_train, label_train, ylim=(0, 1.01),
+                        cv=5, n_jobs=4)
 
     if fig_name is not None:
         now = datetime.now()
@@ -393,12 +396,12 @@ def run_ada_1(fig_name = None, show_plots = False):
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
 
     # plot validation curve
-    title = f"Validation Curve with Boosted DT ({DATASET_1_NAME})"
+    val_title = f"Validation Curve with Boosted DT ({DATASET_1_NAME})"
     x_lab = "n_estimators"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="n_estimators", param_range=range(10, 500, 10), ylim=(0.0, 1.1))
+    plot_validation_curve(clf, val_title, data_train, label_train, x_lab, y_lab, cv=5,
+                          param_name="n_estimators", param_range=range(5, 20, 1), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -962,10 +965,12 @@ def run_ann_2(fig_name = None, show_plots = False):
 
 if __name__ == '__main__':
     # dataset 1
-    # run_dtc_1("charts/dtc_1_notune")
-    # run_ada_1("charts/ada_1_notune")
-    # run_svm_1("charts/svm_1_notune")
-    # run_knn_1("charts/knn_1_notune")
+    # run_dtc_1("charts/dtc/dtc_1_tunedepth", True)
+    # run_dtc_1(show_plots=True)
+    # run_ada_1("charts/ada/ada_1_tuneestimators", True)
+    run_ada_1(show_plots=True)
+    # run_svm_1("charts/svm/svm_1_notune", show_plots=True)
+    # run_knn_1("charts/knn/knn_1_notune", show_plots=True)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
@@ -973,14 +978,14 @@ if __name__ == '__main__':
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
-        run_ann_1("charts/ann_1_notune")
+        # run_ann_1("charts/ann/ann_1_notune", show_plots=True)
 
     # dataset 2
-    run_dtc_2("charts/dtc_2_notune")
-    run_ada_2("charts/ada_2_notune")
-    run_svm_2("charts/svm_2_notune")
-    run_knn_2("charts/knn_2_notune")
+    # run_dtc_2("charts/dtc/dtc_2_notune", show_plots=True)
+    # run_ada_2("charts/ada/ada_2_notune", show_plots=True)
+    # run_svm_2("charts/svm/svm_2_notune", show_plots=True)
+    # run_knn_2("charts/knn/knn_2_notune", show_plots=True)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
-        run_ann_2("charts/ann_2_notune")
+        # run_ann_2("charts/ann/ann_2_notune", show_plots=True)
