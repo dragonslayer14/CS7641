@@ -52,6 +52,17 @@ but surprisingly high validation fitting around 89%
     - this makes sense when the data points are sparse, but should improve as more are added
     - likely due to the fact that there is not a lot of data, so there isn't enough room to progress
 
+#### tuning
+
+- validation over k devolves as k grows
+    - unsurprising as it then becomes a plurality vote
+- changing to distance weighting works to mitigate the issue by only working on items near x
+    - training stays at 100%, which is strange
+    - perhaps they occupy specific areas within space and all classes are covered early, so it's lucky?
+        - there are only 3, evenly distributed, and it starts with 20 or so examples, not unreasonable
+- manhattan distance seems to work better than euclidian for an unknown reason
+- k = 3 with manhattan distance seems best at 85% for cv
+
 ### ANN
 
 #### basic
@@ -78,3 +89,10 @@ but surprisingly high validation fitting around 89%
 - obvious and expected over fitting with very low
 cv accuracy (55%)
   - overfit and not scalable to testing set
+
+### Boosting
+
+#### basic
+
+- training and test accuracy consistent, but around 40% with no real change after 100's of estimators
+    - something is wrong, but what? 
