@@ -80,6 +80,19 @@ but surprisingly high validation fitting around 89%
     - would need to try a coarse search for C and gamma to see how the kernel could improve
     - also a search through the other kernel options, likely avoiding a custom kernel
 
+#### tuning
+
+- linear kernel seems far and away the best
+linear: training: 1.0 0.0, cv: 0.9454545454545455 0.06680426571226848
+poly: training: 0.7142857142857142 0.03610893068595978, cv: 0.7454545454545454 0.07385489458759967
+rbf: training: 0.7380952380952379 0.04937247941268508, cv: 0.7 0.11354541815269817
+sigmoid: training: 0.2976190476190476 0.12710807442894417, cv: 0.20909090909090908 0.1171281702429557
+- grid search c values
+     - c 1 -> 2000 seems to be the same value, .945 cv
+     - also keeps the model simple
+     - small c does not improve
+     - balanced class weight does not improve
+
 ## Dataset 2 (Wine Quality)
 
 ### DT

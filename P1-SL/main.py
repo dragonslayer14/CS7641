@@ -509,23 +509,21 @@ def run_svm_1(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = SVC(random_state=0)
+    clf = SVC(kernel="linear", random_state=0)
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # at least kernels
-        # C?
-        # gamma?
-        # "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"]
-    }
+    # param_grid = [
+    #     {'C': [1, 10, 100, 1000], 'kernel': ["linear", "poly", "sigmoid"]},
+    #     {'C': [1, 10, 100, 1000], 'gamma': [0.001, 0.0001, "scale"], 'kernel': ['rbf']},
+    # ]
 
-    basic = SVC(random_state=0).fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # basic = SVC(random_state=0).fit(data_train, label_train)
+    #
+    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -546,11 +544,18 @@ def run_svm_1(fig_name = None, show_plots = False):
         plt.savefig(f"{fig_name}_learn_{dt_string}")
 
     # validation curve won't really work here, just use a table
-    for kernel in ["linear", "poly", "rbf", "sigmoid", "precomputed"]:
-        # train svc with given kernel
-        # cv sets to get average per kernel
-        # dump results for table
-        pass
+    # for kernel in ["linear", "poly", "rbf", "sigmoid"]:
+    #     split = ShuffleSplit(n_splits=5, test_size=0.2, random_state=0)
+    #     training = []
+    #     val = []
+    #     for train_index, test_index in split.split(data_train, label_train):
+    #         # train svc with given kernel
+    #         test = SVC(kernel=kernel).fit(data_train[train_index], label_train[train_index])
+    #         training.append(test.score(data_train[train_index], label_train[train_index]))
+    #         val.append(test.score(data_train[test_index], label_train[test_index]))
+    #     # cv sets to get average per kernel
+    #     # dump results for table
+    #     print(f"{kernel}: training: {np.mean(training)} {np.std(training)}, cv: {np.mean(val)} {np.std(val)}")
 
     if show_plots:
         plt.show()
@@ -973,6 +978,7 @@ if __name__ == '__main__':
     # run_knn_1("charts/knn/knn_1_tune_k", show_plots=True)
     # run_knn_1(show_plots=True)
     # run_svm_1("charts/svm/svm_1_notune", show_plots=True)
+    run_svm_1(show_plots=True)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
