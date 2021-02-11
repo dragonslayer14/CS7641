@@ -642,28 +642,28 @@ def run_knn_1(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = neighbors.KNeighborsClassifier()
+    clf = neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance', p=1)
+
+    # 4 of the 5 folds use to train
+    max_neigh = int(len(data_train)*0.8)
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # neighbors (k)
-        # "n_neighbors": range(1,len(data_train), 5),
-        # weights (uniform, distance)
-        "weights": ["uniform", "distance"],
-        # p (1 = manhattan, 2 = euclidian)
-        "p": [1,2]
-    }
-
-    basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
-
-    # 4 of the 5 folds use to train
-    max_neigh = int(len(data_train)*0.8)
-
-    sh = HalvingGridSearchCV(clf, param_grid, resource="n_neighbors", max_resources=max_neigh, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     # neighbors (k)
+    #     "n_neighbors": range(1,max_neigh, 6),
+    #     # weights (uniform, distance)
+    #     "weights": ["uniform", "distance"],
+    #     # p (1 = manhattan, 2 = euclidian)
+    #     "p": [1,2]
+    # }
+    #
+    # basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
+    #
+    # sh = GridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -676,7 +676,7 @@ def run_knn_1(fig_name = None, show_plots = False):
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
-                        cv=cv, n_jobs=4)
+                        cv=5, n_jobs=4)
 
     if fig_name is not None:
         now = datetime.now()
@@ -692,8 +692,8 @@ def run_knn_1(fig_name = None, show_plots = False):
     x_lab = "Neighbors"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="n_neighbors", param_range=range(1, max_neigh), ylim=(0.0, 1.1))
+    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, cv=5,
+                          param_name="n_neighbors", param_range=range(1, 10), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -964,13 +964,15 @@ def run_ann_2(fig_name = None, show_plots = False):
 
 
 if __name__ == '__main__':
+    print()
     # dataset 1
     # run_dtc_1("charts/dtc/dtc_1_tunedepth", True)
     # run_dtc_1(show_plots=True)
     # run_ada_1("charts/ada/ada_1_tuneestimators", True)
-    run_ada_1(show_plots=True)
+    # run_ada_1(show_plots=True)
+    # run_knn_1("charts/knn/knn_1_tune_k", show_plots=True)
+    # run_knn_1(show_plots=True)
     # run_svm_1("charts/svm/svm_1_notune", show_plots=True)
-    # run_knn_1("charts/knn/knn_1_notune", show_plots=True)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
