@@ -71,6 +71,13 @@ but surprisingly high validation fitting around 89%
 - default has 100 hidden nodes on second layer which may be over complicating the calculations
     - certainly not overfitting, as the training error drops from about 90% to about 70%
 
+#### tuning
+
+- 85 nodes in one hidden layer seems to be best, no change to learning rate or alpha
+    - could run validation curves to be sure, only slight checking
+- got to about 95% train, 92% cv with one layer of 85
+- search over alpha, learning rate, and momentum did not give anything better
+
 ### SVM
 
 #### basic

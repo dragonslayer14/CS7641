@@ -811,28 +811,34 @@ def run_ann_1(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
-                        solver='sgd', verbose=10, random_state=0,
-                        learning_rate_init=.1)
-    clf = MLPClassifier(random_state=0)
+    # clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
+    #                     solver='sgd', verbose=10, random_state=0,
+    #                     learning_rate_init=.1)
+    clf = MLPClassifier(hidden_layer_sizes=(85,), random_state=0)
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # hidden layers?
-        "hidden_layer_sizes": [(i,) for i in range(5,50,5)]
-        # alpha
-        # learning rate
-        # momentum
-        # solver
-    }
-
-    basic = MLPClassifier().fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     # hidden layers?
+    #     # "hidden_layer_sizes": [(i,) for i in range(5,50,5)],
+    #     # alpha
+    #     "alpha": [1e-3,1e-4,1e-5],
+    #     # learning rate
+    #     "learning_rate_init": [1e-2,1e-3,1e-4],
+    #     # momentum
+    #     "momentum": np.linspace(.1,1.0,10)
+    #     # solver
+    # }
+    #
+    # basic = MLPClassifier().fit(data_train, label_train)
+    #
+    # with warnings.catch_warnings():
+    #     warnings.filterwarnings("ignore", category=ConvergenceWarning,
+    #                             module="sklearn")
+    #     sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -844,8 +850,11 @@ def run_ann_1(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
-                        cv=cv, n_jobs=4)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                module="sklearn")
+        plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
+                        cv=5, n_jobs=4)
 
     if fig_name is not None:
         now = datetime.now()
@@ -861,8 +870,11 @@ def run_ann_1(fig_name = None, show_plots = False):
     x_lab = "hidden_layer_sizes"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(5,50,5)], ylim=(0.0, 1.1))
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                module="sklearn")
+        plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, cv=5,
+                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(5,100,5)], ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -978,18 +990,20 @@ if __name__ == '__main__':
     # run_knn_1("charts/knn/knn_1_tune_k", show_plots=True)
     # run_knn_1(show_plots=True)
     # run_svm_1("charts/svm/svm_1_notune", show_plots=True)
-    run_svm_1(show_plots=True)
+    # run_svm_1(show_plots=True)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
     # warning and are ignore it here
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=ConvergenceWarning,
-                                module="sklearn")
+    # with warnings.catch_warnings():
+    #     warnings.filterwarnings("ignore", category=ConvergenceWarning,
+    #                             module="sklearn")
         # run_ann_1("charts/ann/ann_1_notune", show_plots=True)
+    run_ann_1("charts/ann/ann_1_tune_layers", show_plots=True)
 
     # dataset 2
     # run_dtc_2("charts/dtc/dtc_2_notune", show_plots=True)
+    # run_dtc_2(show_plots=True)
     # run_ada_2("charts/ada/ada_2_notune", show_plots=True)
     # run_svm_2("charts/svm/svm_2_notune", show_plots=True)
     # run_knn_2("charts/knn/knn_2_notune", show_plots=True)
