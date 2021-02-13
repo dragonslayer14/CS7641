@@ -483,7 +483,8 @@ def run_ada_2(fig_name = None, show_plots = False):
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
     clf = AdaBoostClassifier(n_estimators=300, random_state=0)
-    clf = AdaBoostClassifier(random_state=0)
+    clf = AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500,
+        random_state=0)
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
@@ -492,12 +493,13 @@ def run_ada_2(fig_name = None, show_plots = False):
     # param_grid = {
     #     # depth of decision classifier? or just optimize number of depth 1 stumps?
     #     # learning rate
-    #     # "n_estimators": range(10,500,10)
+    #     "n_estimators": range(50,500,50),
+    #     "base_estimator": [DecisionTreeClassifier(max_depth=i, ccp_alpha=a) for i in range(1, 6) for a in np.linspace(0,1,10) ]
     # }
     #
     # basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
     #
-    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', max_resources=500, factor=2).fit(data_train, label_train)
+    # sh = GridSearchCV(clf, param_grid,scoring="f1_weighted", cv=5).fit(data_train, label_train)
     # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -510,13 +512,13 @@ def run_ada_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
-                        cv=cv, n_jobs=4)
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01), scoring="f1_weighted",
+                        cv=5, n_jobs=4)
 
     if fig_name is not None:
         now = datetime.now()
         dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
-        plt.savefig(f"{fig_name}_learn_{dt_string}")
+        # plt.savefig(f"{fig_name}_learn_{dt_string}")
 
 
     # based off sklearn validation curve example
@@ -524,14 +526,26 @@ def run_ada_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with Boosted DT ({DATASET_2_NAME})"
-    x_lab = "n_estimators"
+    x_lab = "estimators"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="n_estimators", param_range=range(10, 500,10), ylim=(0.0, 1.1))
+    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, cv=5, scoring="f1_weighted",
+                          param_name="n_estimators", param_range=range(10,300,10), ylim=(0.0, 1.1))
 
     if fig_name is not None:
-        plt.savefig(f"{fig_name}_val_{dt_string}")
+        # plt.savefig(f"{fig_name}_val_{dt_string}")
+        pass
+
+    # split and retrain to do a validation confusion matrix
+    t = AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500,random_state=0)
+    t_train, t_test, l_train, l_test = train_test_split(data_train, label_train, random_state=0)
+
+    t.fit(t_train, l_train)
+
+    plot_confusion_matrix(t, t_test, l_test)
+
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_conf_matrix_{dt_string}")
 
     if show_plots:
         plt.show()
@@ -647,7 +661,7 @@ def run_svm_2(fig_name = None, show_plots = False):
     #
     # basic = SVC(random_state=0).fit(data_train, label_train)
     #
-    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # sh = GridSearchCV(clf, param_grid, cv=5,scoring="f1_weighted").fit(data_train, label_train)
     # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -661,15 +675,37 @@ def run_svm_2(fig_name = None, show_plots = False):
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
-                        cv=cv, n_jobs=4)
+                        scoring="f1_weighted", cv=cv, n_jobs=4)
 
     if fig_name is not None:
         now = datetime.now()
         dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
         plt.savefig(f"{fig_name}_learn_{dt_string}")
 
+    # split and retrain to do a validation confusion matrix
+    t = DecisionTreeClassifier(random_state=0)
+    t_train, t_test, l_train, l_test = train_test_split(data_train, label_train, random_state=0)
 
-    # validation curve isn't helpful here, pull table code once svm1 is done
+    t.fit(t_train, l_train)
+
+    plot_confusion_matrix(t, t_test, l_test)
+
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_conf_matrix_{dt_string}")
+
+    # validation curve won't really work here, just use a table
+    # for kernel in ["linear", "poly", "rbf", "sigmoid"]:
+    #     split = ShuffleSplit(n_splits=5, test_size=0.2, random_state=0)
+    #     training = []
+    #     val = []
+    #     for train_index, test_index in split.split(data_train, label_train):
+    #         # train svc with given kernel
+    #         test = SVC(kernel=kernel).fit(data_train[train_index], label_train[train_index])
+    #         training.append(test.score(data_train[train_index], label_train[train_index]))
+    #         val.append(test.score(data_train[test_index], label_train[test_index]))
+    #     # cv sets to get average per kernel
+    #     # dump results for table
+    #     print(f"{kernel}: training: {np.mean(training)} {np.std(training)}, cv: {np.mean(val)} {np.std(val)}")
 
     if show_plots:
         plt.show()
@@ -787,8 +823,8 @@ def run_knn_2(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     # param_grid = {
     #     # neighbors (k)
-    #     # "n_neighbors": range(1, len(data_train), 5),
-    #     # weights (uniform, distance)
+    #     "n_neighbors": range(1, max_neigh, 5),
+    #    # weights (uniform, distance)
     #     "weights": ["uniform", "distance"],
     #     # p (1 = manhattan, 2 = euclidian)
     #     "p": [1, 2]
@@ -799,7 +835,7 @@ def run_knn_2(fig_name = None, show_plots = False):
     # # 4 of the 5 folds use to train
     max_neigh = int(len(data_train)*0.8)
     #
-    # sh = HalvingGridSearchCV(clf, param_grid, resource="n_neighbors",max_resources=max_neigh, cv=5, factor=2).fit(data_train, label_train)
+    # sh = GridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5).fit(data_train, label_train)
     # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -812,7 +848,7 @@ def run_knn_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01), scoring="f1_weighted",
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -829,11 +865,22 @@ def run_knn_2(fig_name = None, show_plots = False):
     x_lab = "Neighbors"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
+    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, scoring="f1_weighted",
                           param_name="n_neighbors", param_range=range(1, max_neigh,5), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    # split and retrain to do a validation confusion matrix
+    t = DecisionTreeClassifier(random_state=0)
+    t_train, t_test, l_train, l_test = train_test_split(data_train, label_train, random_state=0)
+
+    t.fit(t_train, l_train)
+
+    plot_confusion_matrix(t, t_test, l_test)
+
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_conf_matrix_{dt_string}")
 
     if show_plots:
         plt.show()
@@ -982,7 +1029,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     #
     # basic = MLPClassifier().fit(data_train, label_train)
     #
-    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # sh = HalvingGridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5).fit(data_train, label_train)
     # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -995,7 +1042,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
+    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),scoring="f1_weighted",
                         cv=cv, n_jobs=4)
 
     if fig_name is not None:
@@ -1012,11 +1059,22 @@ def run_ann_2(fig_name = None, show_plots = False):
     x_lab = "hidden_layer_sizes"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
+    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, scoring="f1_weighted",
                           param_name="hidden_layer_sizes", param_range=[(i,) for i in range(5,50,5)], ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
+
+    # split and retrain to do a validation confusion matrix
+    t = DecisionTreeClassifier(random_state=0)
+    t_train, t_test, l_train, l_test = train_test_split(data_train, label_train, random_state=0)
+
+    t.fit(t_train, l_train)
+
+    plot_confusion_matrix(t, t_test, l_test)
+
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_conf_matrix_{dt_string}")
 
     if show_plots:
         plt.show()
@@ -1055,16 +1113,16 @@ if __name__ == '__main__':
     # run_dtc_2("charts/dtc/dtc_wifi_notune", show_plots=True)
     # run_dtc_2(show_plots=True)
     # run_dtc_2(show_plots=True)
-    # run_ada_2("charts/ada/ada_wifi_notune", show_plots=True)
-    run_ada_2(show_plots=True)
-    # run_svm_2("charts/svm/svm_wifi_notune", show_plots=True)
-    run_svm_2(show_plots=True)
-    # run_knn_2("charts/knn/knn_wifi_notune", show_plots=True)
-    run_knn_2(show_plots=True)
+    # run_ada_2("charts/ada/ada_2_", show_plots=True)
+    # run_ada_2(show_plots=True)
+    run_svm_2("charts/svm/svm_2_notune", show_plots=True)
+    # run_svm_2(show_plots=True)
+    run_knn_2("charts/knn/knn_2_notune", show_plots=True)
+    # run_knn_2(show_plots=True)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
-        # run_ann_2("charts/ann/ann_wifi_notune", show_plots=True)
+        # run_ann_2("charts/ann/ann_2_notune", show_plots=True)
         run_ann_2(show_plots=True)
 
     print()
