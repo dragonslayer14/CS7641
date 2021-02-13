@@ -15,6 +15,11 @@ from sklearn.model_selection import learning_curve
 from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import validation_curve
 from datetime import datetime
+from sklearn.metrics import precision_recall_curve
+from sklearn.metrics import average_precision_score
+# We use OneVsRestClassifier for multi-label prediction
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.metrics import plot_confusion_matrix
 
 # show popup for graphs on mac
 
@@ -29,7 +34,7 @@ DATASET_2_NAME = "Wine Quality"
 
 
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
-                        n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
+                        scoring="accuracy", n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
     """
     Generate 3 plots: the test and training learning curve, the training
     samples vs fit times curve, the fit times vs score curve.
@@ -103,7 +108,8 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
     train_sizes, train_scores, test_scores, fit_times, _ = \
         learning_curve(estimator, X, y, cv=cv, n_jobs=n_jobs,
                        train_sizes=train_sizes,
-                       return_times=True)
+                       return_times=True,
+                       scoring=scoring)
     train_scores_mean = np.mean(train_scores, axis=1)
     train_scores_std = np.std(train_scores, axis=1)
     test_scores_mean = np.mean(test_scores, axis=1)
@@ -144,8 +150,35 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
     axes[2].set_title("Performance of the model")
 
 
+def average_precision_scorer(estimator, X, y):
+    # weight score by weight of label in set
+    unique, counts = np.unique(y, return_counts=True)
+    counts = counts / len(y)
+    scale = dict(zip(unique, counts))
+    print(estimator)
+    y_score = estimator.predict_proba(X)
+    # For each class
+    precision = dict()
+    recall = dict()
+    average_precision = dict()
+    for i in range(len(unique)):
+        precision[i], recall[i], _ = precision_recall_curve(y[:, i],
+                                                            y_score[:, i])
+        average_precision[i] = average_precision_score(y[:, i], y_score[:, i])
+
+    # A "micro-average": quantifying score on all classes jointly
+    precision["micro"], recall["micro"], _ = precision_recall_curve(y.ravel(),
+                                                                    y_score.ravel())
+    average_precision["micro"] = average_precision_score(y, y_score,
+                                                         average="micro")
+    print('Average precision score, micro-averaged over all classes: {0:0.2f}'
+          .format(average_precision["micro"]))
+
+    return average_precision["micro"]
+
+
 def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, param_range,
-                          ylim=None, cv=None, n_jobs=None):
+                          scoring="accuracy", ylim=None, cv=None, n_jobs=None):
 
     plt.figure()
     plt.title(title)
@@ -156,7 +189,7 @@ def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, para
     # param_range = np.logspace(-6, -1, 5)
     train_scores, test_scores = validation_curve(
         estimator, X, y, param_name=param_name, param_range=param_range,
-        scoring="accuracy", n_jobs=n_jobs, cv=cv)
+        scoring=scoring, n_jobs=n_jobs, cv=cv)
     train_scores_mean = np.mean(train_scores, axis=1)
     train_scores_std = np.std(train_scores, axis=1)
     test_scores_mean = np.mean(test_scores, axis=1)
@@ -254,7 +287,7 @@ def run_dtc_1(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -277,7 +310,8 @@ def run_dtc_2(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
+    clf = DecisionTreeClassifier(criterion="entropy", max_depth=18,
+                                 random_state=0)
 
     # TODO run cost complexity pruning code to find alpha for ccp
 
@@ -285,16 +319,18 @@ def run_dtc_2(fig_name = None, show_plots = False):
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        "max_depth": [3, 5, 10, 12, 15, 20],
-        "min_samples_split": [2, 3, 4],
-        # ccp alpha for pruning as opposed to max depth, post vs pre pruning
-    }
-
-    basic = DecisionTreeClassifier(criterion="entropy", random_state=0).fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=3, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     "max_depth": range(1, 26),
+    #     "min_samples_split": [2, 5, 10],
+    #     "ccp_alpha": [0, 0.1, 0.2, 0.3, 0.4, 0.5],
+    #     "min_samples_leaf": range(1, 10),
+    #     "criterion": ["gini", "entropy"]
+    # }
+    #
+    # basic = DecisionTreeClassifier(criterion="entropy", random_state=0).fit(data_train, label_train)
+    #
+    # sh = GridSearchCV(clf, param_grid, cv=3, scoring="f1_weighted").fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -307,7 +343,7 @@ def run_dtc_2(fig_name = None, show_plots = False):
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.0, 1.01),
-                        cv=cv, n_jobs=4)
+                        cv=5, n_jobs=4, scoring="f1_weighted")
 
     if fig_name is not None:
         now = datetime.now()
@@ -319,19 +355,33 @@ def run_dtc_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with DT ({DATASET_2_NAME})"
-    x_lab = "Depth"
+    x_lab = "alpha"
     y_lab = "Score"
 
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab,
-                          param_name="max_depth", param_range=range(1, 20), ylim=(0.0, 1.1))
+    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, cv=5, scoring="f1_weighted",
+                          param_name="ccp_alpha", param_range=np.linspace(0,1), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
 
+    # plot_confusion_matrix(basic, data_train, label_train)
+
+    # split and retrain to do a validation confusion matrix
+    t = DecisionTreeClassifier(random_state=0)
+    t_train,t_test,l_train,l_test = train_test_split(data_train, label_train, random_state=0)
+
+    t.fit(t_train, l_train)
+
+    plot_confusion_matrix(t, t_test, l_test)
+
+    if fig_name is not None:
+        plt.savefig(f"{fig_name}_conf_matrix_{dt_string}")
+
+
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -409,7 +459,7 @@ def run_ada_1(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -439,16 +489,16 @@ def run_ada_2(fig_name = None, show_plots = False):
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # depth of decision classifier? or just optimize number of depth 1 stumps?
-        # learning rate
-        # "n_estimators": range(10,500,10)
-    }
-
-    basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', max_resources=500, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     # depth of decision classifier? or just optimize number of depth 1 stumps?
+    #     # learning rate
+    #     # "n_estimators": range(10,500,10)
+    # }
+    #
+    # basic = AdaBoostClassifier(random_state=0).fit(data_train, label_train)
+    #
+    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, resource='n_estimators', max_resources=500, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -486,7 +536,7 @@ def run_ada_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -560,7 +610,7 @@ def run_svm_1(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -589,16 +639,16 @@ def run_svm_2(fig_name = None, show_plots = False):
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # at least kernels
-        # C?
-        # gamma?
-    }
-
-    basic = SVC(random_state=0).fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     # at least kernels
+    #     # C?
+    #     # gamma?
+    # }
+    #
+    # basic = SVC(random_state=0).fit(data_train, label_train)
+    #
+    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -624,7 +674,7 @@ def run_svm_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -706,7 +756,7 @@ def run_knn_1(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -735,22 +785,22 @@ def run_knn_2(fig_name = None, show_plots = False):
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # neighbors (k)
-        # "n_neighbors": range(1, len(data_train), 5),
-        # weights (uniform, distance)
-        "weights": ["uniform", "distance"],
-        # p (1 = manhattan, 2 = euclidian)
-        "p": [1, 2]
-    }
-
-    basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
-
-    # 4 of the 5 folds use to train
+    # param_grid = {
+    #     # neighbors (k)
+    #     # "n_neighbors": range(1, len(data_train), 5),
+    #     # weights (uniform, distance)
+    #     "weights": ["uniform", "distance"],
+    #     # p (1 = manhattan, 2 = euclidian)
+    #     "p": [1, 2]
+    # }
+    #
+    # basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
+    #
+    # # 4 of the 5 folds use to train
     max_neigh = int(len(data_train)*0.8)
-
-    sh = HalvingGridSearchCV(clf, param_grid, resource="n_neighbors",max_resources=max_neigh, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    #
+    # sh = HalvingGridSearchCV(clf, param_grid, resource="n_neighbors",max_resources=max_neigh, cv=5, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -788,7 +838,7 @@ def run_knn_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -882,7 +932,7 @@ def run_ann_1(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -921,19 +971,19 @@ def run_ann_2(fig_name = None, show_plots = False):
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
     # define hyper parameter space to check over
-    param_grid = {
-        # hidden layers?
-        "hidden_layer_sizes": [(i,) for i in range(5,50,5)]
-        # alpha
-        # learning rate
-        # momentum
-        # solver
-    }
-
-    basic = MLPClassifier().fit(data_train, label_train)
-
-    sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
+    # param_grid = {
+    #     # hidden layers?
+    #     "hidden_layer_sizes": [(i,) for i in range(5,50,5)]
+    #     # alpha
+    #     # learning rate
+    #     # momentum
+    #     # solver
+    # }
+    #
+    # basic = MLPClassifier().fit(data_train, label_train)
+    #
+    # sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+    # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
@@ -971,7 +1021,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    plt.close('all')
+    
 
     # run against test, uncomment for final analysis
     # !! don't touch during training/tuning !!
@@ -999,15 +1049,23 @@ if __name__ == '__main__':
     #     warnings.filterwarnings("ignore", category=ConvergenceWarning,
     #                             module="sklearn")
         # run_ann_1("charts/ann/ann_1_notune", show_plots=True)
-    run_ann_1("charts/ann/ann_1_tune_layers", show_plots=True)
+    # run_ann_1("charts/ann/ann_1_tune_layers", show_plots=True)
 
     # dataset 2
-    # run_dtc_2("charts/dtc/dtc_2_notune", show_plots=True)
+    # run_dtc_2("charts/dtc/dtc_wifi_notune", show_plots=True)
     # run_dtc_2(show_plots=True)
-    # run_ada_2("charts/ada/ada_2_notune", show_plots=True)
-    # run_svm_2("charts/svm/svm_2_notune", show_plots=True)
-    # run_knn_2("charts/knn/knn_2_notune", show_plots=True)
+    # run_dtc_2(show_plots=True)
+    # run_ada_2("charts/ada/ada_wifi_notune", show_plots=True)
+    run_ada_2(show_plots=True)
+    # run_svm_2("charts/svm/svm_wifi_notune", show_plots=True)
+    run_svm_2(show_plots=True)
+    # run_knn_2("charts/knn/knn_wifi_notune", show_plots=True)
+    run_knn_2(show_plots=True)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
-        # run_ann_2("charts/ann/ann_2_notune", show_plots=True)
+        # run_ann_2("charts/ann/ann_wifi_notune", show_plots=True)
+        run_ann_2(show_plots=True)
+
+    print()
+    plt.close('all')
