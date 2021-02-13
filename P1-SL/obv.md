@@ -104,11 +104,25 @@ sigmoid: training: 0.2976190476190476 0.12710807442894417, cv: 0.209090909090909
 
 ### DT
 
-### basic
+#### basic
 
 - obvious and expected over fitting with very low
 cv accuracy (55%)
   - overfit and not scalable to testing set
+- fully overfit tree is depth 25
+    - look into pre and post pruning
+
+#### tuning
+
+- no real improvement from tuning depth or alpha with a weighted f1 score
+    - grid searching reveals some pre pruning with depth 18-21, but with little impact
+    - validation curves show very heavy impact from tuning alpha, likely due to regression to populous class
+    - Confusion matrix shows that for the 3 major classes, it is getting the correct class most often
+    followed by others in descending order of number of samples
+- ultimately, probably just need more data for other classes, the enormous skew makes it highly dependent on a few examples
+- unsure why the 3 main classes are not doing better, this may require better domain knowledge about feature importance,
+as noted in the dataset text calling for feature selection
+    - could be a lot of noise in unimportant features to the actual classification 
 
 ### Boosting
 
