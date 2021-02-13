@@ -102,6 +102,22 @@ sigmoid: training: 0.2976190476190476 0.12710807442894417, cv: 0.209090909090909
 
 ## Dataset 2 (Wine Quality)
 
+- imbalanced to 2 classes, really only made up of 3 with some samples in the others.
+- probably possible to work with, but need to graph other than accuracy
+    - confusion matrix is helpful, but not so much for tuning, would need a different score for validation curve
+- other datasets may be better, especially if balanced
+    - adults?
+        - maybe, binary and imbalanced, so higher accuracy over all, but maybe not better in terms of ease of tuning
+    - wifi?
+        - perfectly balanced,but far too simple, basic runs get 90%+ for all algos, no good comparisons, I don't think
+    - yeast?
+        - multiclass and imbalanced to a few in a similar way, can run basic and see what improvement room there is
+    - need something, balanced, non-trivial, maybe stick with same approx number of params?
+        - original idea was comparison of number of dimensions across dataset size and distribution, so sticking could 
+        work so long as improvements to confusion matrix scoring can be found, but not sure how
+            - still shows the problems of a bunch of data defining a small amount of the class space
+            as opposed to a small amount of data points in the same dimensionality defining a smaller class space well
+
 ### DT
 
 #### basic
@@ -129,4 +145,14 @@ as noted in the dataset text calling for feature selection
 #### basic
 
 - training and test accuracy consistent, but around 40% with no real change after 100's of estimators
-    - something is wrong, but what? 
+    - something is wrong, but what?
+
+
+#### tuning
+
+- able to tune in much the same way as in 1, max depth 5, but alpha pruning did not improve anything
+- seems to trend slightly up, even after 1000 learners
+    - given enough learners it would do well, but lack of time and computing power will cap it to 500
+    - still likely to do poorly on the edge cases, since there are not enough samples to build a better understanding
+- went from converging around 40% to maybe around 70% if traced out, cv around 60%
+- 500 depth 5 trees is probably too much, but it's good enough for this
