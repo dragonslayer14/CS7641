@@ -1079,13 +1079,44 @@ def run_ann_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    
 
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
+def score_1(clf):
+    # read in dataset from file
+    with open(DATASET_1, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
 
-    # track accuracy and variance so later report can pull numbers as needed
+    data, labels = data[:, :-1], data[:, -1]
+
+    # random state makes this the same split
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+    # train on all of training set, no cv or curves here
+    clf.fit(data_train, label_train)
+
+    # just score test set
+    clf.score(data_test, label_test)
+
+
+def score_2(clf):
+    # read in dataset from file
+    with open(DATASET_2, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:, :-1], data[:, -1]
+
+    # random state makes this the same split
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    # train on all of training set, no cv or curves here
+    clf.fit(data_train, label_train)
+
+    # just score test set
+    clf.score(data_test, label_test)
 
 
 if __name__ == '__main__':
@@ -1127,3 +1158,19 @@ if __name__ == '__main__':
 
     print()
     plt.close('all')
+
+    # print("scoring")
+    # print(DATASET_1_NAME)
+    # score_1(DecisionTreeClassifier())
+    # score_1(AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0))
+    # score_1(SVC(kernel="linear", random_state=0))
+    # score_1(neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance', p=1))
+    # score_1(MLPClassifier(hidden_layer_sizes=(85,), random_state=0))
+    # print()
+    # print(DATASET_2_NAME)
+    # score_2(DecisionTreeClassifier(criterion="entropy", max_depth=18, random_state=0))
+    # score_2(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500, random_state=0))
+    # score_2(SVC(gamma=0.001, C=1000, random_state=0))
+    # score_2(neighbors.KNeighborsClassifier())
+    # score_2(MLPClassifier())
+
