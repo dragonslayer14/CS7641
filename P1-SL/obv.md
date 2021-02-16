@@ -189,6 +189,9 @@ sigmoid: training: 0.381975625400898 0.03125054901201807, cv: 0.3653846153846153
     - not really surprising
 - switching to distance weighted samples shows 100% on training with 10 neighbors, 53% on cv
 - validation curve shows about 55% for 14 neighbors
+- better performance could likely be found with more domain knowledge for picking off specific attributes or scaling for distance
+- leaf size does not seem to matter, but grid search gave 10 over 30, so we will go with it
+- 14 neighbors, leaf size 10, manhattan distance weighted
 
 ### ANN
 

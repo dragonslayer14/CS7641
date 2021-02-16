@@ -818,7 +818,7 @@ def run_knn_2(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = neighbors.KNeighborsClassifier()
+    clf = neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance')
 
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
@@ -827,20 +827,21 @@ def run_knn_2(fig_name = None, show_plots = False):
     max_neigh = int(len(data_train)*0.8)
 
     # define hyper parameter space to check over
-    param_grid = {
-        # neighbors (k)
-        "n_neighbors": [10, max_neigh//2, max_neigh],
-        # weights (uniform, distance)
-        "weights": ["uniform", "distance"],
-        # p (1 = manhattan, 2 = euclidian)
-        "p": [1, 2]
-    }
-
-    basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
-
-    sh = GridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5, verbose=3).fit(data_train, label_train)
-    print(sh.best_estimator_)
-    clf = sh.best_estimator_
+    # param_grid = {
+    #     # neighbors (k)
+    #     "n_neighbors": range(1,50),
+    #     "leaf_size": range(10,50)
+    #     # weights (uniform, distance)
+    #     # "weights": ["uniform", "distance"],
+    #     # p (1 = manhattan, 2 = euclidian)
+    #     # "p": [1, 2]
+    # }
+    #
+    # basic = neighbors.KNeighborsClassifier().fit(data_train, label_train)
+    #
+    # sh = GridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5).fit(data_train, label_train)
+    # print(sh.best_estimator_)
+    # clf = sh.best_estimator_
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
@@ -865,22 +866,22 @@ def run_knn_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with KNN ({DATASET_2_NAME})"
-    x_lab = "Neighbors"
+    x_lab = "lef size"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, scoring="f1_weighted", cv=5,
-                          param_name="n_neighbors", param_range=range(1, max_neigh, 150), ylim=(0.0, 1.1))
+                          param_name="leaf_size", param_range=range(1, 50), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
 
     # split and retrain to do a validation confusion matrix
-    t = neighbors.KNeighborsClassifier()
+    # t = neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance')
     t_train, t_test, l_train, l_test = train_test_split(data_train, label_train, random_state=0)
 
-    t.fit(t_train, l_train)
+    clf.fit(t_train, l_train)
 
-    plot_confusion_matrix(t, t_test, l_test)
+    plot_confusion_matrix(clf, t_test, l_test)
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_conf_matrix_{dt_string}")
@@ -1151,7 +1152,7 @@ if __name__ == '__main__':
     # run_ada_2(show_plots=True)
     # run_svm_2("charts/svm/svm_2_tuned", show_plots=True)
     # run_svm_2(show_plots=True)
-    run_knn_2("charts/knn/knn_2_tune_dist_weight", show_plots=True)
+    run_knn_2("charts/knn/knn_2_tune_leaf_size", show_plots=True)
     # run_knn_2(show_plots=True)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
