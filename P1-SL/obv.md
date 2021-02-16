@@ -197,5 +197,16 @@ sigmoid: training: 0.381975625400898 0.03125054901201807, cv: 0.3653846153846153
 
 #### Basic
 
+- not performing too well overall, performance on training and testing set are both around 50%
+- conf matrix shows a decent bias for 6.0, still outweighed by 5 on its own data, but not by much, 6 outweighs 7 on its data
 
 #### Tuning
+
+- hidden layer size 100+ seems best, need to coarse search above with validation curve and hone down with other variables on grid search
+- 290 nodes seems to be the best, but still with only 53% on training
+- even with a grid search for momentum and alpha, no real better performance
+- best seems to not be great around 53% with a single hidden layer of size 290
+- multilayer with 50,10 seems to perform about as well as single layer 290
+    - numbers are smaller, but is a more complex model
+    - performs worse in conf matrix, fixing closer to 6 for 5 and 7 than the single layer case
+- 290 also seems comparable in speed, so it is a fine choice

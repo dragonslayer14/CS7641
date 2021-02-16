@@ -20,7 +20,7 @@ from sklearn.metrics import average_precision_score
 # We use OneVsRestClassifier for multi-label prediction
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import plot_confusion_matrix
-
+import timeit
 # show popup for graphs on mac
 
 matplotlib.use("TKAgg")
@@ -1009,7 +1009,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
                         solver='sgd', verbose=10, random_state=0,
                         learning_rate_init=.1)
-    clf = MLPClassifier(random_state=0)
+    clf = MLPClassifier(hidden_layer_sizes=(290,), random_state=0)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
@@ -1024,16 +1024,19 @@ def run_ann_2(fig_name = None, show_plots = False):
     # define hyper parameter space to check over
     # param_grid = {
     #     # hidden layers?
-    #     "hidden_layer_sizes": [(i,) for i in range(5,50,5)]
+    #     "hidden_layer_sizes": [(i,j,) for i in range(10,210,10) for j in range(10,210,10)],
     #     # alpha
+    #     # "alpha": [1e-3,1e-4,1e-5],
     #     # learning rate
+    #     # "learning_rate_init": [1e-2,1e-3,1e-4],
     #     # momentum
+    #     # "momentum": np.linspace(.1,1.0,10)
     #     # solver
     # }
     #
     # basic = MLPClassifier().fit(data_train, label_train)
     #
-    # sh = HalvingGridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5).fit(data_train, label_train)
+    # sh = GridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5, verbose=3).fit(data_train, label_train)
     # print(sh.best_estimator_)
     # clf = sh.best_estimator_
 
@@ -1064,13 +1067,13 @@ def run_ann_2(fig_name = None, show_plots = False):
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, scoring="f1_weighted", cv=5,
-                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(5,50,5)], ylim=(0.0, 1.1))
+                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(10,110,10)], ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
 
     # split and retrain to do a validation confusion matrix
-    t = MLPClassifier(random_state=0)
+    t = MLPClassifier(hidden_layer_sizes=(290,), random_state=0)
     t_train, t_test, l_train, l_test = train_test_split(data_train, label_train, random_state=0)
 
     t.fit(t_train, l_train)
@@ -1152,13 +1155,13 @@ if __name__ == '__main__':
     # run_ada_2(show_plots=True)
     # run_svm_2("charts/svm/svm_2_tuned", show_plots=True)
     # run_svm_2(show_plots=True)
-    run_knn_2("charts/knn/knn_2_tune_leaf_size", show_plots=True)
+    # run_knn_2("charts/knn/knn_2_tune_leaf_size", show_plots=True)
     # run_knn_2(show_plots=True)
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
-        # run_ann_2("charts/ann/ann_2_notune", show_plots=True)
-        run_ann_2(show_plots=True)
+        run_ann_2("charts/ann/ann_2_tune_2_layer_width", show_plots=True)
+        # run_ann_2(show_plots=True)
 
     print()
     plt.close('all')
@@ -1175,6 +1178,6 @@ if __name__ == '__main__':
     # score_2(DecisionTreeClassifier(criterion="entropy", max_depth=18, random_state=0))
     # score_2(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500, random_state=0))
     # score_2(SVC(gamma=0.001, C=10000, random_state=0))
-    # score_2(neighbors.KNeighborsClassifier())
-    # score_2(MLPClassifier())
+    # score_2(neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance'))
+    # score_2(MLPClassifier(hidden_layer_sizes=(290,), random_state=0))
 
