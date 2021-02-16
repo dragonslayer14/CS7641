@@ -156,3 +156,43 @@ as noted in the dataset text calling for feature selection
     - still likely to do poorly on the edge cases, since there are not enough samples to build a better understanding
 - went from converging around 40% to maybe around 70% if traced out, cv around 60%
 - 500 depth 5 trees is probably too much, but it's good enough for this
+
+### svm
+
+#### basic
+
+- untuned with default rbf kernel gives little room between training and testing, converging ~30%
+
+#### tuning
+
+- taking a long time to grid search...
+- grid search gave rbf, c 1000, gamma 0.001
+- 10k C works better, grid searching with 100k and 1m
+    - should be the final svm step, not much more that can be tweaked
+
+
+linear: training: 0.5432969852469532 0.0025334724385030678, cv: 0.5184615384615384 0.007802627720360503
+poly: training: 0.4447722899294419 0.003390526051674793, cv: 0.4297435897435897 0.01802912392948404
+rbf: training: 0.44381013470173186 0.003456624396486848, cv: 0.42743589743589744 0.013436484622127074
+sigmoid: training: 0.381975625400898 0.03125054901201807, cv: 0.36538461538461536 0.025057461904733406
+
+### KNN
+
+#### Basic
+
+- training just above 60 and cv jsut about 40
+- increase of neighbors shows decrease, unsurprising due to uniform weighting
+
+#### Tuning
+
+- grid search shows p=1 and distance weighted
+    - not really surprising
+- switching to distance weighted samples shows 100% on training with 10 neighbors, 53% on cv
+- validation curve shows about 55% for 14 neighbors
+
+### ANN
+
+#### Basic
+
+
+#### Tuning
