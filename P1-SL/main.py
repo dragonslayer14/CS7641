@@ -20,7 +20,7 @@ from sklearn.metrics import average_precision_score
 # We use OneVsRestClassifier for multi-label prediction
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import plot_confusion_matrix
-import timeit
+import time
 # show popup for graphs on mac
 
 matplotlib.use("TKAgg")
@@ -954,13 +954,13 @@ def run_ann_1(fig_name = None, show_plots = False):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
-        plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
-                        cv=5, n_jobs=4)
+        # plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
+        #                 cv=5, n_jobs=4)
 
     if fig_name is not None:
         now = datetime.now()
         dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
-        plt.savefig(f"{fig_name}_learn_{dt_string}")
+        # plt.savefig(f"{fig_name}_learn_{dt_string}")
 
 
     # based off sklearn validation curve example
@@ -968,14 +968,14 @@ def run_ann_1(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with ANN ({DATASET_1_NAME})"
-    x_lab = "hidden_layer_sizes"
+    x_lab = "Iterations"
     y_lab = "Score"
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
         plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, cv=5,
-                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(5,100,5)], ylim=(0.0, 1.1))
+                          param_name="max_iter", param_range=range(10,210,10), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -1009,7 +1009,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
                         solver='sgd', verbose=10, random_state=0,
                         learning_rate_init=.1)
-    clf = MLPClassifier(hidden_layer_sizes=(290,), random_state=0)
+    clf = MLPClassifier(hidden_layer_sizes=(290,), max_iter=110, random_state=0)
 
     # pulled from sklearn plot mnist example
     # this example won't converge because of CI's time constraints, so we catch the
@@ -1063,11 +1063,11 @@ def run_ann_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with ANN ({DATASET_2_NAME})"
-    x_lab = "hidden_layer_sizes"
+    x_lab = "Iterations"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, scoring="f1_weighted", cv=5,
-                          param_name="hidden_layer_sizes", param_range=[(i,) for i in range(10,110,10)], ylim=(0.0, 1.1))
+                          param_name="max_iter", param_range=range(10,160,10), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -1088,6 +1088,7 @@ def run_ann_2(fig_name = None, show_plots = False):
 
 
 def score_1(clf):
+    start = time.time()
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -1105,8 +1106,12 @@ def score_1(clf):
     # just score test set
     clf.score(data_test, label_test)
 
+    print(f"took {time.time() - start} seconds")
+
 
 def score_2(clf):
+    start = time.time()
+
     # read in dataset from file
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -1125,59 +1130,85 @@ def score_2(clf):
     # just score test set
     clf.score(data_test, label_test)
 
+    print(f"took {time.time() - start} seconds")
+
 
 if __name__ == '__main__':
     print()
     # dataset 1
-    # run_dtc_1("charts/dtc/dtc_1_tunedepth", True)
-    # run_dtc_1(show_plots=True)
-    # run_ada_1("charts/ada/ada_1_tuneestimators", True)
-    # run_ada_1(show_plots=True)
-    # run_knn_1("charts/knn/knn_1_tune_k", show_plots=True)
-    # run_knn_1(show_plots=True)
-    # run_svm_1("charts/svm/svm_1_notune", show_plots=True)
-    # run_svm_1(show_plots=True)
-
-    # pulled from sklearn plot mnist example
-    # this example won't converge because of CI's time constraints, so we catch the
-    # warning and are ignore it here
-    # with warnings.catch_warnings():
-    #     warnings.filterwarnings("ignore", category=ConvergenceWarning,
-    #                             module="sklearn")
-        # run_ann_1("charts/ann/ann_1_notune", show_plots=True)
-    # run_ann_1("charts/ann/ann_1_tune_layers", show_plots=True)
+    # run_dtc_1("charts/dtc/dtc_1_tunedepth", show_plots=False)
+    # run_ada_1("charts/ada/ada_1_tuneestimators", show_plots=False)
+    # run_knn_1("charts/knn/knn_1_tune_k", show_plots=False)
+    # run_svm_1("charts/svm/svm_1_tune_kernel", show_plots=False)
+    # run_ann_1("charts/ann/ann_1_iterations", show_plots=False)
 
     # dataset 2
-    # run_dtc_2("charts/dtc/dtc_wifi_notune", show_plots=True)
-    # run_dtc_2(show_plots=True)
-    # run_dtc_2(show_plots=True)
-    # run_ada_2("charts/ada/ada_2_", show_plots=True)
-    # run_ada_2(show_plots=True)
-    # run_svm_2("charts/svm/svm_2_tuned", show_plots=True)
-    # run_svm_2(show_plots=True)
-    # run_knn_2("charts/knn/knn_2_tune_leaf_size", show_plots=True)
-    # run_knn_2(show_plots=True)
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=ConvergenceWarning,
-                                module="sklearn")
-        run_ann_2("charts/ann/ann_2_tune_2_layer_width", show_plots=True)
-        # run_ann_2(show_plots=True)
+    # run_dtc_2("charts/dtc/dtc_wifi_notune", show_plots=False)
+    # run_ada_2("charts/ada/ada_2_", show_plots=False)
+    # run_svm_2("charts/svm/svm_2_tuned", show_plots=False)
+    # run_knn_2("charts/knn/knn_2_tune_leaf_size", show_plots=False)
+    run_ann_2("charts/ann/ann_2_iterations",show_plots=True)
 
     print()
-    plt.close('all')
+    # plt.close('all')
 
-    # print("scoring")
-    # print(DATASET_1_NAME)
-    # score_1(DecisionTreeClassifier())
-    # score_1(AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0))
-    # score_1(SVC(kernel="linear", random_state=0))
-    # score_1(neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance', p=1))
-    # score_1(MLPClassifier(hidden_layer_sizes=(85,), random_state=0))
-    # print()
-    # print(DATASET_2_NAME)
-    # score_2(DecisionTreeClassifier(criterion="entropy", max_depth=18, random_state=0))
-    # score_2(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500, random_state=0))
-    # score_2(SVC(gamma=0.001, C=10000, random_state=0))
-    # score_2(neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance'))
-    # score_2(MLPClassifier(hidden_layer_sizes=(290,), random_state=0))
+    print("scoring")
+    print(DATASET_1_NAME)
+    # read in dataset from file
+    with open(DATASET_1, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:, :-1], data[:, -1]
+
+    # random state makes this the same split
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    for clf in [
+        DecisionTreeClassifier(criterion="entropy", random_state=0),
+        AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0),
+        SVC(kernel="linear", random_state=0),
+        neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance', p=1),
+        MLPClassifier(hidden_layer_sizes=(85,), random_state=0)
+    ]:
+        print(clf)
+        start = time.time()
+        # train on all of training set, no cv or curves here
+        clf.fit(data_train, label_train)
+
+        # just score test set
+        clf.score(data_test, label_test)
+        print(f"took {time.time() - start} seconds")
+
+    print()
+    print(DATASET_2_NAME)
+
+    with open(DATASET_2, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:, :-1], data[:, -1]
+
+    # random state makes this the same split
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    for clf in [
+        DecisionTreeClassifier(criterion="entropy", max_depth=18, random_state=0),
+        AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500, random_state=0),
+        SVC(gamma=0.001, C=10000, random_state=0),
+        neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance'),
+        MLPClassifier(hidden_layer_sizes=(290,), max_iter=110, random_state=0)
+    ]:
+        print(clf)
+        start = time.time()
+        # train on all of training set, no cv or curves here
+        clf.fit(data_train, label_train)
+
+        # just score test set
+        clf.score(data_test, label_test)
+        print(f"took {time.time() - start} seconds")
 
