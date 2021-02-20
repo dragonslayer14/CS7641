@@ -150,33 +150,6 @@ def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
     axes[2].set_title("Performance of the model")
 
 
-def average_precision_scorer(estimator, X, y):
-    # weight score by weight of label in set
-    unique, counts = np.unique(y, return_counts=True)
-    counts = counts / len(y)
-    scale = dict(zip(unique, counts))
-    print(estimator)
-    y_score = estimator.predict_proba(X)
-    # For each class
-    precision = dict()
-    recall = dict()
-    average_precision = dict()
-    for i in range(len(unique)):
-        precision[i], recall[i], _ = precision_recall_curve(y[:, i],
-                                                            y_score[:, i])
-        average_precision[i] = average_precision_score(y[:, i], y_score[:, i])
-
-    # A "micro-average": quantifying score on all classes jointly
-    precision["micro"], recall["micro"], _ = precision_recall_curve(y.ravel(),
-                                                                    y_score.ravel())
-    average_precision["micro"] = average_precision_score(y, y_score,
-                                                         average="micro")
-    print('Average precision score, micro-averaged over all classes: {0:0.2f}'
-          .format(average_precision["micro"]))
-
-    return average_precision["micro"]
-
-
 def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, param_range,
                           scoring="accuracy", ylim=None, cv=None, n_jobs=None):
 
@@ -232,8 +205,7 @@ def run_dtc_1(fig_name = None, show_plots = False):
     # fix hyperparameters as needed to avoid unneeded grid search
     clf = DecisionTreeClassifier(criterion="entropy", random_state=0)
 
-    # TODO run cost complexity pruning code to find alpha for ccp
-
+    
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
@@ -287,14 +259,6 @@ def run_dtc_1(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
-
 
 def run_dtc_2(fig_name = None, show_plots = False):
     # read in dataset from file
@@ -313,8 +277,7 @@ def run_dtc_2(fig_name = None, show_plots = False):
     clf = DecisionTreeClassifier(criterion="entropy", max_depth=18,
                                  random_state=0)
 
-    # TODO run cost complexity pruning code to find alpha for ccp
-
+    
     # based off sklearn example for hp tuning
     # https://scikit-learn.org/stable/modules/grid_search.html#
 
@@ -355,11 +318,11 @@ def run_dtc_2(fig_name = None, show_plots = False):
 
     # plot validation curve
     title = f"Validation Curve with DT ({DATASET_2_NAME})"
-    x_lab = "alpha"
+    x_lab = "depth"
     y_lab = "Score"
 
     plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, cv=5, scoring="f1_weighted",
-                          param_name="ccp_alpha", param_range=np.linspace(0,1), ylim=(0.0, 1.1))
+                          param_name="max_depth", param_range=range(1,30), ylim=(0.0, 1.1))
 
     if fig_name is not None:
         plt.savefig(f"{fig_name}_val_{dt_string}")
@@ -367,7 +330,7 @@ def run_dtc_2(fig_name = None, show_plots = False):
     # plot_confusion_matrix(basic, data_train, label_train)
 
     # split and retrain to do a validation confusion matrix
-    t = DecisionTreeClassifier(random_state=0)
+    t = DecisionTreeClassifier(max_depth=18,random_state=0)
     t_train,t_test,l_train,l_test = train_test_split(data_train, label_train, random_state=0)
 
     t.fit(t_train, l_train)
@@ -380,14 +343,6 @@ def run_dtc_2(fig_name = None, show_plots = False):
 
     if show_plots:
         plt.show()
-
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
 
 
 def run_ada_1(fig_name = None, show_plots = False):
@@ -403,8 +358,6 @@ def run_ada_1(fig_name = None, show_plots = False):
     )
 
     # define model
-    # fix hyperparameters as needed to avoid unneeded grid search
-    clf = AdaBoostClassifier(n_estimators=300, random_state=0)
     clf = AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0)
 
     # based off sklearn example for hp tuning
@@ -458,14 +411,6 @@ def run_ada_1(fig_name = None, show_plots = False):
 
     if show_plots:
         plt.show()
-
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
 
 
 def run_ada_2(fig_name = None, show_plots = False):
@@ -550,14 +495,6 @@ def run_ada_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
-
 
 def run_svm_1(fig_name = None, show_plots = False):
     # read in dataset from file
@@ -623,14 +560,6 @@ def run_svm_1(fig_name = None, show_plots = False):
 
     if show_plots:
         plt.show()
-
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
 
 
 def run_svm_2(fig_name = None, show_plots = False):
@@ -713,14 +642,6 @@ def run_svm_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
-
 
 def run_knn_1(fig_name = None, show_plots = False):
     # read in dataset from file
@@ -794,14 +715,6 @@ def run_knn_1(fig_name = None, show_plots = False):
 
     if show_plots:
         plt.show()
-
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
 
 
 def run_knn_2(fig_name = None, show_plots = False):
@@ -889,14 +802,6 @@ def run_knn_2(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
-
 
 def run_ann_1(fig_name = None, show_plots = False):
     # read in dataset from file
@@ -983,14 +888,6 @@ def run_ann_1(fig_name = None, show_plots = False):
     if show_plots:
         plt.show()
 
-    
-
-    # run against test, uncomment for final analysis
-    # !! don't touch during training/tuning !!
-    # print(clf.score(data_test, label_test))
-
-    # track accuracy and variance so later report can pull numbers as needed
-
 
 def run_ann_2(fig_name = None, show_plots = False):
     # read in dataset from file
@@ -1034,7 +931,7 @@ def run_ann_2(fig_name = None, show_plots = False):
     #     # solver
     # }
     #
-    # basic = MLPClassifier().fit(data_train, label_train)
+    basic = MLPClassifier().fit(data_train, label_train)
     #
     # sh = GridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5, verbose=3).fit(data_train, label_train)
     # print(sh.best_estimator_)
@@ -1049,6 +946,8 @@ def run_ann_2(fig_name = None, show_plots = False):
     # score curves, each time with 20% data randomly selected as a validation set.
     cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
+    plot_learning_curve(basic, title, data_train, label_train, ylim=(0, 1.01),scoring="f1_weighted",
+                        cv=5, n_jobs=4)
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),scoring="f1_weighted",
                         cv=5, n_jobs=4)
 
@@ -1087,128 +986,76 @@ def run_ann_2(fig_name = None, show_plots = False):
         plt.show()
 
 
-def score_1(clf):
-    start = time.time()
-    # read in dataset from file
-    with open(DATASET_1, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
-
-    data, labels = data[:, :-1], data[:, -1]
-
-    # random state makes this the same split
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-    # train on all of training set, no cv or curves here
-    clf.fit(data_train, label_train)
-
-    # just score test set
-    clf.score(data_test, label_test)
-
-    print(f"took {time.time() - start} seconds")
-
-
-def score_2(clf):
-    start = time.time()
-
-    # read in dataset from file
-    with open(DATASET_2, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
-
-    data, labels = data[:, :-1], data[:, -1]
-
-    # random state makes this the same split
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-
-    # train on all of training set, no cv or curves here
-    clf.fit(data_train, label_train)
-
-    # just score test set
-    clf.score(data_test, label_test)
-
-    print(f"took {time.time() - start} seconds")
-
-
 if __name__ == '__main__':
-    print()
     # dataset 1
-    # run_dtc_1("charts/dtc/dtc_1_tunedepth", show_plots=False)
-    # run_ada_1("charts/ada/ada_1_tuneestimators", show_plots=False)
-    # run_knn_1("charts/knn/knn_1_tune_k", show_plots=False)
-    # run_svm_1("charts/svm/svm_1_tune_kernel", show_plots=False)
-    # run_ann_1("charts/ann/ann_1_iterations", show_plots=False)
+    run_dtc_1("charts/dtc_1_final", show_plots=False)
+    run_ada_1("charts/ada_1_final", show_plots=False)
+    run_knn_1("charts/knn_1_final", show_plots=False)
+    run_svm_1("charts/svm_1_final", show_plots=False)
+    run_ann_1("charts/ann_1_final", show_plots=False)
 
     # dataset 2
-    # run_dtc_2("charts/dtc/dtc_wifi_notune", show_plots=False)
-    # run_ada_2("charts/ada/ada_2_", show_plots=False)
-    # run_svm_2("charts/svm/svm_2_tuned", show_plots=False)
-    # run_knn_2("charts/knn/knn_2_tune_leaf_size", show_plots=False)
-    run_ann_2("charts/ann/ann_2_iterations",show_plots=True)
+    run_dtc_2("charts/dtc_2_final", show_plots=False)
+    run_ada_2("charts/ada_2_final", show_plots=False)
+    run_svm_2("charts/svm_2_final", show_plots=False)
+    run_knn_2("charts/knn_2_final", show_plots=False)
+    run_ann_2("charts/ann_2_final", show_plots=False)
 
-    print()
-    # plt.close('all')
+    if False:
+        print("scoring")
+        print(DATASET_1_NAME)
+        # read in dataset from file
+        with open(DATASET_1, 'r') as f:
+            data = np.genfromtxt(f, delimiter=',')
 
-    print("scoring")
-    print(DATASET_1_NAME)
-    # read in dataset from file
-    with open(DATASET_1, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
+        data, labels = data[:, :-1], data[:, -1]
 
-    data, labels = data[:, :-1], data[:, -1]
+        # random state makes this the same split
+        # split for training and testing
+        data_train, data_test, label_train, label_test = train_test_split(
+            data, labels, test_size=0.4, random_state=0, stratify=labels
+        )
 
-    # random state makes this the same split
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
+        for clf in [
+            DecisionTreeClassifier(criterion="entropy", random_state=0),
+            DecisionTreeClassifier(criterion="entropy", max_depth=3, random_state=0),
+            AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0),
+            SVC(kernel="linear", random_state=0),
+            neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance', p=1),
+            MLPClassifier(hidden_layer_sizes=(85,), random_state=0)
+        ]:
+            start = time.time()
+            # train on all of training set, no cv or curves here
+            clf.fit(data_train, label_train)
 
-    for clf in [
-        DecisionTreeClassifier(criterion="entropy", random_state=0),
-        AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0),
-        SVC(kernel="linear", random_state=0),
-        neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance', p=1),
-        MLPClassifier(hidden_layer_sizes=(85,), random_state=0)
-    ]:
-        print(clf)
-        start = time.time()
-        # train on all of training set, no cv or curves here
-        clf.fit(data_train, label_train)
+            # just score test set
+            print(f"{clf}\t{clf.score(data_test, label_test):.2f}\t{time.time() - start:.2f}")
 
-        # just score test set
-        clf.score(data_test, label_test)
-        print(f"took {time.time() - start} seconds")
+        print()
+        print(DATASET_2_NAME)
 
-    print()
-    print(DATASET_2_NAME)
+        with open(DATASET_2, 'r') as f:
+            data = np.genfromtxt(f, delimiter=',')
 
-    with open(DATASET_2, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
+        data, labels = data[:, :-1], data[:, -1]
 
-    data, labels = data[:, :-1], data[:, -1]
+        # random state makes this the same split
+        # split for training and testing
+        data_train, data_test, label_train, label_test = train_test_split(
+            data, labels, test_size=0.4, random_state=0, stratify=labels
+        )
 
-    # random state makes this the same split
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
+        for clf in [
+            DecisionTreeClassifier(criterion="entropy", max_depth=18, random_state=0),
+            AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500, random_state=0),
+            SVC(gamma=0.001, C=10000, random_state=0),
+            neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance'),
+            MLPClassifier(hidden_layer_sizes=(290,), max_iter=110, random_state=0)
+        ]:
+            start = time.time()
+            # train on all of training set, no cv or curves here
+            clf.fit(data_train, label_train)
 
-    for clf in [
-        DecisionTreeClassifier(criterion="entropy", max_depth=18, random_state=0),
-        AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500, random_state=0),
-        SVC(gamma=0.001, C=10000, random_state=0),
-        neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance'),
-        MLPClassifier(hidden_layer_sizes=(290,), max_iter=110, random_state=0)
-    ]:
-        print(clf)
-        start = time.time()
-        # train on all of training set, no cv or curves here
-        clf.fit(data_train, label_train)
-
-        # just score test set
-        clf.score(data_test, label_test)
-        print(f"took {time.time() - start} seconds")
+            # just score test set
+            print(f"{clf}\t{clf.score(data_test, label_test):.2f}\t{time.time() - start:.2f}")
 
