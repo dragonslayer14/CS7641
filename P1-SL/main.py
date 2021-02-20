@@ -994,12 +994,16 @@ if __name__ == '__main__':
     run_svm_1("charts/svm_1_final", show_plots=False)
     run_ann_1("charts/ann_1_final", show_plots=False)
 
+    plt.close('all')
+
     # dataset 2
     run_dtc_2("charts/dtc_2_final", show_plots=False)
     run_ada_2("charts/ada_2_final", show_plots=False)
     run_svm_2("charts/svm_2_final", show_plots=False)
     run_knn_2("charts/knn_2_final", show_plots=False)
     run_ann_2("charts/ann_2_final", show_plots=False)
+
+    plt.close('all')
 
     if False:
         print("scoring")
