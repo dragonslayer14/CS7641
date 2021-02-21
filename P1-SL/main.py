@@ -219,7 +219,7 @@ def run_dtc_1(fig_name = None, show_plots = False):
     #
     # basic = DecisionTreeClassifier(criterion="entropy", random_state=0).fit(data_train, label_train)
     #
-    # cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
+    # 
     #
     # sh = GridSearchCV(clf, param_grid, cv=5).fit(data_train, label_train)
     # print(sh.best_estimator_)
@@ -230,9 +230,6 @@ def run_dtc_1(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (Decision tree) ({DATASET_1_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=5, n_jobs=4)
 
@@ -301,10 +298,6 @@ def run_dtc_2(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (Decision tree) ({DATASET_2_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0.0, 1.01),
                         cv=5, n_jobs=4, scoring="f1_weighted")
 
@@ -382,10 +375,6 @@ def run_ada_1(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     learn_title = f"Learning Curves (Boosted Decision tree) ({DATASET_1_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     plot_learning_curve(clf, learn_title, data_train, label_train, ylim=(0, 1.01),
                         cv=5, n_jobs=4)
 
@@ -427,7 +416,6 @@ def run_ada_2(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = AdaBoostClassifier(n_estimators=300, random_state=0)
     clf = AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500,
         random_state=0)
 
@@ -453,10 +441,6 @@ def run_ada_2(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (Boosted Decision tree) ({DATASET_2_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01), scoring="f1_weighted",
                         cv=5, n_jobs=4)
 
@@ -532,10 +516,6 @@ def run_svm_1(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (SVM) ({DATASET_1_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=cv, n_jobs=4)
 
@@ -602,10 +582,6 @@ def run_svm_2(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (SVM) ({DATASET_2_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         scoring="f1_weighted", cv=5, n_jobs=4)
 
@@ -686,10 +662,6 @@ def run_knn_1(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (KNN) ({DATASET_1_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),
                         cv=5, n_jobs=4)
 
@@ -761,10 +733,6 @@ def run_knn_2(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (KNN) ({DATASET_2_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01), scoring="f1_weighted",
                         cv=5, n_jobs=4)
 
@@ -817,9 +785,6 @@ def run_ann_1(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    # clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
-    #                     solver='sgd', verbose=10, random_state=0,
-    #                     learning_rate_init=.1)
     clf = MLPClassifier(hidden_layer_sizes=(85,), random_state=0)
 
     # based off sklearn example for hp tuning
@@ -852,10 +817,6 @@ def run_ann_1(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (ANN) ({DATASET_1_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
-
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
@@ -903,9 +864,6 @@ def run_ann_2(fig_name = None, show_plots = False):
 
     # define model
     # fix hyperparameters as needed to avoid unneeded grid search
-    clf = MLPClassifier(hidden_layer_sizes=(50,), max_iter=10, alpha=1e-4,
-                        solver='sgd', verbose=10, random_state=0,
-                        learning_rate_init=.1)
     clf = MLPClassifier(hidden_layer_sizes=(290,), max_iter=110, random_state=0)
 
     # pulled from sklearn plot mnist example
@@ -942,9 +900,6 @@ def run_ann_2(fig_name = None, show_plots = False):
 
     # plot learning curve for current model
     title = f"Learning Curves (ANN) ({DATASET_2_NAME})"
-    # Cross validation with 100 iterations to get smoother mean test and train
-    # score curves, each time with 20% data randomly selected as a validation set.
-    cv = ShuffleSplit(n_splits=100, test_size=0.2, random_state=0)
 
     plot_learning_curve(basic, title, data_train, label_train, ylim=(0, 1.01),scoring="f1_weighted",
                         cv=5, n_jobs=4)
