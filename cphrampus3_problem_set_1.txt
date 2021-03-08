@@ -1,0 +1,84 @@
+2. Design a two-input perceptron that implements the boolean function 𝐴∧¬𝐵. Design a two-layer network of perceptrons that implements 𝐴 ⊕ 𝐵 (⊕ is XOR).
+
+𝐴∧¬𝐵
+
+weights
+A: 0.5
+B: -1
+
+Threshold: 0.5
+
+Table
+A  B  sum  output
+0  0  0    0
+0  1  -1   0
+1  0  0.5  1
+1  1  -0.5 0
+
+Two layer XOR
+
+Output Threshold = 1
+AND Threshold = 3/4
+
+A - - - - - - - -
+  \              |
+   0.5           1
+    \            |
+     AND-- -2 -- Ouput
+    /            |
+   0.5           1
+  /              |
+B - - - - - - - -
+
+
+5. Suggest a lazy version of the eager decision tree learning algorithm ID3. What are the advantages and disadvantages of your lazy algorithm compared to the original eager algorithm?
+
+Rather than taking in all the data at the beginning to build the tree then be discarded, they should be kept in memory. The branching points of the tree will only be made as they are hit, i.e., if a branching point is hit and the branch we need does not exist, a new branch will be made to a new leaf or decision node. For example, if our branching condition is x > 5, we may have only hit true thus far, so if we have x=4, the false branch will be added to the tree and the next necessary split, unchanged from the original ID3, will be made.
+
+As with everything, there are no solutions, only tradeoffs. The benefits we gain here are:
+1. faster "training" phase, since no work is being done
+2. similar points classified faster, in theory from start of training to prediction due to 0 cost training and reuse of the work just done
+3. Work is distributed across use allowing us to start prediction immediately
+4. Specific work for small classes is put off until it is needed, allowing more "popular" classes to be built out in the tree. So, if there are 3 classes and 1 occurs 70% of the time and can be classified in a single decision, whereas the others require, say, a million more decisions, we can, in theory, classify 70% of the data with minimal effort. This point is obviously at the mercy of the order of data we get.
+
+The cons are:
+1. Significant space usage, since all points are in memory and not simply discarded after building the smaller tree.
+2. Work is distributed so the same tree is being built over more time, assuming the first n points do not fully span the tree's decisions nodes and build the complete tree
+3. Since the tree is built as it goes, query time can be increased as the specific path for the point is built
+4. Space may never be given up, as, depending on the problem, it may not be possible/feasible to know the complete tree has been made, such as when splitting on continuous features.
+
+
+6. Imagine you had a learning problem with an instance space of points on the plane and a target function that you knew took the form of a line on the plane where all points on one side of the line are positive and all those on the other are negative. If you were constrained to only use decision tree or nearest-neighbor learning, which would you use? Why?
+
+Decision tree
+
+Boundary cases would mess up knn by influencing what the vote for the new point is and since everything in on a plane, we know that this distance is strictly 2d, so there would be no benefit of other dimensions to increase the distance. Even if the points were moved by the addition of another dimension, as is done with the kernel trick, there is no promise of enough distance since the plane separates them at a line and extends infinitely on both sides.
+
+It can also be simplified to the 2d problem it actually is, since everything is on the plane. DT can take the separating line and have a node such as "x > 4" and separate cleanly without regard for two points at 3.9999... and 4.0000000....1, or an infinite number of points infinitely close to the separating line.
+
+7. Give the VC dimension of the following hypothesis spaces. Briefly explain your answers.
+1. An origin-centered circle (2D)
+2
+By definition given in lecture: the VC dimension is the number of parameters + 1
+It is important to note that it is a 2-d figure, but we can only control its radius, as it is origin centered, thus we have 1 parameter to construct the space.
+
+By example: 
+
+VC = 1, trivially we can make a circle which touches the point and flip weights to get - or +
+VC = 2, 2 varying distant points from the origin. The circle can contain neither, - -, both, + +, or the nearer one, - + and + - by flipping weights.
+
+Imagine 3 varying distanced points in a 2d plane, we have a draw a circle centered on the origin to classify all points in all configurations.
+The important thing to note is that we can only control the radius, thus the classification is actually defined by distance from the origin.
+This means we can actually reduce the problem to a number line where each point's position is its distance from the origin.
+
+0(origin)-------1 ----------- 2 ----------- 3
+
+
+There is no way to draw a line (representing the radius of the circle) such that 2 is classified differently than 1 and 3.
+
+2. An origin-centered sphere (3D)
+
+2
+
+Despite having more technical dimensions, there is still only 1 parameter to the construction of the space, radius.
+Thus, we can do exactly the same method as for a circle to convince ourselves that we cannot classify the middle distanced of 3 points differently than the outer two.
