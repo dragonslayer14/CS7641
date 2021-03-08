@@ -25,11 +25,34 @@ def run_SA(problem):
     best_state, best_fit, fit_vals = simulated_annealing(problem, curve=True, random_state=random_state)
 
 
-def run_ANN(algo = "gradient_descent"):
+def run_ANN():
     # TODO use multiple random states and average values
     random_state = 0
-    _, loss, _, fit_curve = NeuralNetwork(algorithm=algo, curve=True, random_state=random_state)
+    _, loss, _, fit_curve = NeuralNetwork(curve=True, random_state=random_state)
 
+
+def run_ANN():
+    # TODO use multiple random states and average values
+    random_state = 0
+    _, loss, _, fit_curve = NeuralNetwork(curve=True, random_state=random_state)
+
+
+def run_ANN_RHC():
+    # TODO use multiple random states and average values
+    random_state = 0
+    _, loss, _, fit_curve = NeuralNetwork(algorithm="random_hill_climb", curve=True, random_state=random_state)
+
+
+def run_ANN_SA():
+    # TODO use multiple random states and average values
+    random_state = 0
+    _, loss, _, fit_curve = NeuralNetwork(algorithm="simulated_annealing", curve=True, random_state=random_state)
+
+
+def run_ANN_GA():
+    # TODO use multiple random states and average values
+    random_state = 0
+    _, loss, _, fit_curve = NeuralNetwork(algorithm="genetic_alg", curve=True, random_state=random_state)
 
 if __name__ == "__main__":
     problems = []
@@ -41,6 +64,6 @@ if __name__ == "__main__":
 
     # ANN compare
     run_ANN()
-    run_ANN("random_hill_climb")
-    run_ANN("simulated_annealing")
-    run_ANN("genetic_alg")
+    run_ANN_RHC()
+    run_ANN_SA()
+    run_ANN_GA()
