@@ -1,34 +1,163 @@
-from mlrose import NeuralNetwork, random_hill_climb, simulated_annealing, genetic_alg, mimic
+import sys
+from datetime import datetime
+import matplotlib
+matplotlib.use("TKAgg")
+
+import matplotlib.pyplot as plt
+import six
+sys.modules['sklearn.externals.six'] = six
+from mlrose import NeuralNetwork, random_hill_climb, simulated_annealing, genetic_alg, mimic, FlipFlop, SixPeaks, \
+    Queens, DiscreteOpt
+import numpy as np
+import time
+
+random_states = [0,50,800,35]
 
 
-def run_RHC(problem):
-    # TODO use multiple random states and average values
-    random_state=0
-    best_state, best_fit, fit_vals = random_hill_climb(problem, random_state=random_state, curve=True)
+def average_curves(fit_curves):
+    length = max([len(curve) for curve in fit_curves])
+    return np.stack([
+        np.pad(curve, (0, length - len(curve)), 'edge')
+        for curve in fit_curves
+    ]).mean(axis=0)
 
 
-def run_GA(problem):
-    # TODO use multiple random states and average values
-    random_state=0
-    best_state, best_fit, fit_vals = genetic_alg(problem, curve=True, random_state=random_state)
+def run_RHC(problem, init_state):
+    fit_vals = []
+    fit_curves = []
+    times = []
+
+    # run multiple times to get average
+    for random_state in random_states:
+        start = time.time()
+        _, best_fit, fit_curve = random_hill_climb(problem, random_state=random_state, curve=True, init_state=init_state)
+
+        fit_vals.append(best_fit)
+        fit_curves.append(fit_curve)
+        times.append(time.time() - start)
+
+    # plot average fitness value
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+    # hack for ease of naming
+    problem_name = str(problem.fitness_fn).split('.')[-1].split(' ')[0]
+    chart_name = f"charts/rhc_{problem_name}_{len(init_state)}_{dt_string}"
+
+    plt.plot(average_curves(fit_curves))
+    plt.title(f"RHC {problem_name} ({len(init_state)})")
+    plt.xlabel("step")
+    plt.ylabel("fitness")
+    plt.savefig(chart_name)
+    plt.show()
+
+    avg_fit = np.average(fit_vals)
+    print(f"RHC {problem_name}: {avg_fit}: {np.mean(times):.2f}")
 
 
-def run_MIMIC(problem):
-    # TODO use multiple random states and average values
-    random_state=0
-    best_state, best_fit, fit_vals = mimic(problem, curve=True, random_state=random_state)
+def run_GA(problem, init_state):
+    fit_vals = []
+    fit_curves = []
+    times = []
+
+    # run multiple times to get average
+    for random_state in random_states:
+        start = time.time()
+        _, best_fit, fit_curve = genetic_alg(problem, random_state=random_state, curve=True)
+
+        fit_vals.append(best_fit)
+        fit_curves.append(fit_curve)
+        times.append(time.time() - start)
+
+    # plot average fitness value
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+    # hack for ease of naming
+    problem_name = str(problem.fitness_fn).split('.')[-1].split(' ')[0]
+    chart_name = f"charts/ga_{problem_name}_{len(init_state)}_{dt_string}"
+
+    plt.plot(average_curves(fit_curves))
+    plt.title(f"GA {problem_name} ({len(init_state)})")
+    plt.xlabel("step")
+    plt.ylabel("fitness")
+    plt.savefig(chart_name)
+    plt.show()
+
+    avg_fit = np.average(fit_vals)
+    print(f"GA {problem_name}: {avg_fit}: {np.mean(times):.2f}")
 
 
-def run_SA(problem):
-    # TODO use multiple random states and average values
-    random_state=0
-    best_state, best_fit, fit_vals = simulated_annealing(problem, curve=True, random_state=random_state)
+def run_MIMIC(problem, init_state):
+    fit_vals = []
+    fit_curves = []
+    times = []
+
+    # run multiple times to get average
+    for random_state in random_states:
+        start = time.time()
+
+        _, best_fit, fit_curve = mimic(problem, random_state=random_state, curve=True)
+
+        fit_vals.append(best_fit)
+        fit_curves.append(fit_curve)
+        times.append(time.time() - start)
 
 
-def run_ANN():
-    # TODO use multiple random states and average values
-    random_state = 0
-    _, loss, _, fit_curve = NeuralNetwork(curve=True, random_state=random_state)
+    # plot average fitness value
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+    # hack for ease of naming
+    problem_name = str(problem.fitness_fn).split('.')[-1].split(' ')[0]
+    chart_name = f"charts/mimic_{problem_name}_{len(init_state)}_{dt_string}"
+
+    plt.plot(average_curves(fit_curves))
+    plt.title(f"MIMIC {problem_name} ({len(init_state)})")
+    plt.xlabel("step")
+    plt.ylabel("fitness")
+    plt.savefig(chart_name)
+    plt.show()
+
+    avg_fit = np.average(fit_vals)
+    print(f"MIMIC {problem_name}: {avg_fit}: {np.mean(times):.2f}")
+
+
+
+
+def run_SA(problem, init_state):
+    start = time.time()
+    fit_vals = []
+    fit_curves = []
+    times = []
+
+
+    # run multiple times to get average
+    for random_state in random_states:
+        start = time.time()
+
+        _, best_fit, fit_curve = simulated_annealing(problem, random_state=random_state, curve=True,
+                                                   init_state=init_state)
+
+        fit_vals.append(best_fit)
+        fit_curves.append(fit_curve)
+        times.append(time.time() - start)
+
+
+    # plot average fitness value
+    now = datetime.now()
+    dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
+    # hack for ease of naming
+    problem_name = str(problem.fitness_fn).split('.')[-1].split(' ')[0]
+    chart_name = f"charts/sa_{problem_name}_{len(init_state)}_{dt_string}"
+
+    plt.plot(average_curves(fit_curves))
+    plt.title(f"SA {problem_name} ({len(init_state)})")
+    plt.xlabel("step")
+    plt.ylabel("fitness")
+    plt.savefig(chart_name)
+    plt.show()
+
+    avg_fit = np.average(fit_vals)
+    print(f"SA {problem_name}: {avg_fit}: {np.mean(times):.2f}")
+
 
 
 def run_ANN():
@@ -54,13 +183,27 @@ def run_ANN_GA():
     random_state = 0
     _, loss, _, fit_curve = NeuralNetwork(algorithm="genetic_alg", curve=True, random_state=random_state)
 
+
 if __name__ == "__main__":
-    problems = []
-    for problem in problems:
-        run_RHC(problem)
-        run_GA(problem)
-        run_SA(problem)
-        run_MIMIC(problem)
+    # define fitness functions and different problem sizes
+    problems = [
+        (FlipFlop(), [
+            np.array([0, 1, 0, 1, 1, 1, 1])
+         ]),
+        (SixPeaks(), [
+            np.array([0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1])
+         ]),
+        (Queens(), [
+            np.array([1, 4, 1, 3, 5, 5, 2, 7])
+         ])
+    ]
+    for fit_func, init_states in problems:
+        for init_state in init_states:
+            problem = DiscreteOpt(length = len(init_state), fitness_fn = fit_func)
+            run_RHC(problem, init_state)
+            run_GA(problem, init_state)
+            run_SA(problem, init_state)
+            run_MIMIC(problem, init_state)
 
     # ANN compare
     run_ANN()
