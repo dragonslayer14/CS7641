@@ -129,6 +129,7 @@
 ## OH 6
 
 - for RHC, generate multiple random seeds, run for each and average results for plot
+  - maybe just for all of them, they are all randomized optimization
 - grid search is not analysis, there is no dataset, but you need to explain why things were tuned
   - why are you tuning it? ask questions of your results and answer those questions
 - tune for a middle sized problem, not so simple it is not good, not so complex it takes forever to run, there is already a time crunch
@@ -142,7 +143,7 @@
   - if RHC and SA are performing about as well, the underlying problem is probably simple
   - NN is also probably not the absolute best version of the network that could exist for the problem
   - performance can be defined as both the performance function, as well as time
-- GA and MIMIC are looking for underlying structure, so if there is not, it can take much longer and waster efforts
+- GA and MIMIC are looking for underlying structure, so if there is not, it can take much longer and waste efforts
 - Time vs problem size could be interesting
   - table could be useful instead of plot
 - during dev, may be good to choose 2 or 3 problem sizes, tune for each, then pick one for the analysis
