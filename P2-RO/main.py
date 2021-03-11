@@ -65,7 +65,7 @@ def run_RHC_1(problem, init_state):
     return avg_fit
 
 
-def run_GA_1(problem, init_state):
+def run_GA_1(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -74,7 +74,7 @@ def run_GA_1(problem, init_state):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state, curve=True,fevals=True)
+        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state, curve=True,fevals=True, **kwargs)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -149,8 +149,7 @@ def run_SA_1(problem, init_state, **kwargs):
         start = time.time()
 
         _, best_fit, fit_curve, evals = simulated_annealing(problem, random_state=random_state, curve=True,
-                                                   init_state=init_state, fevals=True, max_iters=10000,
-                                                            decay=GeomDecay(decay=0.8), **kwargs)
+                                                   init_state=init_state, fevals=True, **kwargs)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -530,25 +529,6 @@ if __name__ == "__main__":
     # show plot, evaluate necessary value
     # mlrose grid search doesn't seem too helpful, so just coarse MC curve and narrow on areas for tuning, need the curves for report anyway
 
-    # Generate a new 8-Queen problem using a fixed seed.
-    # problem = QueensGenerator().generate(seed=123456, size=8)
-
-    # temperature list and following best init temp example in repo could work for grid searching to find good value
-    # otherwise, follow example up to best run, get fitness, (do that for each random seed/state and average),
-    # then do that over problem sizes to make graph
-    # sa = SARunner(problem=problem,
-    #               experiment_name='queens8',
-    #               output_directory=None,  # note: specify an output directory to have results saved to disk
-    #               seed=123456,
-    #               iteration_list=2 ** np.arange(11),
-    #               max_attempts=500,
-    #               temperature_list=[0.1, 0.5, 0.75, 1.0, 2.0, 5.0],
-    #               decay_list=[mlrose_hiive.GeomDecay])
-    #
-    # df_run_stats, df_run_curves = sa.run()
-    #
-    # best_fitness = df_run_curves['Fitness'].min()
-
     # problem 1
     init_states = [
         np.random.randint(0,2,20),
@@ -564,34 +544,40 @@ if __name__ == "__main__":
     problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
                                             max_connections_per_node=4, max_colors=None)
     plt.figure()
-    plt.title("GA crossover")
-    plt.xlabel("pop size")
+    plt.title("GA population size")
+    plt.xlabel("population size")
     plt.ylabel("fitness")
-    temps = []
+    values = []
     fitness = []
     evals = []
     times = []
-    for init_temp in range(1, 11):
-        temps.append(init_temp)
-        print(init_temp)
-        fitness.append(run_SA_1(problem, init_state, max_iters=10000,
-                                schedule=GeomDecay(init_temp=init_temp)))
+    for pop_size in range(100, 310, 10):
+        values.append(pop_size)
+        print(pop_size)
+        fit, _, fevals = run_GA_1(problem, init_state, pop_size=pop_size)
+        fitness.append(fit)
 
-    for decay in np.linspace(0.5, 0.8):
+    plt.plot(values, fitness)
+
+    values = []
+    fitness = []
+    evals = []
+    times = []
+
+    for decay in np.linspace(0, 1):
         decay = round(decay, 3)
-        temps.append(decay)
+        values.append(decay)
         print(decay)
-        fit, _, fevals = run_SA_1(problem, init_state, max_iters=5000, schedule=GeomDecay(decay=decay))
+        fit, _, fevals = run_GA_1(problem, init_state, mutation_prob=decay)
         fitness.append(fit)
         evals.append(fevals)
 
-    plt.plot(temps, fitness)
 
     plt.figure()
-    plt.title("SA decay")
-    plt.xlabel("decay")
-    plt.ylabel("function evals")
-    plt.plot(temps, evals)
+    plt.title("GA mutation probability")
+    plt.xlabel("mutation prob")
+    plt.ylabel("fitness")
+    plt.plot(values, fitness)
     plt.show()
 
     # run_GA_1(problem, init_state)
