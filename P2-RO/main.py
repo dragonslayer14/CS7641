@@ -138,7 +138,6 @@ def run_MIMIC_1(problem, init_state):
 
 
 def run_SA_1(problem, init_state, **kwargs):
-    start = time.time()
     fit_vals = []
     fit_curves = []
     times = []
@@ -150,7 +149,8 @@ def run_SA_1(problem, init_state, **kwargs):
         start = time.time()
 
         _, best_fit, fit_curve, evals = simulated_annealing(problem, random_state=random_state, curve=True,
-                                                   init_state=init_state, fevals=True, **kwargs)
+                                                   init_state=init_state, fevals=True, max_iters=10000,
+                                                            decay=GeomDecay(decay=0.8), **kwargs)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -173,8 +173,10 @@ def run_SA_1(problem, init_state, **kwargs):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"SA {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
 def run_RHC_2(problem, init_state):
@@ -562,25 +564,34 @@ if __name__ == "__main__":
     problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
                                             max_connections_per_node=4, max_colors=None)
     plt.figure()
-    plt.title("SA starting temp")
-    plt.xlabel("starting temperature")
+    plt.title("GA crossover")
+    plt.xlabel("pop size")
     plt.ylabel("fitness")
     temps = []
     fitness = []
-    # for init_temp in range(1, 11):
-    #     temps.append(init_temp)
-    #     print(init_temp)
-    #     fitness.append(run_SA_1(problem, init_state, max_iters=10000,
-    #                             schedule=GeomDecay(init_temp=init_temp)))
+    evals = []
+    times = []
+    for init_temp in range(1, 11):
+        temps.append(init_temp)
+        print(init_temp)
+        fitness.append(run_SA_1(problem, init_state, max_iters=10000,
+                                schedule=GeomDecay(init_temp=init_temp)))
 
-    for decay in np.linspace(0.8, 0.996):
+    for decay in np.linspace(0.5, 0.8):
         decay = round(decay, 3)
         temps.append(decay)
         print(decay)
-        fitness.append(run_SA_1(problem, init_state, max_iters=10000,
-                                schedule=GeomDecay(decay=decay)))
+        fit, _, fevals = run_SA_1(problem, init_state, max_iters=5000, schedule=GeomDecay(decay=decay))
+        fitness.append(fit)
+        evals.append(fevals)
 
     plt.plot(temps, fitness)
+
+    plt.figure()
+    plt.title("SA decay")
+    plt.xlabel("decay")
+    plt.ylabel("function evals")
+    plt.plot(temps, evals)
     plt.show()
 
     # run_GA_1(problem, init_state)
@@ -594,11 +605,13 @@ if __name__ == "__main__":
     MIMIC_vals = []
     for init_state in init_states:
         problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
-                                                max_connections_per_node=4, max_colors=None)
-        RHC_vals.append(run_RHC_1(problem, init_state))
-        SA_vals.append(run_SA_1(problem, init_state))
-        GA_vals.append(run_GA_1(problem, init_state))
-        MIMIC_vals.append(run_MIMIC_1(problem, init_state))
+                                                max_connections_per_node=len(init_state), max_colors=None)
+        # RHC_vals.append(run_RHC_1(problem, init_state))
+        # SA_vals.append(run_SA_1(problem, init_state))
+        # GA_vals.append(run_GA_1(problem, init_state))
+        # MIMIC_vals.append(
+        run_MIMIC_1(problem, init_state)
+        #)
     plt.plot(lens, RHC_vals, label="rhc")
     plt.plot(lens, SA_vals, label="sa")
     plt.plot(lens, GA_vals, label="ga")
