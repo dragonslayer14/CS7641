@@ -30,7 +30,7 @@ random_states = [0,50,800,35]
 # probably need 3 sizes of problem for each? small, medium, large? check notes
 #    would run algo for each size and plot fitness to size, maybe all algos on one plot for space
 
-def run_RHC_1(problem, init_state):
+def run_RHC_1(problem, init_state, **kwargs):
     fit_vals = []
     # fit_curves = []
     times = []
@@ -39,7 +39,7 @@ def run_RHC_1(problem, init_state):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, _, evals = random_hill_climb(problem, random_state=random_state, curve=True, fevals=True, init_state=init_state)
+        _, best_fit, _, evals = random_hill_climb(problem, random_state=random_state, **kwargs, curve=True, fevals=True, init_state=init_state)
 
         fit_vals.append(best_fit)
         # fit_curves.append(fit_curve)
@@ -61,8 +61,10 @@ def run_RHC_1(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"RHC {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
 def run_GA_1(problem, init_state, **kwargs):
@@ -96,11 +98,13 @@ def run_GA_1(problem, init_state, **kwargs):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"GA {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_MIMIC_1(problem, init_state):
+def run_MIMIC_1(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -110,7 +114,7 @@ def run_MIMIC_1(problem, init_state):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, curve=True, fevals=True)
+        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, **kwargs, curve=True, fevals=True)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -133,8 +137,10 @@ def run_MIMIC_1(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"MIMIC {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
 def run_SA_1(problem, init_state, **kwargs):
@@ -178,7 +184,7 @@ def run_SA_1(problem, init_state, **kwargs):
     return avg_fit, avg_time, avg_evals
 
 
-def run_RHC_2(problem, init_state):
+def run_RHC_2(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -187,7 +193,7 @@ def run_RHC_2(problem, init_state):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, fit_curve, evals = random_hill_climb(problem, random_state=random_state, curve=True,fevals=True,  init_state=init_state)
+        _, best_fit, fit_curve, evals = random_hill_climb(problem, random_state=random_state, **kwargs, curve=True,fevals=True,  init_state=init_state)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -209,11 +215,13 @@ def run_RHC_2(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"RHC {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_GA_2(problem, init_state):
+def run_GA_2(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -222,7 +230,7 @@ def run_GA_2(problem, init_state):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state,fevals=True,  curve=True)
+        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state, **kwargs,fevals=True,  curve=True)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -244,11 +252,13 @@ def run_GA_2(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"GA {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_MIMIC_2(problem, init_state):
+def run_MIMIC_2(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -258,7 +268,7 @@ def run_MIMIC_2(problem, init_state):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state,fevals=True,  curve=True)
+        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, **kwargs,fevals=True,  curve=True)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -281,11 +291,13 @@ def run_MIMIC_2(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"MIMIC {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_SA_2(problem, init_state):
+def run_SA_2(problem, init_state, **kwargs):
     start = time.time()
     fit_vals = []
     fit_curves = []
@@ -297,7 +309,7 @@ def run_SA_2(problem, init_state):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = simulated_annealing(problem, random_state=random_state, curve=True,fevals=True,
+        _, best_fit, fit_curve, evals = simulated_annealing(problem, random_state=random_state, **kwargs, curve=True,fevals=True,
                                                    init_state=init_state)
 
         fit_vals.append(best_fit)
@@ -321,11 +333,13 @@ def run_SA_2(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"SA {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_RHC_3(problem, init_state):
+def run_RHC_3(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -334,7 +348,7 @@ def run_RHC_3(problem, init_state):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, fit_curve, evals = random_hill_climb(problem, random_state=random_state, curve=True,
+        _, best_fit, fit_curve, evals = random_hill_climb(problem, random_state=random_state, **kwargs, curve=True,
                                                    init_state=init_state, fevals=True)
 
         fit_vals.append(best_fit)
@@ -357,11 +371,13 @@ def run_RHC_3(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"RHC {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_GA_3(problem, init_state):
+def run_GA_3(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -370,7 +386,7 @@ def run_GA_3(problem, init_state):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state, curve=True, fevals=True)
+        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state, **kwargs, curve=True, fevals=True)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -392,11 +408,13 @@ def run_GA_3(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"GA {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_MIMIC_3(problem, init_state):
+def run_MIMIC_3(problem, init_state, **kwargs):
     fit_vals = []
     fit_curves = []
     times = []
@@ -406,7 +424,7 @@ def run_MIMIC_3(problem, init_state):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, curve=True, fevals=True)
+        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, **kwargs, curve=True, fevals=True)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -429,11 +447,13 @@ def run_MIMIC_3(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"MIMIC {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
-def run_SA_3(problem, init_state):
+def run_SA_3(problem, init_state, **kwargs):
     start = time.time()
     fit_vals = []
     fit_curves = []
@@ -445,7 +465,7 @@ def run_SA_3(problem, init_state):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = simulated_annealing(problem, random_state=random_state, curve=True,
+        _, best_fit, fit_curve, evals = simulated_annealing(problem, random_state=random_state, **kwargs, curve=True,
                                                    init_state=init_state, fevals=True)
 
         fit_vals.append(best_fit)
@@ -469,8 +489,10 @@ def run_SA_3(problem, init_state):
     # plt.show()
 
     avg_fit = np.average(fit_vals)
-    print(f"SA {problem_name}: {avg_fit}: {np.mean(times):.2f}: {np.mean(fevals)}")
-    return avg_fit
+    avg_time = round(np.mean(times), 2)
+    avg_evals = np.mean(fevals)
+    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    return avg_fit, avg_time, avg_evals
 
 
 def run_ANN():
@@ -564,7 +586,7 @@ if __name__ == "__main__":
     evals = []
     times = []
 
-    for decay in np.linspace(0, 1):
+    for decay in np.linspace(0, 1, 51):
         decay = round(decay, 3)
         values.append(decay)
         print(decay)
