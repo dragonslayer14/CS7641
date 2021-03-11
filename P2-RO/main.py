@@ -63,7 +63,7 @@ def run_RHC_1(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"RHC {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -76,7 +76,8 @@ def run_GA_1(problem, init_state, **kwargs):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state, curve=True,fevals=True, **kwargs)
+        _, best_fit, fit_curve, evals = genetic_alg(problem, random_state=random_state, curve=True,fevals=True,
+                                                    pop_size=120, mutation_prob=0.12, **kwargs)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -100,7 +101,7 @@ def run_GA_1(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"GA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -139,7 +140,7 @@ def run_MIMIC_1(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"MIMIC {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -217,7 +218,7 @@ def run_RHC_2(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"RHC {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -254,7 +255,7 @@ def run_GA_2(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"GA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -293,7 +294,7 @@ def run_MIMIC_2(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"MIMIC {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -373,7 +374,7 @@ def run_RHC_3(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"RHC {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -410,7 +411,7 @@ def run_GA_3(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"GA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -449,7 +450,7 @@ def run_MIMIC_3(problem, init_state, **kwargs):
     avg_fit = np.average(fit_vals)
     avg_time = round(np.mean(times), 2)
     avg_evals = np.mean(fevals)
-    print(f"SA {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
+    print(f"MIMIC {problem_name}: {avg_fit}: {avg_time}: {avg_evals}")
     return avg_fit, avg_time, avg_evals
 
 
@@ -565,21 +566,21 @@ if __name__ == "__main__":
     init_state = init_states[1]
     problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
                                             max_connections_per_node=4, max_colors=None)
-    plt.figure()
-    plt.title("GA population size")
-    plt.xlabel("population size")
-    plt.ylabel("fitness")
-    values = []
-    fitness = []
-    evals = []
-    times = []
-    for pop_size in range(100, 310, 10):
-        values.append(pop_size)
-        print(pop_size)
-        fit, _, fevals = run_GA_1(problem, init_state, pop_size=pop_size)
-        fitness.append(fit)
-
-    plt.plot(values, fitness)
+    # plt.figure()
+    # plt.title("GA population size")
+    # plt.xlabel("population size")
+    # plt.ylabel("fitness")
+    # values = []
+    # fitness = []
+    # evals = []
+    # times = []
+    # for pop_size in range(100, 310, 10):
+    #     values.append(pop_size)
+    #     print(pop_size)
+    #     fit, _, fevals = run_GA_1(problem, init_state, pop_size=pop_size)
+    #     fitness.append(fit)
+    #
+    # plt.plot(values, fitness)
 
     values = []
     fitness = []
@@ -590,13 +591,13 @@ if __name__ == "__main__":
         decay = round(decay, 3)
         values.append(decay)
         print(decay)
-        fit, _, fevals = run_GA_1(problem, init_state, mutation_prob=decay)
+        fit, _, fevals = run_GA_1(problem, init_state, pop_size=120, mutation_prob=decay)
         fitness.append(fit)
         evals.append(fevals)
 
 
     plt.figure()
-    plt.title("GA mutation probability")
+    plt.title("GA mutation probability (pop 120)")
     plt.xlabel("mutation prob")
     plt.ylabel("fitness")
     plt.plot(values, fitness)
