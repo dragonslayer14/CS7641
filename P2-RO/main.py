@@ -115,7 +115,8 @@ def run_MIMIC_1(problem, init_state, **kwargs):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, **kwargs, curve=True, fevals=True)
+        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, pop_size=120, keep_pct=0.15,
+                                              **kwargs, curve=True, fevals=True)
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -566,8 +567,10 @@ if __name__ == "__main__":
     init_state = init_states[1]
     problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
                                             max_connections_per_node=4, max_colors=None)
+
+    # TODO plot a 4 line graph of tuned algos for problem size over fevals
     # plt.figure()
-    # plt.title("GA population size")
+    # plt.title("MIMIC population size")
     # plt.xlabel("population size")
     # plt.ylabel("fitness")
     # values = []
@@ -577,30 +580,38 @@ if __name__ == "__main__":
     # for pop_size in range(100, 310, 10):
     #     values.append(pop_size)
     #     print(pop_size)
-    #     fit, _, fevals = run_GA_1(problem, init_state, pop_size=pop_size)
+    #     fit, _, fevals = run_MIMIC_1(problem, init_state, pop_size=pop_size)
     #     fitness.append(fit)
+    #     evals.append(fevals)
     #
     # plt.plot(values, fitness)
+    # plt.savefig("charts/MIMIC1_popsize")
+    # plt.figure()
+    # plt.title("MIMIC population size fevals")
+    # plt.xlabel("population size")
+    # plt.ylabel("fevals")
+    # plt.plot(values, fevals)
 
     values = []
     fitness = []
     evals = []
     times = []
 
-    for decay in np.linspace(0, 1, 51):
+    for decay in np.linspace(0, 0.5,51):
         decay = round(decay, 3)
         values.append(decay)
         print(decay)
-        fit, _, fevals = run_GA_1(problem, init_state, pop_size=120, mutation_prob=decay)
+        fit, _, fevals = run_MIMIC_1(problem, init_state, pop_size=150, keep_pct=decay)
         fitness.append(fit)
         evals.append(fevals)
 
 
     plt.figure()
-    plt.title("GA mutation probability (pop 120)")
-    plt.xlabel("mutation prob")
+    plt.title("MIMIC keep percentage (pop 150)")
+    plt.xlabel("keep %")
     plt.ylabel("fitness")
     plt.plot(values, fitness)
+    plt.savefig("charts/MIMIC1_keep_pct_pop150")
     plt.show()
 
     # run_GA_1(problem, init_state)
