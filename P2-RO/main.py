@@ -2,6 +2,7 @@ import sys
 from datetime import datetime
 import matplotlib
 import mlrose_hiive
+from sklearn.model_selection import train_test_split
 
 matplotlib.use("TKAgg")
 
@@ -10,7 +11,7 @@ from mlrose_hiive import NeuralNetwork, random_hill_climb, simulated_annealing, 
     Queens, DiscreteOpt, FourPeaks, MaxKColorGenerator, MaxKColor, SARunner, QueensGenerator, GeomDecay
 import numpy as np
 import time
-
+from sklearn.metrics import accuracy_score
 
 random_states = [0,50,800,35]
 
@@ -499,8 +500,32 @@ def run_SA_3(problem, init_state, **kwargs):
 
 def run_ANN():
     # TODO use multiple random states and average values
+
+    with open("data/wine.csv", 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:, :-1], data[:, -1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
     random_state = 0
-    _, loss, _, fit_curve = NeuralNetwork(curve=True, random_state=random_state)
+    net = NeuralNetwork(hidden_nodes=[290], max_iters=110, algorithm="gradient_descent", curve=True,
+                                          learning_rate=0.001, random_state=random_state)
+
+    net.fit(data_train, label_train)
+
+    label_pred = net.predict(data_train)
+
+    train_accuracy = accuracy_score(label_train, label_pred)
+
+    label_pred = net.predict(data_test)
+
+    test_accuracy = accuracy_score(label_test, label_pred)
+
+
 
 
 def run_ANN_RHC():
