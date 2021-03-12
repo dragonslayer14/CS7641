@@ -40,7 +40,8 @@ def run_RHC_1(problem, init_state, **kwargs):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, _, evals = random_hill_climb(problem, random_state=random_state, **kwargs, curve=True, fevals=True, init_state=init_state)
+        _, best_fit, _, evals = random_hill_climb(problem, random_state=random_state, restarts=100, max_attempts=12,
+                                                  **kwargs, curve=True, fevals=True, init_state=init_state)
 
         fit_vals.append(best_fit)
         # fit_curves.append(fit_curve)
@@ -595,48 +596,66 @@ if __name__ == "__main__":
 
     # TODO plot a 4 line graph of tuned algos for problem size over fevals
     # plt.figure()
-    # plt.title("MIMIC population size")
-    # plt.xlabel("population size")
+    # plt.title("RHC restarts")
+    # plt.xlabel("allowed restarts (40 neighbor attempt)")
     # plt.ylabel("fitness")
     # values = []
     # fitness = []
     # evals = []
     # times = []
-    # for pop_size in range(100, 310, 10):
+    # for pop_size in range(0, 101):
     #     values.append(pop_size)
     #     print(pop_size)
-    #     fit, _, fevals = run_MIMIC_1(problem, init_state, pop_size=pop_size)
+    #     fit, _, fevals = run_RHC_1(problem, init_state, max_attempts=81, restarts=pop_size)
     #     fitness.append(fit)
     #     evals.append(fevals)
     #
     # plt.plot(values, fitness)
-    # plt.savefig("charts/MIMIC1_popsize")
-    # plt.figure()
-    # plt.title("MIMIC population size fevals")
-    # plt.xlabel("population size")
-    # plt.ylabel("fevals")
-    # plt.plot(values, fevals)
+    # plt.savefig("charts/RHC1_restarts_40attempts")
 
+    plt.figure()
+    plt.title("RHC neighbor attempts")
+    plt.xlabel("attempts to find neighbor")
+    plt.ylabel("fitness")
     values = []
     fitness = []
     evals = []
     times = []
-
-    for decay in np.linspace(0, 0.5,51):
-        decay = round(decay, 3)
-        values.append(decay)
-        print(decay)
-        fit, _, fevals = run_MIMIC_1(problem, init_state, pop_size=150, keep_pct=decay)
+    for pop_size in range(0, 20):
+        values.append(pop_size)
+        print(pop_size)
+        fit, _, fevals = run_RHC_1(problem, init_state, restarts=60, max_attempts=pop_size)
         fitness.append(fit)
         evals.append(fevals)
 
-
-    plt.figure()
-    plt.title("MIMIC keep percentage (pop 150)")
-    plt.xlabel("keep %")
-    plt.ylabel("fitness")
     plt.plot(values, fitness)
-    plt.savefig("charts/MIMIC1_keep_pct_pop150")
+    plt.savefig("charts/RHC1_max_attempts")
+    plt.figure()
+    plt.title("MIMIC population size fevals")
+    plt.xlabel("population size")
+    plt.ylabel("fevals")
+    plt.plot(values, fevals)
+
+    # values = []
+    # fitness = []
+    # evals = []
+    # times = []
+    #
+    # for decay in np.linspace(0, 0.5,51):
+    #     decay = round(decay, 3)
+    #     values.append(decay)
+    #     print(decay)
+    #     fit, _, fevals = run_MIMIC_1(problem, init_state, pop_size=150, keep_pct=decay)
+    #     fitness.append(fit)
+    #     evals.append(fevals)
+    #
+    #
+    # plt.figure()
+    # plt.title("MIMIC keep percentage (pop 150)")
+    # plt.xlabel("keep %")
+    # plt.ylabel("fitness")
+    # plt.plot(values, fitness)
+    # plt.savefig("charts/MIMIC1_keep_pct_pop150")
     plt.show()
 
     # run_GA_1(problem, init_state)
