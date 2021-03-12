@@ -274,7 +274,7 @@ def run_MIMIC_2(problem, init_state, **kwargs):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, pop_size=310, keep_pct=0.2,
+        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, pop_size=300, keep_pct=0.2,
                                               **kwargs,fevals=True,  curve=True)
 
         fit_vals.append(best_fit)
