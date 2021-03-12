@@ -117,7 +117,7 @@ def run_MIMIC_1(problem, init_state, **kwargs):
     for random_state in random_states:
         start = time.time()
 
-        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, pop_size=120, keep_pct=0.15,
+        _, best_fit, fit_curve, evals = mimic(problem, random_state=random_state, pop_size=150, keep_pct=0.15,
                                               **kwargs, curve=True, fevals=True)
 
         fit_vals.append(best_fit)
@@ -613,28 +613,28 @@ if __name__ == "__main__":
     # plt.plot(values, fitness)
     # plt.savefig("charts/RHC1_restarts_40attempts")
 
-    plt.figure()
-    plt.title("RHC neighbor attempts")
-    plt.xlabel("attempts to find neighbor")
-    plt.ylabel("fitness")
-    values = []
-    fitness = []
-    evals = []
-    times = []
-    for pop_size in range(0, 20):
-        values.append(pop_size)
-        print(pop_size)
-        fit, _, fevals = run_RHC_1(problem, init_state, restarts=60, max_attempts=pop_size)
-        fitness.append(fit)
-        evals.append(fevals)
-
-    plt.plot(values, fitness)
-    plt.savefig("charts/RHC1_max_attempts")
-    plt.figure()
-    plt.title("MIMIC population size fevals")
-    plt.xlabel("population size")
-    plt.ylabel("fevals")
-    plt.plot(values, fevals)
+    # plt.figure()
+    # plt.title("RHC neighbor attempts")
+    # plt.xlabel("attempts to find neighbor")
+    # plt.ylabel("fitness")
+    # values = []
+    # fitness = []
+    # evals = []
+    # times = []
+    # for pop_size in range(0, 20):
+    #     values.append(pop_size)
+    #     print(pop_size)
+    #     fit, _, fevals = run_RHC_1(problem, init_state, restarts=60, max_attempts=pop_size)
+    #     fitness.append(fit)
+    #     evals.append(fevals)
+    #
+    # plt.plot(values, fitness)
+    # plt.savefig("charts/RHC1_max_attempts")
+    # plt.figure()
+    # plt.title("MIMIC population size fevals")
+    # plt.xlabel("population size")
+    # plt.ylabel("fevals")
+    # plt.plot(values, fevals)
 
     # values = []
     # fitness = []
@@ -656,7 +656,7 @@ if __name__ == "__main__":
     # plt.ylabel("fitness")
     # plt.plot(values, fitness)
     # plt.savefig("charts/MIMIC1_keep_pct_pop150")
-    plt.show()
+    # plt.show()
 
     # run_GA_1(problem, init_state)
     # run_MIMIC_1(problem, init_state)
@@ -669,12 +669,22 @@ if __name__ == "__main__":
     MIMIC_vals = []
     for init_state in init_states:
         problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
-                                                max_connections_per_node=len(init_state), max_colors=None)
-        # RHC_vals.append(run_RHC_1(problem, init_state))
-        # SA_vals.append(run_SA_1(problem, init_state))
-        # GA_vals.append(run_GA_1(problem, init_state))
+                                                max_connections_per_node=4, max_colors=None)
+        # RHC_vals.append(
+        _,_,evals = run_RHC_1(problem, init_state)
+        RHC_vals.append(evals)
+        # )
+        # SA_vals.append(
+        _,_,evals = run_SA_1(problem, init_state)
+        SA_vals.append(evals)
+        # )
+        # GA_vals.append(
+        _,_,evals = run_GA_1(problem, init_state)
+        GA_vals.append(evals)
+        # )
         # MIMIC_vals.append(
-        run_MIMIC_1(problem, init_state)
+        _,_,evals = run_MIMIC_1(problem, init_state)
+        MIMIC_vals.append(evals)
         #)
     plt.plot(lens, RHC_vals, label="rhc")
     plt.plot(lens, SA_vals, label="sa")
@@ -685,10 +695,10 @@ if __name__ == "__main__":
     problem_name = str(fit_func).split('.')[-1].split(' ')[0]
     plt.title(problem_name)
     plt.xlabel("problem size")
-    plt.ylabel("fitness")
+    plt.ylabel("fevals")
     plt.legend()
-    plt.savefig(f"charts/{problem_name}")
-    # plt.show()
+    plt.savefig(f"charts/{problem_name}_fevals")
+    plt.show()
     plt.close('all')
 
     # problem 2
