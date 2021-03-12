@@ -317,7 +317,7 @@ def run_SA_2(problem, init_state, **kwargs):
         start = time.time()
 
         _, best_fit, fit_curve, evals = simulated_annealing(problem, random_state=random_state, **kwargs, curve=True,fevals=True,
-                                                   init_state=init_state, decay=GeomDecay(init_temp=11, decay=0.96))
+                                                   init_state=init_state, schedule=GeomDecay(init_temp=11, decay=0.96))
 
         fit_vals.append(best_fit)
         fit_curves.append(fit_curve)
@@ -805,12 +805,24 @@ if __name__ == "__main__":
     SA_vals = []
     GA_vals = []
     MIMIC_vals = []
+    RHC_times = []
+    SA_times = []
+    GA_times = []
+    MIMIC_times = []
     for init_state in init_states:
         problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
-        RHC_vals.append(run_RHC_2(problem, init_state))
-        SA_vals.append(run_SA_2(problem, init_state))
-        GA_vals.append(run_GA_2(problem, init_state))
-        MIMIC_vals.append(run_MIMIC_2(problem, init_state))
+        fit, duration,_ = run_RHC_2(problem, init_state)
+        RHC_vals.append(fit)
+        RHC_times.append(duration)
+        fit, duration,_ = run_SA_2(problem, init_state)
+        SA_vals.append(fit)
+        SA_times.append(duration)
+        fit, duration,_ = run_GA_2(problem, init_state)
+        GA_vals.append(fit)
+        GA_times.append(duration)
+        fit, duration,_ = run_MIMIC_2(problem, init_state)
+        MIMIC_vals.append(fit)
+        MIMIC_times.append(duration)
     plt.plot(lens, RHC_vals, label="rhc")
     plt.plot(lens, SA_vals, label="sa")
     plt.plot(lens, GA_vals, label="ga")
@@ -823,7 +835,18 @@ if __name__ == "__main__":
     plt.ylabel("fitness")
     plt.legend()
     plt.savefig(f"charts/{problem_name}")
-    # plt.show()
+
+    plt.figure()
+    plt.title(f"{problem_name} times")
+    plt.xlabel("problem size")
+    plt.ylabel("time (seconds)")
+    plt.plot(lens, RHC_times, label="rhc")
+    plt.plot(lens, SA_times, label="sa")
+    plt.plot(lens, GA_times, label="ga")
+    plt.plot(lens, MIMIC_times, label="mimic")
+    plt.legend()
+    plt.savefig(f"charts/{problem_name}_time")
+    plt.show()
     plt.close('all')
 
     # problem 3
