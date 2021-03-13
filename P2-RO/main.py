@@ -584,13 +584,13 @@ if __name__ == "__main__":
 
     # problem 1
     init_state = init_states = [
-        np.random.randint(0, 2, 10),
-        np.random.randint(0, 2, 30),
+        np.random.randint(0, 2, 20),
         np.random.randint(0, 2, 50),
+        np.random.randint(0, 2, 100),
         # np.random.randint(0, 2, 100) # mimic takes a long time to run, will need to run overnight
     ]
     # plt.figure()
-    fit_func = SixPeaks()
+    fit_func = MaxKColor([])
 
     # calls for tuning
     # get medium size
@@ -750,20 +750,20 @@ if __name__ == "__main__":
     #     problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
     #                                             max_connections_per_node=4, max_colors=None)
     #     # RHC_vals.append(
-    #     _,_,evals = run_RHC_1(problem, init_state)
-    #     RHC_vals.append(evals)
+    #     fit,_,evals = run_RHC_1(problem, init_state)
+    #     RHC_vals.append(fit)
     #     # )
     #     # SA_vals.append(
-    #     _,_,evals = run_SA_1(problem, init_state)
-    #     SA_vals.append(evals)
+    #     fit,_,evals = run_SA_1(problem, init_state)
+    #     SA_vals.append(fit)
     #     # )
     #     # GA_vals.append(
-    #     _,_,evals = run_GA_1(problem, init_state)
-    #     GA_vals.append(evals)
+    #     fit,_,evals = run_GA_1(problem, init_state)
+    #     GA_vals.append(fit)
     #     # )
     #     # MIMIC_vals.append(
-    #     _,_,evals = run_MIMIC_1(problem, init_state)
-    #     MIMIC_vals.append(evals)
+    #     fit,_,evals = run_MIMIC_1(problem, init_state)
+    #     MIMIC_vals.append(fit)
     #     #)
     # plt.plot(lens, RHC_vals, label="rhc")
     # plt.plot(lens, SA_vals, label="sa")
@@ -774,80 +774,80 @@ if __name__ == "__main__":
     # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
     # plt.title(problem_name)
     # plt.xlabel("problem size")
-    # plt.ylabel("fevals")
+    # plt.ylabel("fitness")
     # plt.legend()
-    # plt.savefig(f"charts/{problem_name}_fevals")
+    # plt.savefig(f"charts/{problem_name}")
     # plt.show()
     # plt.close('all')
 
     # problem 2
-    init_state = init_states = [
-        np.random.randint(0, 2, 10),
-        np.random.randint(0, 2, 30),
-        np.random.randint(0, 2, 50),
-        # np.random.randint(0, 2, 100) # mimic takes a long time to run, will need to run overnight
-    ]
+    # init_state = init_states = [
+    #     np.random.randint(0, 2, 10),
+    #     np.random.randint(0, 2, 30),
+    #     np.random.randint(0, 2, 50),
+    #     # np.random.randint(0, 2, 100) # mimic takes a long time to run, will need to run overnight
+    # ]
+    # # plt.figure()
+    # fit_func = SixPeaks()
+    #
+    # # calls for tuning
+    # # get medium size
+    # # init_state = init_states[1]
+    # # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
+    # # run_RHC_2(problem, init_state)
+    # # run_SA_2(problem, init_state)
+    # # run_GA_2(problem, init_state)
+    # # run_MIMIC_2(problem, init_state)
+    #
+    # # plot time over problem sizes
+    # lens = [len(init_state) for init_state in init_states]
+    # RHC_vals = []
+    # SA_vals = []
+    # GA_vals = []
+    # MIMIC_vals = []
+    # RHC_times = []
+    # SA_times = []
+    # GA_times = []
+    # MIMIC_times = []
+    # for init_state in init_states:
+    #     problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
+    #     fit, duration,_ = run_RHC_2(problem, init_state)
+    #     RHC_vals.append(fit)
+    #     RHC_times.append(duration)
+    #     fit, duration,_ = run_SA_2(problem, init_state)
+    #     SA_vals.append(fit)
+    #     SA_times.append(duration)
+    #     fit, duration,_ = run_GA_2(problem, init_state)
+    #     GA_vals.append(fit)
+    #     GA_times.append(duration)
+    #     fit, duration,_ = run_MIMIC_2(problem, init_state)
+    #     MIMIC_vals.append(fit)
+    #     MIMIC_times.append(duration)
+    # plt.plot(lens, RHC_vals, label="rhc")
+    # plt.plot(lens, SA_vals, label="sa")
+    # plt.plot(lens, GA_vals, label="ga")
+    # plt.plot(lens, MIMIC_vals, label="mimic")
+    #
+    # print()
+    # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    # plt.title(problem_name)
+    # plt.xlabel("problem size")
+    # plt.ylabel("fitness")
+    # plt.legend()
+    # plt.savefig(f"charts/{problem_name}")
+    #
     # plt.figure()
-    fit_func = SixPeaks()
-
-    # calls for tuning
-    # get medium size
-    # init_state = init_states[1]
-    # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
-    # run_RHC_2(problem, init_state)
-    # run_SA_2(problem, init_state)
-    # run_GA_2(problem, init_state)
-    # run_MIMIC_2(problem, init_state)
-
-    # plot time over problem sizes
-    lens = [len(init_state) for init_state in init_states]
-    RHC_vals = []
-    SA_vals = []
-    GA_vals = []
-    MIMIC_vals = []
-    RHC_times = []
-    SA_times = []
-    GA_times = []
-    MIMIC_times = []
-    for init_state in init_states:
-        problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
-        fit, duration,_ = run_RHC_2(problem, init_state)
-        RHC_vals.append(fit)
-        RHC_times.append(duration)
-        fit, duration,_ = run_SA_2(problem, init_state)
-        SA_vals.append(fit)
-        SA_times.append(duration)
-        fit, duration,_ = run_GA_2(problem, init_state)
-        GA_vals.append(fit)
-        GA_times.append(duration)
-        fit, duration,_ = run_MIMIC_2(problem, init_state)
-        MIMIC_vals.append(fit)
-        MIMIC_times.append(duration)
-    plt.plot(lens, RHC_vals, label="rhc")
-    plt.plot(lens, SA_vals, label="sa")
-    plt.plot(lens, GA_vals, label="ga")
-    plt.plot(lens, MIMIC_vals, label="mimic")
-
-    print()
-    problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    plt.title(problem_name)
-    plt.xlabel("problem size")
-    plt.ylabel("fitness")
-    plt.legend()
-    plt.savefig(f"charts/{problem_name}")
-
-    plt.figure()
-    plt.title(f"{problem_name} times")
-    plt.xlabel("problem size")
-    plt.ylabel("time (seconds)")
-    plt.plot(lens, RHC_times, label="rhc")
-    plt.plot(lens, SA_times, label="sa")
-    plt.plot(lens, GA_times, label="ga")
-    plt.plot(lens, MIMIC_times, label="mimic")
-    plt.legend()
-    plt.savefig(f"charts/{problem_name}_time")
-    plt.show()
-    plt.close('all')
+    # plt.title(f"{problem_name} times")
+    # plt.xlabel("problem size")
+    # plt.ylabel("time (seconds)")
+    # plt.plot(lens, RHC_times, label="rhc")
+    # plt.plot(lens, SA_times, label="sa")
+    # plt.plot(lens, GA_times, label="ga")
+    # plt.plot(lens, MIMIC_times, label="mimic")
+    # plt.legend()
+    # plt.savefig(f"charts/{problem_name}_time")
+    # plt.show()
+    # plt.close('all')
 
     # problem 3
 
