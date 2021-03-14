@@ -3,6 +3,7 @@ from datetime import datetime
 import matplotlib
 import mlrose_hiive
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 matplotlib.use("TKAgg")
 
@@ -40,7 +41,7 @@ def run_RHC_1(problem, init_state, **kwargs):
     # run multiple times to get average
     for random_state in random_states:
         start = time.time()
-        _, best_fit, _, evals = random_hill_climb(problem, random_state=random_state, restarts=100, max_attempts=12,
+        _, best_fit, _, evals = random_hill_climb(problem, random_state=random_state, restarts=60, max_attempts=12,
                                                   **kwargs, curve=True, fevals=True, init_state=init_state)
 
         fit_vals.append(best_fit)
@@ -519,37 +520,310 @@ def run_ANN():
 
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], max_iters=110, algorithm="gradient_descent", curve=True,
-                        learning_rate=0.001, random_state=random_state)
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
 
-    net.fit(data_train, label_train)
+    # Normalize feature data
+    scaler = MinMaxScaler()
 
-    label_pred = net.predict(data_train)
+    data_train_scaled = scaler.fit_transform(data_train)
+    data_test_scaled = scaler.transform(data_test)
 
-    train_accuracy = accuracy_score(label_train, label_pred)
+    # this shouldn't be necessary, but following the example and breaks otherwise
+    # One hot encode target values
+    one_hot = OneHotEncoder()
 
-    label_pred = net.predict(data_test)
+    label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
+    label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
 
-    test_accuracy = accuracy_score(label_test, label_pred)
+    net.fit(data_train_scaled, label_train_hot)
 
+    label_pred = net.predict(data_train_scaled)
 
+    train_accuracy = accuracy_score(label_train_hot, label_pred)
+
+    label_pred = net.predict(data_test_scaled)
+
+    test_accuracy = accuracy_score(label_test_hot, label_pred)
+    print(train_accuracy, test_accuracy)
+
+    # plot fitness curve
+    plt.figure()
+    plt.title("Gradient Descent")
+    plt.xlabel("iterations")
+    plt.ylabel("fitness")
+    plt.plot(net.fitness_curve, label="gradient descent")
+    plt.show()
 
 
 def run_ANN_RHC():
     # TODO use multiple random states and average values
+
+    with open("data/wine.csv", 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:, :-1], data[:, -1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
     random_state = 0
-    _, loss, _, fit_curve = NeuralNetwork(algorithm="random_hill_climb", curve=True, random_state=random_state)
+    net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="random_hill_climb", curve=True,
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+
+    # Normalize feature data
+    scaler = MinMaxScaler()
+
+    data_train_scaled = scaler.fit_transform(data_train)
+    data_test_scaled = scaler.transform(data_test)
+
+    # this shouldn't be necessary, but following the example and breaks otherwise
+    # One hot encode target values
+    one_hot = OneHotEncoder()
+
+    label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
+    label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
+
+    net.fit(data_train_scaled, label_train_hot)
+
+    label_pred = net.predict(data_train_scaled)
+
+    train_accuracy = accuracy_score(label_train_hot, label_pred)
+
+    label_pred = net.predict(data_test_scaled)
+
+    test_accuracy = accuracy_score(label_test_hot, label_pred)
+    print(train_accuracy, test_accuracy)
+
+    train_vals = []
+
+    plt.figure()
+    plt.title("rhc")
+    plt.xlabel("allowed restarts")
+    plt.ylabel("score")
+
+    # create MC curve over HP for tuning
+    for restarts in range(100):
+        vals = []
+        for random_state in random_states:
+            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="random_hill_climb", restarts=restarts,
+                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+            net.fit(data_train_scaled, label_train_hot)
+            label_pred = net.predict(data_train_scaled)
+            train_accuracy = accuracy_score(label_train_hot, label_pred)
+            print(f"rhc {restarts}: {train_accuracy}")
+            vals.append(train_accuracy)
+        train_vals.append(np.mean(vals))
+
+    plt.plot(range(100), train_vals)
+    plt.savefig("charts/ann_rhc_restarts")
+
+
+    # plot fitness curve
+    # plt.figure()
+    # plt.title("rhc")
+    # plt.xlabel("iterations")
+    # plt.ylabel("fitness")
+    # plt.plot(net.fitness_curve, label="rhc")
+    # plt.show()
 
 
 def run_ANN_SA():
     # TODO use multiple random states and average values
+
+    with open("data/wine.csv", 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:, :-1], data[:, -1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
     random_state = 0
-    _, loss, _, fit_curve = NeuralNetwork(algorithm="simulated_annealing", curve=True, random_state=random_state)
+    net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing", curve=True,
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+
+    # Normalize feature data
+    scaler = MinMaxScaler()
+
+    data_train_scaled = scaler.fit_transform(data_train)
+    data_test_scaled = scaler.transform(data_test)
+
+    # this shouldn't be necessary, but following the example and breaks otherwise
+    # One hot encode target values
+    one_hot = OneHotEncoder()
+
+    label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
+    label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
+
+    net.fit(data_train_scaled, label_train_hot)
+
+    label_pred = net.predict(data_train_scaled)
+
+    train_accuracy = accuracy_score(label_train_hot, label_pred)
+
+    label_pred = net.predict(data_test_scaled)
+
+    test_accuracy = accuracy_score(label_test_hot, label_pred)
+    print(train_accuracy, test_accuracy)
+
+    train_vals = []
+
+    plt.figure()
+    plt.title("sa")
+    plt.xlabel("temp")
+    plt.ylabel("score")
+
+
+    # create MC curve over HP for tuning
+    for temp in range(1,20):
+        vals = []
+        for random_state in random_states:
+            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing",
+                                schedule=GeomDecay(init_temp=temp),
+                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+            net.fit(data_train_scaled, label_train_hot)
+            label_pred = net.predict(data_train_scaled)
+            train_accuracy = accuracy_score(label_train_hot, label_pred)
+            print(f"sa {temp}: {train_accuracy}")
+            vals.append(train_accuracy)
+        train_vals.append(np.mean(vals))
+
+    plt.plot(range(1,20), train_vals, label="temp")
+    plt.savefig("charts/ann_sa_temp")
+
+    train_vals = []
+    plt.figure()
+    plt.title("sa")
+    plt.ylabel("score")
+    plt.xlabel("decay")
+
+    # create MC curve over HP for tuning
+    for decay in np.linspace(0.01, 0.99, 99):
+        vals = []
+        for random_state in random_states:
+            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing",
+                                schedule=GeomDecay(decay=decay),
+                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+            net.fit(data_train_scaled, label_train_hot)
+            label_pred = net.predict(data_train_scaled)
+            train_accuracy = accuracy_score(label_train_hot, label_pred)
+            print(f"sa {decay}: {train_accuracy}")
+            vals.append(train_accuracy)
+        train_vals.append(np.mean(vals))
+
+    plt.plot(np.linspace(0.01, 0.99, 99), train_vals, label="decay")
+    plt.savefig("charts/ann_sa_decay")
+
+    # plot fitness curve
+    # plt.figure()
+    # plt.title("SA")
+    # plt.xlabel("iterations")
+    # plt.ylabel("fitness")
+    # plt.plot(net.fitness_curve, label="sa")
+    # plt.show()
 
 
 def run_ANN_GA():
     # TODO use multiple random states and average values
+
+    with open("data/wine.csv", 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:, :-1], data[:, -1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
     random_state = 0
-    _, loss, _, fit_curve = NeuralNetwork(algorithm="genetic_alg", curve=True, random_state=random_state)
+    net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg", curve=True,
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+
+    # Normalize feature data
+    scaler = MinMaxScaler()
+
+    data_train_scaled = scaler.fit_transform(data_train)
+    data_test_scaled = scaler.transform(data_test)
+
+    # this shouldn't be necessary, but following the example and breaks otherwise
+    # One hot encode target values
+    one_hot = OneHotEncoder()
+
+    label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
+    label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
+
+    net.fit(data_train_scaled, label_train_hot)
+
+    label_pred = net.predict(data_train_scaled)
+
+    train_accuracy = accuracy_score(label_train_hot, label_pred)
+
+    label_pred = net.predict(data_test_scaled)
+
+    test_accuracy = accuracy_score(label_test_hot, label_pred)
+    print(train_accuracy, test_accuracy)
+
+    train_vals = []
+
+    plt.figure()
+    plt.title("ga")
+    plt.xlabel("pop size")
+    plt.ylabel("score")
+
+
+    # create MC curve over HP for tuning
+    for temp in range(100, 310,10):
+        vals = []
+        for random_state in random_states:
+            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg",
+                                pop_size=temp,
+                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+            net.fit(data_train_scaled, label_train_hot)
+            label_pred = net.predict(data_train_scaled)
+            train_accuracy = accuracy_score(label_train_hot, label_pred)
+            print(f"ga {temp}: {train_accuracy}")
+            vals.append(train_accuracy)
+        train_vals.append(np.mean(vals))
+
+    plt.plot(range(100, 310,10), train_vals, label="pop_size")
+    plt.savefig("charts/ann_ga_pop_size")
+
+    train_vals = []
+    plt.figure()
+    plt.title("sa")
+    plt.ylabel("score")
+    plt.xlabel("decay")
+
+
+    # create MC curve over HP for tuning
+    for decay in np.linspace(0.01, 0.99, 99):
+        vals = []
+        for random_state in random_states:
+            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg",
+                                mutation_prob=decay,
+                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+            net.fit(data_train_scaled, label_train_hot)
+            label_pred = net.predict(data_train_scaled)
+            train_accuracy = accuracy_score(label_train_hot, label_pred)
+            print(f"ga {decay}: {train_accuracy}")
+            vals.append(train_accuracy)
+        train_vals.append(np.mean(vals))
+
+    plt.plot(np.linspace(0.01, 0.99, 99), train_vals, label="mutation_prob")
+    plt.savefig("charts/ann_ga_mutation_prob")
+
+    # plot fitness curve
+    # plt.figure()
+    # plt.title("GA")
+    # plt.xlabel("iterations")
+    # plt.ylabel("fitness")
+    # plt.plot(net.fitness_curve, label="ga")
+    # plt.show()
 
 
 if __name__ == "__main__":
@@ -585,12 +859,11 @@ if __name__ == "__main__":
     # mlrose grid search doesn't seem too helpful, so just coarse MC curve and narrow on areas for tuning, need the curves for report anyway
 
     # problem 1
-    # init_states = [
-    #     np.random.randint(0, 8, 8),
-    #     # np.random.randint(0, 15, 15),
-    #     np.random.randint(0, 36, 36),
-    #     np.random.randint(0, 50, 50)
-    # ]
+    init_states = [
+        np.random.randint(0, 2, 20),
+        np.random.randint(0, 2, 50),
+        np.random.randint(0, 2, 100)
+    ]
     # plt.figure()
     # fit_func = Queens()
 
@@ -749,6 +1022,12 @@ if __name__ == "__main__":
     # SA_vals = []
     # GA_vals = []
     # MIMIC_vals = []
+    # fit_func=MaxKColor([])
+    # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    # plt.figure()
+    # plt.title(problem_name)
+    # plt.xlabel("problem size")
+    # plt.ylabel("fitness")
     # for init_state in init_states:
     #     problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
     #                                             max_connections_per_node=4, max_colors=None)
@@ -772,8 +1051,8 @@ if __name__ == "__main__":
     # plt.plot(lens, SA_vals, label="sa")
     # plt.plot(lens, GA_vals, label="ga")
     # plt.plot(lens, MIMIC_vals, label="mimic")
-    #
-    # print()
+
+    print()
     # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
     # plt.title(problem_name)
     # plt.xlabel("problem size")
@@ -904,7 +1183,9 @@ if __name__ == "__main__":
     # plt.close('all')
 
     # ANN compare
-    run_ANN()
+    # run_ANN()
     run_ANN_RHC()
     run_ANN_SA()
     run_ANN_GA()
+    plt.show()
+    print()
