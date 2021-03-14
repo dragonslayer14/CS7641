@@ -519,7 +519,7 @@ def run_ANN():
 
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], max_iters=110, algorithm="gradient_descent", curve=True,
-                                          learning_rate=0.001, random_state=random_state)
+                        learning_rate=0.001, random_state=random_state)
 
     net.fit(data_train, label_train)
 
@@ -585,19 +585,19 @@ if __name__ == "__main__":
     # mlrose grid search doesn't seem too helpful, so just coarse MC curve and narrow on areas for tuning, need the curves for report anyway
 
     # problem 1
-    init_states = [
-        np.random.randint(0, 8, 8),
-        # np.random.randint(0, 15, 15),
-        np.random.randint(0, 36, 36),
-        np.random.randint(0, 50, 50)
-    ]
+    # init_states = [
+    #     np.random.randint(0, 8, 8),
+    #     # np.random.randint(0, 15, 15),
+    #     np.random.randint(0, 36, 36),
+    #     np.random.randint(0, 50, 50)
+    # ]
     # plt.figure()
-    fit_func = Queens()
+    # fit_func = Queens()
 
     # calls for tuning
     # get medium size
-    init_state = init_states[1]
-    problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func, maximize=False)
+    # init_state = init_states[1]
+    # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func, maximize=False)
     # problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
     #                                         max_connections_per_node=4, max_colors=None)
 
@@ -854,54 +854,54 @@ if __name__ == "__main__":
 
     # problem 3
 
-    init_states = [
-        np.random.randint(0, 8, 8),
-        # np.random.randint(0, 15, 15),
-        np.random.randint(0, 36, 36),
-        np.random.randint(0, 50, 50)
-    ]
-    # plt.figure()
-    fit_func = Queens()
-
-    # calls for tuning
-    # get medium size
-    # init_state = init_states[1]
-    # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
-    # run_RHC_3(problem, init_state)
-    # run_SA_3(problem, init_state)
-    # run_GA_3(problem, init_state)
-    # run_MIMIC_3(problem, init_state)
-
-    # plot fitness over problem sizes
-    lens = [len(init_state) for init_state in init_states]
-    RHC_vals = []
-    SA_vals = []
-    GA_vals = []
-    MIMIC_vals = []
-    for init_state in init_states:
-        problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func, maximize=False)
-        fit, _,_ = run_RHC_3(problem, init_state)
-        RHC_vals.append(fit)
-        fit, _,_ = run_SA_3(problem, init_state)
-        SA_vals.append(fit)
-        fit, _,_ = run_GA_3(problem, init_state)
-        GA_vals.append(fit)
-        fit, _,_ = run_MIMIC_3(problem, init_state)
-        MIMIC_vals.append(fit)
-    plt.plot(lens, RHC_vals, label="rhc")
-    plt.plot(lens, SA_vals, label="sa")
-    plt.plot(lens, GA_vals, label="ga")
-    plt.plot(lens, MIMIC_vals, label="mimic")
-
-    print()
-    problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    plt.title(problem_name)
-    plt.xlabel("problem size")
-    plt.ylabel("fitness")
-    plt.legend()
-    plt.savefig(f"charts/{problem_name}")
-    plt.show()
-    plt.close('all')
+    # init_states = [
+    #     np.random.randint(0, 8, 8),
+    #     # np.random.randint(0, 15, 15),
+    #     np.random.randint(0, 36, 36),
+    #     np.random.randint(0, 50, 50)
+    # ]
+    # # plt.figure()
+    # fit_func = Queens()
+    #
+    # # calls for tuning
+    # # get medium size
+    # # init_state = init_states[1]
+    # # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
+    # # run_RHC_3(problem, init_state)
+    # # run_SA_3(problem, init_state)
+    # # run_GA_3(problem, init_state)
+    # # run_MIMIC_3(problem, init_state)
+    #
+    # # plot fitness over problem sizes
+    # lens = [len(init_state) for init_state in init_states]
+    # RHC_vals = []
+    # SA_vals = []
+    # GA_vals = []
+    # MIMIC_vals = []
+    # for init_state in init_states:
+    #     problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func, maximize=False)
+    #     fit, _,_ = run_RHC_3(problem, init_state)
+    #     RHC_vals.append(fit)
+    #     fit, _,_ = run_SA_3(problem, init_state)
+    #     SA_vals.append(fit)
+    #     fit, _,_ = run_GA_3(problem, init_state)
+    #     GA_vals.append(fit)
+    #     fit, _,_ = run_MIMIC_3(problem, init_state)
+    #     MIMIC_vals.append(fit)
+    # plt.plot(lens, RHC_vals, label="rhc")
+    # plt.plot(lens, SA_vals, label="sa")
+    # plt.plot(lens, GA_vals, label="ga")
+    # plt.plot(lens, MIMIC_vals, label="mimic")
+    #
+    # print()
+    # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    # plt.title(problem_name)
+    # plt.xlabel("problem size")
+    # plt.ylabel("fitness")
+    # plt.legend()
+    # plt.savefig(f"charts/{problem_name}")
+    # plt.show()
+    # plt.close('all')
 
     # ANN compare
     run_ANN()
