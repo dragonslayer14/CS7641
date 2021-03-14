@@ -869,7 +869,7 @@ if __name__ == "__main__":
     plt.plot(lens, GA_fevals, label="ga")
     plt.plot(lens, MIMIC_fevals, label="mimic")
     plt.legend()
-    plt.savefig(f"charts/{problem_name}")
+    plt.savefig(f"charts/{problem_name}_fevals")
 
     # problem 2
     init_state = init_states = [
@@ -911,6 +911,7 @@ if __name__ == "__main__":
 
     print()
     problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    plt.figure()
     plt.title(problem_name)
     plt.xlabel("problem size")
     plt.ylabel("fitness")
@@ -961,6 +962,7 @@ if __name__ == "__main__":
 
     print()
     problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    plt.figure()
     plt.title(problem_name)
     plt.xlabel("problem size")
     plt.ylabel("fitness")
