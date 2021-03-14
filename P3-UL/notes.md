@@ -1,0 +1,52 @@
+# OH 7
+
+- 2 datasets
+- hard and soft clustering
+- dimensionality reduction
+- one of own choosing can be supervised or unsupervised (use labels or not)
+- step 4 and 5 is one dataset and comparing to NN from P1
+- steps
+- clustering and analysis
+- DR and analysis
+- DR then clustering and analysis (compare and see if anything changed)
+- DR on dataset, use for NN and compare to set without DR
+    - if we are throwing away some features, are they affecting a model like NN?
+- Clustering on same dataset as step 4 then NN (not Clustering AND DR)
+    - for generated clustering features, can either replace features or add them to existing list of features
+    - replacement of DR in part 4
+- UL, so assuming there are not labels when learning the model
+- in reference to the 4th DR algo being supervised or unsupervised
+- cannot use labels to determine how many clusters are needed, but can be used when evaluating the clusters
+    - can use labels for evaluation, but don't need to, a lot fot he time the number of clusters doesn't match number of classes
+- LDA uses class labels, have the option to used that as 4th DR if you want
+- you do need to look at eigenvalues ECA and kertosis(?) for ICA
+- talk about how you determined the number of clusters for K means and EM, cannot be supervised (from class labels)
+- then validate the number of clusters, using labels, vizualization, some unsupervized metric
+- compare k means and EM, one is soft clustering one is hard clustering, what are advantages/disadvantages you see
+- dimensionality reduction
+- talk about what the algorithms are doing
+- PCA - eigenvalues, maximum variance in the data
+- ICA - tries to find independent components, kertotsis, randomized projection etc.
+- if you can see any meaning in those reduced values
+- DR + clustering
+- cluster similar to part 1 and compare to part 1
+- if something is different, as is usually the case, take specific cases and visualize them/provide intuition for what happened
+- large number of combinations, don't need to look into all the differences, but pick a couple of examples
+- DR + NN
+- advantages and disadvantages of DR and how it affect perf of NN
+- when you throw away info, makes things faster and hopefully get rid of some noise, but you are throwing away information
+- how is it affecting performance in terms of time and convergence, as well as "value" of perf metric
+- Cluster + NN
+- same as part 4
+- compare with normal NN and part 4
+- can use clustering output as only features (like DR) or can add them as additional ones (not throwing away info, adding filtered versions)
+- using cluster output as only features
+    - really simple features
+    - can negatively affect performance
+- probably want some kind of visualization to understand what the new projection looks like
+  - can use another algo like TSNE or pair-wse plots for specific features
+- same with clustering, same kinds of visuals if you like, or just include metrics about how dense and separated the clusters are
+- eigenvalues for PCA
+- kertosis for ICA
+- randomized projection would use reconstruction error
+- 4th - use whatever makes sense

@@ -151,4 +151,25 @@
 - with so many problems and algorithms, may just look at one HP per algorithm, just chose the most interesting one
 - mlrose outputs a csv, can plot in excel, just include the code that makes the csv
 - vary problem length for all algos, not just the one being highlighted
-- 
+
+## OH 7
+
+- GA in NN, instead of a fitness value, the loss function, which will determine what a good population is in terms of GA
+- convergence is just getting to a steady value, not necessarily the best one
+- set a seed, but also average runs
+- not doing CV for this assignment, will get performance vs iteration curve that shows convergence
+- still need to care about training and testing performance and bias variance tradeoff
+  - BV tradeoff is not as important for the grading here, assumes P1 showed its role
+- get to a good performance, but in how much time?
+- DOn't need to show the bias variance trade off, but it is assumed to have been done
+  - I'm assuming this is if the network is being re-tuned in the new system, since the architecture is frozen when replacing algo
+  so no changes to how it is called should be made to ensure the same network is running the same way except for algo substitution
+- need a loss curve to show convergence behavior
+- fitness curve does not care about sample size, it is for convergence behavior, i.e., fitness over time/iterations
+- tuning of RO NN is necessary to find where HP like temperature, restarts, population, etc. are best
+  - needing to tune makes sense, default parameters and just changing algos doesn't make sense... should have known
+- NN plot for dataset should show the "more interesting one" showing differences
+  - SA is wavey as it explores, then improves as it exploits an area, and RHC ends up just under it, shows some difference
+  - don't worry too much about a strict guideline as long as you're able to do the analysis
+- fitness vs iterations, curve would be expected to go up and hopefully converge at some point
+- there is a feedback loop in backprop which is its utility
