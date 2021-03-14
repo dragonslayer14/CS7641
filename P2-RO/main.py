@@ -1,18 +1,14 @@
-import sys
-from datetime import datetime
 import matplotlib
-import mlrose_hiive
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder
 
 matplotlib.use("TKAgg")
 
 import matplotlib.pyplot as plt
-from mlrose_hiive import NeuralNetwork, random_hill_climb, simulated_annealing, genetic_alg, mimic, FlipFlop, SixPeaks, \
-    Queens, DiscreteOpt, FourPeaks, MaxKColorGenerator, MaxKColor, SARunner, QueensGenerator, GeomDecay
+from mlrose_hiive import NeuralNetwork, random_hill_climb, simulated_annealing, genetic_alg, mimic, SixPeaks, \
+    Queens, DiscreteOpt, MaxKColorGenerator, MaxKColor, GeomDecay
 import numpy as np
 import time
-from sklearn.metrics import accuracy_score
 
 random_states = [0,50,800,35]
 
@@ -540,15 +536,7 @@ def run_ANN():
 
     fit_time = time.time() - start
 
-    label_pred = net.predict(data_train_scaled)
-
-    train_accuracy = accuracy_score(label_train_hot, label_pred)
-
-    label_pred = net.predict(data_test_scaled)
-
-    test_accuracy = accuracy_score(label_test_hot, label_pred)
-    print(train_accuracy, test_accuracy)
-    print(fit_time)
+    print(f"Gradient Descent: {fit_time}")
 
     # plot fitness curve
 
@@ -588,15 +576,8 @@ def run_ANN_RHC():
     start = time.time()
     net.fit(data_train_scaled, label_train_hot)
     fit_time = time.time() - start
-    label_pred = net.predict(data_train_scaled)
 
-    train_accuracy = accuracy_score(label_train_hot, label_pred)
-
-    label_pred = net.predict(data_test_scaled)
-
-    test_accuracy = accuracy_score(label_test_hot, label_pred)
-    print(train_accuracy, test_accuracy)
-    print(fit_time)
+    print(f"RHC: {fit_time}")
 
     # train_vals = []
     #
@@ -664,15 +645,8 @@ def run_ANN_SA():
     start = time.time()
     net.fit(data_train_scaled, label_train_hot)
     fit_time = time.time() -start
-    label_pred = net.predict(data_train_scaled)
 
-    train_accuracy = accuracy_score(label_train_hot, label_pred)
-
-    label_pred = net.predict(data_test_scaled)
-
-    test_accuracy = accuracy_score(label_test_hot, label_pred)
-    print(train_accuracy, test_accuracy)
-    print(fit_time)
+    print(f"SA: {fit_time}")
 
     # train_vals = []
     #
@@ -766,15 +740,8 @@ def run_ANN_GA():
     start = time.time()
     net.fit(data_train_scaled, label_train_hot)
     fit_time = time.time()-start
-    label_pred = net.predict(data_train_scaled)
 
-    train_accuracy = accuracy_score(label_train_hot, label_pred)
-
-    label_pred = net.predict(data_test_scaled)
-
-    test_accuracy = accuracy_score(label_test_hot, label_pred)
-    print(train_accuracy, test_accuracy)
-    print(fit_time)
+    print(f"GA: {fit_time}")
 
     # train_vals = []
     #
@@ -837,36 +804,7 @@ def run_ANN_GA():
 
 
 if __name__ == "__main__":
-    # TODO need to break these and the functions up, since each has to be tuned to problem
-    # TODO switch plotting to be only average score per problem, then the chart will be fitness over problem size
     np.random.seed(0)
-
-    # for each problem size
-    #   generate problem of size
-    #   for each algo
-    #       for each random state
-    #           use algo runner on problem with state as seed
-    #           get best fitness value, min or max depending on problem
-    #       average fitness values together for algo
-    #       dump average time to value
-    #       dump function evals
-    #   add average to list for algo
-    # plot fitness per algo per problem size
-
-    # stick with current method, easier to understand, maybe using mlrose for problems like in kcolor
-    # need to tune about 5 algos a day to leave a good chunk of time for the paper
-    # tune
-    # RHC -> none
-    # SA -> starting temp
-    # GA -> Crossover?
-    # mimic -> pop size? keep_pct?
-
-    # need to run function across space of parameter and graph MC curve to tune parameter
-    # average using same random state stuff as now
-    # adjust run functions to take kwargs and that passed down
-    # call function for each value in range, get fitness, add to plot
-    # show plot, evaluate necessary value
-    # mlrose grid search doesn't seem too helpful, so just coarse MC curve and narrow on areas for tuning, need the curves for report anyway
 
     # problem 1
     init_states = [
@@ -874,323 +812,160 @@ if __name__ == "__main__":
         np.random.randint(0, 2, 50),
         np.random.randint(0, 2, 100)
     ]
-    # plt.figure()
-    # fit_func = Queens()
 
-    # calls for tuning
-    # get medium size
-    # init_state = init_states[1]
-    # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func, maximize=False)
-    # problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
-    #                                         max_connections_per_node=4, max_colors=None)
+    # plot fevals and fitness over problem sizes
+    lens = [len(init_state) for init_state in init_states]
+    RHC_vals = []
+    SA_vals = []
+    GA_vals = []
+    MIMIC_vals = []
+    RHC_fevals = []
+    SA_fevals = []
+    GA_fevals = []
+    MIMIC_fevals = []
+    fit_func=MaxKColor([])
+    problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    plt.figure()
+    plt.title(problem_name)
+    plt.xlabel("problem size")
+    plt.ylabel("fitness")
+    for init_state in init_states:
+        problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
+                                                max_connections_per_node=4, max_colors=None)
+        fit,_,evals = run_RHC_1(problem, init_state)
+        RHC_vals.append(fit)
+        RHC_fevals.append(evals)
 
-    # plt.figure()
-    # plt.title("RHC restarts")
-    # plt.xlabel("allowed restarts")
-    # plt.ylabel("fitness")
-    # values = []
-    # fitness = []
-    # evals = []
-    # times = []
-    # for pop_size in range(0, 51):
-    #     values.append(pop_size)
-    #     print(pop_size)
-    #     fit, _, fevals = run_RHC_3(problem, init_state, restarts=pop_size)
-    #     fitness.append(fit)
-    #     evals.append(fevals)
-    #
-    # plt.plot(values, fitness)
-    # plt.savefig("charts/RHC3_restarts")
+        fit,_,evals = run_SA_1(problem, init_state)
+        SA_vals.append(fit)
+        SA_fevals.append(evals)
 
-    # plt.figure()
-    # plt.title("SA initial temperature")
-    # plt.xlabel("initial temp")
-    # plt.ylabel("fitness")
-    # values = []
-    # fitness = []
-    # evals = []
-    # times = []
-    # for pop_size in range(1, 21):
-    #     values.append(pop_size)
-    #     print(pop_size)
-    #     fit, _, fevals = run_SA_3(problem, init_state, schedule=GeomDecay(decay=0.94, init_temp=pop_size))
-    #     fitness.append(fit)
-    #     evals.append(fevals)
-    #
-    # plt.plot(values, fitness)
-    # plt.savefig("charts/SA3_init_temp_with_decay")
+        fit,_,evals = run_GA_1(problem, init_state)
+        GA_vals.append(fit)
+        GA_fevals.append(evals)
 
-    # plt.figure()
-    # plt.title("SA decay")
-    # plt.xlabel("decay rate")
-    # plt.ylabel("fitness")
-    # values = []
-    # fitness = []
-    # evals = []
-    # times = []
-    #
-    # for decay in np.linspace(0.01, 0.99,99):
-    #     decay = round(decay, 3)
-    #     values.append(decay)
-    #     print(decay)
-    #     fit, _, fevals = run_SA_3(problem, init_state, schedule=GeomDecay(decay=decay))
-    #     fitness.append(fit)
-    #     evals.append(fevals)
-    #
-    # plt.plot(values, fitness)
-    # plt.savefig("charts/SA3_decay")
+        fit,_,evals = run_MIMIC_1(problem, init_state)
+        MIMIC_vals.append(fit)
+        MIMIC_fevals.append(evals)
+    plt.plot(lens, RHC_vals, label="rhc")
+    plt.plot(lens, SA_vals, label="sa")
+    plt.plot(lens, GA_vals, label="ga")
+    plt.plot(lens, MIMIC_vals, label="mimic")
 
-    # plt.figure()
-    # plt.title("GA population size")
-    # plt.xlabel("pop size")
-    # plt.ylabel("fitness")
-    # values = []
-    # fitness = []
-    # evals = []
-    # times = []
-    # for pop_size in range(100, 310, 10):
-    #     values.append(pop_size)
-    #     print(pop_size)
-    #     fit, _, fevals = run_GA_3(problem, init_state, pop_size=pop_size)
-    #     fitness.append(fit)
-    #     evals.append(fevals)
-    #
-    # plt.plot(values, fitness)
-    # plt.savefig("charts/GA3_pop_size")
+    problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    plt.title(problem_name)
+    plt.xlabel("problem size")
+    plt.ylabel("fitness")
+    plt.legend()
+    plt.savefig(f"charts/{problem_name}")
 
-    # plt.figure()
-    # plt.title("GA mutation probability")
-    # plt.xlabel("mutation prob")
-    # plt.ylabel("fitness")
-    #
-    # values = []
-    # fitness = []
-    # evals = []
-    # times = []
-    #
-    # for decay in np.linspace(0.01, 0.99,99):
-    #     decay = round(decay, 3)
-    #     values.append(decay)
-    #     print(decay)
-    #     fit, _, fevals = run_GA_3(problem, init_state, mutation_prob=decay)
-    #     fitness.append(fit)
-    #     evals.append(fevals)
-    #
-    # plt.plot(values, fitness)
-    # plt.savefig("charts/GA3_mutation_prob_pop_170")
-    #
-    # plt.figure()
-    # plt.title("MIMIC population size")
-    # plt.xlabel("pop size")
-    # plt.ylabel("fitness")
-    # values = []
-    # fitness = []
-    # evals = []
-    # times = []
-    # for pop_size in range(280, 410, 10):
-    #     values.append(pop_size)
-    #     print(pop_size)
-    #     fit, _, fevals = run_MIMIC_3(problem, init_state, pop_size=pop_size)
-    #     fitness.append(fit)
-    #     evals.append(fevals)
-    #
-    # plt.plot(values, fitness)
-    # plt.savefig("charts/MIMIC3_pop_size_300+")
-    #
-    # plt.figure()
-    # plt.title("MIMIC keep percentage")
-    # plt.xlabel("keep %")
-    # plt.ylabel("fitness")
-    # values = []
-    # fitness = []
-    # evals = []
-    # times = []
-    #
-    # for decay in np.linspace(0.01, 0.50,50):
-    #     decay = round(decay, 3)
-    #     values.append(decay)
-    #     print(decay)
-    #     fit, _, fevals = run_MIMIC_3(problem, init_state, pop_size=275, keep_pct=decay)
-    #     fitness.append(fit)
-    #     evals.append(fevals)
-    #
-    # plt.plot(values, fitness)
-    # plt.savefig("charts/MIMIC3_keep_pct_pop_275")
-    #
-    #
-    #
-    #
-    # plt.show()
-    # print()
-
-    # run_GA_1(problem, init_state)
-    # run_MIMIC_1(problem, init_state)
-
-    # plot fevals over problem sizes
-    # lens = [len(init_state) for init_state in init_states]
-    # RHC_vals = []
-    # SA_vals = []
-    # GA_vals = []
-    # MIMIC_vals = []
-    # fit_func=MaxKColor([])
-    # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    # plt.figure()
-    # plt.title(problem_name)
-    # plt.xlabel("problem size")
-    # plt.ylabel("fitness")
-    # for init_state in init_states:
-    #     problem = MaxKColorGenerator().generate(seed=123, number_of_nodes=len(init_state),
-    #                                             max_connections_per_node=4, max_colors=None)
-    #     # RHC_vals.append(
-    #     fit,_,evals = run_RHC_1(problem, init_state)
-    #     RHC_vals.append(fit)
-    #     # )
-    #     # SA_vals.append(
-    #     fit,_,evals = run_SA_1(problem, init_state)
-    #     SA_vals.append(fit)
-    #     # )
-    #     # GA_vals.append(
-    #     fit,_,evals = run_GA_1(problem, init_state)
-    #     GA_vals.append(fit)
-    #     # )
-    #     # MIMIC_vals.append(
-    #     fit,_,evals = run_MIMIC_1(problem, init_state)
-    #     MIMIC_vals.append(fit)
-    #     #)
-    # plt.plot(lens, RHC_vals, label="rhc")
-    # plt.plot(lens, SA_vals, label="sa")
-    # plt.plot(lens, GA_vals, label="ga")
-    # plt.plot(lens, MIMIC_vals, label="mimic")
-
-    print()
-    # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    # plt.title(problem_name)
-    # plt.xlabel("problem size")
-    # plt.ylabel("fitness")
-    # plt.legend()
-    # plt.savefig(f"charts/{problem_name}")
-    # plt.show()
-    # plt.close('all')
+    # chart fevals
+    plt.figure()
+    plt.title(f"{problem_name} fevals")
+    plt.xlabel("problem size")
+    plt.ylabel("fevals")
+    plt.plot(lens, RHC_fevals, label="rhc")
+    plt.plot(lens, SA_fevals, label="sa")
+    plt.plot(lens, GA_fevals, label="ga")
+    plt.plot(lens, MIMIC_fevals, label="mimic")
+    plt.legend()
+    plt.savefig(f"charts/{problem_name}")
 
     # problem 2
-    # init_state = init_states = [
-    #     np.random.randint(0, 2, 10),
-    #     np.random.randint(0, 2, 30),
-    #     np.random.randint(0, 2, 50),
-    #     # np.random.randint(0, 2, 100) # mimic takes a long time to run, will need to run overnight
-    # ]
-    # # plt.figure()
-    # fit_func = SixPeaks()
-    #
-    # # calls for tuning
-    # # get medium size
-    # # init_state = init_states[1]
-    # # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
-    # # run_RHC_2(problem, init_state)
-    # # run_SA_2(problem, init_state)
-    # # run_GA_2(problem, init_state)
-    # # run_MIMIC_2(problem, init_state)
-    #
-    # # plot time over problem sizes
-    # lens = [len(init_state) for init_state in init_states]
-    # RHC_vals = []
-    # SA_vals = []
-    # GA_vals = []
-    # MIMIC_vals = []
-    # RHC_times = []
-    # SA_times = []
-    # GA_times = []
-    # MIMIC_times = []
-    # for init_state in init_states:
-    #     problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
-    #     fit, duration,_ = run_RHC_2(problem, init_state)
-    #     RHC_vals.append(fit)
-    #     RHC_times.append(duration)
-    #     fit, duration,_ = run_SA_2(problem, init_state)
-    #     SA_vals.append(fit)
-    #     SA_times.append(duration)
-    #     fit, duration,_ = run_GA_2(problem, init_state)
-    #     GA_vals.append(fit)
-    #     GA_times.append(duration)
-    #     fit, duration,_ = run_MIMIC_2(problem, init_state)
-    #     MIMIC_vals.append(fit)
-    #     MIMIC_times.append(duration)
-    # plt.plot(lens, RHC_vals, label="rhc")
-    # plt.plot(lens, SA_vals, label="sa")
-    # plt.plot(lens, GA_vals, label="ga")
-    # plt.plot(lens, MIMIC_vals, label="mimic")
-    #
-    # print()
-    # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    # plt.title(problem_name)
-    # plt.xlabel("problem size")
-    # plt.ylabel("fitness")
-    # plt.legend()
-    # plt.savefig(f"charts/{problem_name}")
-    #
+    init_state = init_states = [
+        np.random.randint(0, 2, 10),
+        np.random.randint(0, 2, 30),
+        np.random.randint(0, 2, 50)
+    ]
     # plt.figure()
-    # plt.title(f"{problem_name} times")
-    # plt.xlabel("problem size")
-    # plt.ylabel("time (seconds)")
-    # plt.plot(lens, RHC_times, label="rhc")
-    # plt.plot(lens, SA_times, label="sa")
-    # plt.plot(lens, GA_times, label="ga")
-    # plt.plot(lens, MIMIC_times, label="mimic")
-    # plt.legend()
-    # plt.savefig(f"charts/{problem_name}_time")
-    # plt.show()
-    # plt.close('all')
+    fit_func = SixPeaks()
+
+    # plot time over problem sizes
+    lens = [len(init_state) for init_state in init_states]
+    RHC_vals = []
+    SA_vals = []
+    GA_vals = []
+    MIMIC_vals = []
+    RHC_times = []
+    SA_times = []
+    GA_times = []
+    MIMIC_times = []
+    for init_state in init_states:
+        problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
+        fit, duration,_ = run_RHC_2(problem, init_state)
+        RHC_vals.append(fit)
+        RHC_times.append(duration)
+        fit, duration,_ = run_SA_2(problem, init_state)
+        SA_vals.append(fit)
+        SA_times.append(duration)
+        fit, duration,_ = run_GA_2(problem, init_state)
+        GA_vals.append(fit)
+        GA_times.append(duration)
+        fit, duration,_ = run_MIMIC_2(problem, init_state)
+        MIMIC_vals.append(fit)
+        MIMIC_times.append(duration)
+    plt.plot(lens, RHC_vals, label="rhc")
+    plt.plot(lens, SA_vals, label="sa")
+    plt.plot(lens, GA_vals, label="ga")
+    plt.plot(lens, MIMIC_vals, label="mimic")
+
+    print()
+    problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    plt.title(problem_name)
+    plt.xlabel("problem size")
+    plt.ylabel("fitness")
+    plt.legend()
+    plt.savefig(f"charts/{problem_name}")
+
+    plt.figure()
+    plt.title(f"{problem_name} times")
+    plt.xlabel("problem size")
+    plt.ylabel("time (seconds)")
+    plt.plot(lens, RHC_times, label="rhc")
+    plt.plot(lens, SA_times, label="sa")
+    plt.plot(lens, GA_times, label="ga")
+    plt.plot(lens, MIMIC_times, label="mimic")
+    plt.legend()
+    plt.savefig(f"charts/{problem_name}_time")
 
     # problem 3
 
-    # init_states = [
-    #     np.random.randint(0, 8, 8),
-    #     # np.random.randint(0, 15, 15),
-    #     np.random.randint(0, 36, 36),
-    #     np.random.randint(0, 50, 50)
-    # ]
-    # # plt.figure()
-    # fit_func = Queens()
-    #
-    # # calls for tuning
-    # # get medium size
-    # # init_state = init_states[1]
-    # # problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
-    # # run_RHC_3(problem, init_state)
-    # # run_SA_3(problem, init_state)
-    # # run_GA_3(problem, init_state)
-    # # run_MIMIC_3(problem, init_state)
-    #
-    # # plot fitness over problem sizes
-    # lens = [len(init_state) for init_state in init_states]
-    # RHC_vals = []
-    # SA_vals = []
-    # GA_vals = []
-    # MIMIC_vals = []
-    # for init_state in init_states:
-    #     problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func, maximize=False)
-    #     fit, _,_ = run_RHC_3(problem, init_state)
-    #     RHC_vals.append(fit)
-    #     fit, _,_ = run_SA_3(problem, init_state)
-    #     SA_vals.append(fit)
-    #     fit, _,_ = run_GA_3(problem, init_state)
-    #     GA_vals.append(fit)
-    #     fit, _,_ = run_MIMIC_3(problem, init_state)
-    #     MIMIC_vals.append(fit)
-    # plt.plot(lens, RHC_vals, label="rhc")
-    # plt.plot(lens, SA_vals, label="sa")
-    # plt.plot(lens, GA_vals, label="ga")
-    # plt.plot(lens, MIMIC_vals, label="mimic")
-    #
-    # print()
-    # problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    # plt.title(problem_name)
-    # plt.xlabel("problem size")
-    # plt.ylabel("fitness")
-    # plt.legend()
-    # plt.savefig(f"charts/{problem_name}")
-    # plt.show()
-    # plt.close('all')
+    init_states = [
+        np.random.randint(0, 8, 8),
+        np.random.randint(0, 36, 36),
+        np.random.randint(0, 50, 50)
+    ]
+    # plt.figure()
+    fit_func = Queens()
+
+    # plot fitness over problem sizes
+    lens = [len(init_state) for init_state in init_states]
+    RHC_vals = []
+    SA_vals = []
+    GA_vals = []
+    MIMIC_vals = []
+    for init_state in init_states:
+        problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func, maximize=False)
+        fit, _,_ = run_RHC_3(problem, init_state)
+        RHC_vals.append(fit)
+        fit, _,_ = run_SA_3(problem, init_state)
+        SA_vals.append(fit)
+        fit, _,_ = run_GA_3(problem, init_state)
+        GA_vals.append(fit)
+        fit, _,_ = run_MIMIC_3(problem, init_state)
+        MIMIC_vals.append(fit)
+    plt.plot(lens, RHC_vals, label="rhc")
+    plt.plot(lens, SA_vals, label="sa")
+    plt.plot(lens, GA_vals, label="ga")
+    plt.plot(lens, MIMIC_vals, label="mimic")
+
+    print()
+    problem_name = str(fit_func).split('.')[-1].split(' ')[0]
+    plt.title(problem_name)
+    plt.xlabel("problem size")
+    plt.ylabel("fitness")
+    plt.legend()
+    plt.savefig(f"charts/{problem_name}")
 
     # ANN compare
     plt.figure()
@@ -1202,5 +977,6 @@ if __name__ == "__main__":
     run_ANN_SA()
     run_ANN_GA()
     plt.legend()
-    plt.show()
+    plt.savefig("charts/ann_compare")
+    plt.close('all')
     print()
