@@ -506,8 +506,6 @@ def run_SA_3(problem, init_state, **kwargs):
 
 
 def run_ANN():
-    # TODO use multiple random states and average values
-
     with open("data/wine.csv", 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
@@ -552,12 +550,10 @@ def run_ANN():
     plt.xlabel("iterations")
     plt.ylabel("fitness")
     plt.plot(net.fitness_curve, label="gradient descent")
-    plt.show()
+    # plt.show()
 
 
 def run_ANN_RHC():
-    # TODO use multiple random states and average values
-
     with open("data/wine.csv", 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
@@ -570,7 +566,8 @@ def run_ANN_RHC():
 
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="random_hill_climb", curve=True,
-                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True,
+                        restarts=5)
 
     # Normalize feature data
     scaler = MinMaxScaler()
@@ -596,42 +593,41 @@ def run_ANN_RHC():
     test_accuracy = accuracy_score(label_test_hot, label_pred)
     print(train_accuracy, test_accuracy)
 
-    train_vals = []
-
-    plt.figure()
-    plt.title("rhc")
-    plt.xlabel("allowed restarts")
-    plt.ylabel("score")
-
-    # create MC curve over HP for tuning
-    for restarts in range(100):
-        vals = []
-        for random_state in random_states:
-            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="random_hill_climb", restarts=restarts,
-                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
-            net.fit(data_train_scaled, label_train_hot)
-            label_pred = net.predict(data_train_scaled)
-            train_accuracy = accuracy_score(label_train_hot, label_pred)
-            print(f"rhc {restarts}: {train_accuracy}")
-            vals.append(train_accuracy)
-        train_vals.append(np.mean(vals))
-
-    plt.plot(range(100), train_vals)
-    plt.savefig("charts/ann_rhc_restarts")
+    # train_vals = []
+    #
+    # plt.figure()
+    # plt.title("rhc")
+    # plt.xlabel("allowed restarts")
+    # plt.ylabel("score")
+    #
+    # # create MC curve over HP for tuning
+    # for restarts in range(0,100,5):
+    #     vals = []
+    #     for random_state in random_states:
+    #         net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="random_hill_climb", restarts=restarts,
+    #                             curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+    #         net.fit(data_train_scaled, label_train_hot)
+    #         label_pred = net.predict(data_train_scaled)
+    #         train_accuracy = accuracy_score(label_train_hot, label_pred)
+    #         vals.append(train_accuracy)
+    #     avg = np.mean(vals)
+    #     print(f"rhc {restarts}: {avg}")
+    #     train_vals.append(avg)
+    #
+    # plt.plot(range(0,100,5), train_vals)
+    # plt.savefig("charts/ann_rhc_restarts")
 
 
     # plot fitness curve
-    # plt.figure()
-    # plt.title("rhc")
-    # plt.xlabel("iterations")
-    # plt.ylabel("fitness")
-    # plt.plot(net.fitness_curve, label="rhc")
+    plt.figure()
+    plt.title("rhc")
+    plt.xlabel("iterations")
+    plt.ylabel("fitness")
+    plt.plot(net.fitness_curve, label="rhc")
     # plt.show()
 
 
 def run_ANN_SA():
-    # TODO use multiple random states and average values
-
     with open("data/wine.csv", 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
@@ -644,7 +640,8 @@ def run_ANN_SA():
 
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing", curve=True,
-                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True,
+                        schedule=GeomDecay(init_temp=1, decay=0.99))
 
     # Normalize feature data
     scaler = MinMaxScaler()
@@ -670,66 +667,67 @@ def run_ANN_SA():
     test_accuracy = accuracy_score(label_test_hot, label_pred)
     print(train_accuracy, test_accuracy)
 
-    train_vals = []
+    # train_vals = []
+    #
+    # plt.figure()
+    # plt.title("sa")
+    # plt.xlabel("temp")
+    # plt.ylabel("score")
+    #
+    #
+    # # create MC curve over HP for tuning
+    # for temp in range(1,20):
+    #     vals = []
+    #     for random_state in random_states:
+    #         net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing",
+    #                             schedule=GeomDecay(init_temp=temp),
+    #                             curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+    #         net.fit(data_train_scaled, label_train_hot)
+    #         label_pred = net.predict(data_train_scaled)
+    #         train_accuracy = accuracy_score(label_train_hot, label_pred)
+    #         vals.append(train_accuracy)
+    #     avg = np.mean(vals)
+    #     print(f"sa {temp}: {avg}")
+    #     train_vals.append(avg)
+    #
+    #
+    # plt.plot(range(1,20), train_vals, label="temp")
+    # plt.savefig("charts/ann_sa_temp")
 
-    plt.figure()
-    plt.title("sa")
-    plt.xlabel("temp")
-    plt.ylabel("score")
-
-
-    # create MC curve over HP for tuning
-    for temp in range(1,20):
-        vals = []
-        for random_state in random_states:
-            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing",
-                                schedule=GeomDecay(init_temp=temp),
-                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
-            net.fit(data_train_scaled, label_train_hot)
-            label_pred = net.predict(data_train_scaled)
-            train_accuracy = accuracy_score(label_train_hot, label_pred)
-            print(f"sa {temp}: {train_accuracy}")
-            vals.append(train_accuracy)
-        train_vals.append(np.mean(vals))
-
-    plt.plot(range(1,20), train_vals, label="temp")
-    plt.savefig("charts/ann_sa_temp")
-
-    train_vals = []
-    plt.figure()
-    plt.title("sa")
-    plt.ylabel("score")
-    plt.xlabel("decay")
-
-    # create MC curve over HP for tuning
-    for decay in np.linspace(0.01, 0.99, 99):
-        vals = []
-        for random_state in random_states:
-            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing",
-                                schedule=GeomDecay(decay=decay),
-                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
-            net.fit(data_train_scaled, label_train_hot)
-            label_pred = net.predict(data_train_scaled)
-            train_accuracy = accuracy_score(label_train_hot, label_pred)
-            print(f"sa {decay}: {train_accuracy}")
-            vals.append(train_accuracy)
-        train_vals.append(np.mean(vals))
-
-    plt.plot(np.linspace(0.01, 0.99, 99), train_vals, label="decay")
-    plt.savefig("charts/ann_sa_decay")
+    # train_vals = []
+    # plt.figure()
+    # plt.title("sa")
+    # plt.ylabel("score")
+    # plt.xlabel("decay")
+    #
+    # # create MC curve over HP for tuning
+    # for decay in np.linspace(0.01, 1, 21):
+    #     vals = []
+    #     for random_state in random_states:
+    #         net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing",
+    #                             schedule=GeomDecay(decay=decay),
+    #                             curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+    #         net.fit(data_train_scaled, label_train_hot)
+    #         label_pred = net.predict(data_train_scaled)
+    #         train_accuracy = accuracy_score(label_train_hot, label_pred)
+    #         vals.append(train_accuracy)
+    #     avg = np.mean(vals)
+    #     print(f"sa {decay}: {avg}")
+    #     train_vals.append(avg)
+    #
+    # plt.plot(np.linspace(0.01, 1, 21), train_vals, label="decay")
+    # plt.savefig("charts/ann_sa_decay")
 
     # plot fitness curve
-    # plt.figure()
-    # plt.title("SA")
-    # plt.xlabel("iterations")
-    # plt.ylabel("fitness")
-    # plt.plot(net.fitness_curve, label="sa")
+    plt.figure()
+    plt.title("SA")
+    plt.xlabel("iterations")
+    plt.ylabel("fitness")
+    plt.plot(net.fitness_curve, label="sa")
     # plt.show()
 
 
 def run_ANN_GA():
-    # TODO use multiple random states and average values
-
     with open("data/wine.csv", 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
@@ -742,7 +740,8 @@ def run_ANN_GA():
 
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg", curve=True,
-                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True,
+                        pop_size=160)
 
     # Normalize feature data
     scaler = MinMaxScaler()
@@ -768,54 +767,56 @@ def run_ANN_GA():
     test_accuracy = accuracy_score(label_test_hot, label_pred)
     print(train_accuracy, test_accuracy)
 
-    train_vals = []
-
-    plt.figure()
-    plt.title("ga")
-    plt.xlabel("pop size")
-    plt.ylabel("score")
-
-
-    # create MC curve over HP for tuning
-    for temp in range(100, 310,10):
-        vals = []
-        for random_state in random_states:
-            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg",
-                                pop_size=temp,
-                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
-            net.fit(data_train_scaled, label_train_hot)
-            label_pred = net.predict(data_train_scaled)
-            train_accuracy = accuracy_score(label_train_hot, label_pred)
-            print(f"ga {temp}: {train_accuracy}")
-            vals.append(train_accuracy)
-        train_vals.append(np.mean(vals))
-
-    plt.plot(range(100, 310,10), train_vals, label="pop_size")
-    plt.savefig("charts/ann_ga_pop_size")
-
-    train_vals = []
-    plt.figure()
-    plt.title("sa")
-    plt.ylabel("score")
-    plt.xlabel("decay")
-
-
-    # create MC curve over HP for tuning
-    for decay in np.linspace(0.01, 0.99, 99):
-        vals = []
-        for random_state in random_states:
-            net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg",
-                                mutation_prob=decay,
-                                curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
-            net.fit(data_train_scaled, label_train_hot)
-            label_pred = net.predict(data_train_scaled)
-            train_accuracy = accuracy_score(label_train_hot, label_pred)
-            print(f"ga {decay}: {train_accuracy}")
-            vals.append(train_accuracy)
-        train_vals.append(np.mean(vals))
-
-    plt.plot(np.linspace(0.01, 0.99, 99), train_vals, label="mutation_prob")
-    plt.savefig("charts/ann_ga_mutation_prob")
+    # train_vals = []
+    #
+    # plt.figure()
+    # plt.title("ga")
+    # plt.xlabel("pop size")
+    # plt.ylabel("score")
+    #
+    #
+    # # create MC curve over HP for tuning
+    # for temp in range(100, 310,20):
+    #     vals = []
+    #     for random_state in random_states:
+    #         net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg",
+    #                             pop_size=temp,
+    #                             curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+    #         net.fit(data_train_scaled, label_train_hot)
+    #         label_pred = net.predict(data_train_scaled)
+    #         train_accuracy = accuracy_score(label_train_hot, label_pred)
+    #         vals.append(train_accuracy)
+    #     avg = np.mean(vals)
+    #     print(f"ga {temp}: {avg}")
+    #     train_vals.append(avg)
+    #
+    # plt.plot(range(100, 310,20), train_vals, label="pop_size")
+    # plt.savefig("charts/ann_ga_pop_size")
+    #
+    # train_vals = []
+    # plt.figure()
+    # plt.title("ga")
+    # plt.ylabel("score")
+    # plt.xlabel("mutation_prob")
+    #
+    #
+    # # create MC curve over HP for tuning
+    # for decay in np.linspace(0.01, 1, 21):
+    #     vals = []
+    #     for random_state in random_states:
+    #         net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg",
+    #                             mutation_prob=decay,
+    #                             curve=True, learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+    #         net.fit(data_train_scaled, label_train_hot)
+    #         label_pred = net.predict(data_train_scaled)
+    #         train_accuracy = accuracy_score(label_train_hot, label_pred)
+    #         vals.append(train_accuracy)
+    #     avg = np.mean(vals)
+    #     print(f"ga {decay}: {avg}")
+    #     train_vals.append(avg)
+    #
+    # plt.plot(np.linspace(0.01, 1, 21), train_vals, label="mutation_prob")
+    # plt.savefig("charts/ann_ga_mutation_prob")
 
     # plot fitness curve
     # plt.figure()
