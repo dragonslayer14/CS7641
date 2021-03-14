@@ -518,7 +518,8 @@ def run_ANN():
 
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], max_iters=110, algorithm="gradient_descent", curve=True,
-                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True)
+                        learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True,
+                        early_stopping=True)
 
     # Normalize feature data
     scaler = MinMaxScaler()
@@ -533,7 +534,11 @@ def run_ANN():
     label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
     label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
 
+    start = time.time()
+
     net.fit(data_train_scaled, label_train_hot)
+
+    fit_time = time.time() - start
 
     label_pred = net.predict(data_train_scaled)
 
@@ -543,12 +548,10 @@ def run_ANN():
 
     test_accuracy = accuracy_score(label_test_hot, label_pred)
     print(train_accuracy, test_accuracy)
+    print(fit_time)
 
     # plot fitness curve
-    plt.figure()
-    plt.title("Gradient Descent")
-    plt.xlabel("iterations")
-    plt.ylabel("fitness")
+
     plt.plot(net.fitness_curve, label="gradient descent")
     # plt.show()
 
@@ -567,7 +570,7 @@ def run_ANN_RHC():
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="random_hill_climb", curve=True,
                         learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True,
-                        restarts=5)
+                        restarts=5, max_iters=110)
 
     # Normalize feature data
     scaler = MinMaxScaler()
@@ -582,8 +585,9 @@ def run_ANN_RHC():
     label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
     label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
 
+    start = time.time()
     net.fit(data_train_scaled, label_train_hot)
-
+    fit_time = time.time() - start
     label_pred = net.predict(data_train_scaled)
 
     train_accuracy = accuracy_score(label_train_hot, label_pred)
@@ -592,6 +596,7 @@ def run_ANN_RHC():
 
     test_accuracy = accuracy_score(label_test_hot, label_pred)
     print(train_accuracy, test_accuracy)
+    print(fit_time)
 
     # train_vals = []
     #
@@ -619,10 +624,10 @@ def run_ANN_RHC():
 
 
     # plot fitness curve
-    plt.figure()
-    plt.title("rhc")
-    plt.xlabel("iterations")
-    plt.ylabel("fitness")
+    # plt.figure()
+    # plt.title("rhc")
+    # plt.xlabel("iterations")
+    # plt.ylabel("fitness")
     plt.plot(net.fitness_curve, label="rhc")
     # plt.show()
 
@@ -641,7 +646,7 @@ def run_ANN_SA():
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="simulated_annealing", curve=True,
                         learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True,
-                        schedule=GeomDecay(init_temp=1, decay=0.99))
+                        schedule=GeomDecay(init_temp=1, decay=0.99), max_iters=110)
 
     # Normalize feature data
     scaler = MinMaxScaler()
@@ -656,8 +661,9 @@ def run_ANN_SA():
     label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
     label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
 
+    start = time.time()
     net.fit(data_train_scaled, label_train_hot)
-
+    fit_time = time.time() -start
     label_pred = net.predict(data_train_scaled)
 
     train_accuracy = accuracy_score(label_train_hot, label_pred)
@@ -666,6 +672,7 @@ def run_ANN_SA():
 
     test_accuracy = accuracy_score(label_test_hot, label_pred)
     print(train_accuracy, test_accuracy)
+    print(fit_time)
 
     # train_vals = []
     #
@@ -719,10 +726,10 @@ def run_ANN_SA():
     # plt.savefig("charts/ann_sa_decay")
 
     # plot fitness curve
-    plt.figure()
-    plt.title("SA")
-    plt.xlabel("iterations")
-    plt.ylabel("fitness")
+    # plt.figure()
+    # plt.title("SA")
+    # plt.xlabel("iterations")
+    # plt.ylabel("fitness")
     plt.plot(net.fitness_curve, label="sa")
     # plt.show()
 
@@ -741,7 +748,7 @@ def run_ANN_GA():
     random_state = 0
     net = NeuralNetwork(hidden_nodes=[290], early_stopping=True, algorithm="genetic_alg", curve=True,
                         learning_rate=0.001, random_state=random_state, is_classifier=True, bias=True,
-                        pop_size=160)
+                        pop_size=160, max_iters=110)
 
     # Normalize feature data
     scaler = MinMaxScaler()
@@ -756,8 +763,9 @@ def run_ANN_GA():
     label_train_hot = one_hot.fit_transform(label_train.reshape(-1, 1)).todense()
     label_test_hot = one_hot.transform(label_test.reshape(-1, 1)).todense()
 
+    start = time.time()
     net.fit(data_train_scaled, label_train_hot)
-
+    fit_time = time.time()-start
     label_pred = net.predict(data_train_scaled)
 
     train_accuracy = accuracy_score(label_train_hot, label_pred)
@@ -766,6 +774,7 @@ def run_ANN_GA():
 
     test_accuracy = accuracy_score(label_test_hot, label_pred)
     print(train_accuracy, test_accuracy)
+    print(fit_time)
 
     # train_vals = []
     #
@@ -823,7 +832,7 @@ def run_ANN_GA():
     # plt.title("GA")
     # plt.xlabel("iterations")
     # plt.ylabel("fitness")
-    # plt.plot(net.fitness_curve, label="ga")
+    plt.plot(net.fitness_curve, label="ga")
     # plt.show()
 
 
@@ -1184,9 +1193,14 @@ if __name__ == "__main__":
     # plt.close('all')
 
     # ANN compare
-    # run_ANN()
+    plt.figure()
+    plt.title("ANN Comparison")
+    plt.xlabel("iterations")
+    plt.ylabel("fitness")
+    run_ANN()
     run_ANN_RHC()
     run_ANN_SA()
     run_ANN_GA()
+    plt.legend()
     plt.show()
     print()
