@@ -806,6 +806,8 @@ def run_ANN_GA():
 if __name__ == "__main__":
     np.random.seed(0)
 
+    s = time.time()
+
     # problem 1
     init_states = [
         np.random.randint(0, 2, 20),
@@ -890,6 +892,7 @@ if __name__ == "__main__":
     SA_times = []
     GA_times = []
     MIMIC_times = []
+    plt.figure()
     for init_state in init_states:
         problem = DiscreteOpt(length=len(init_state), fitness_fn=fit_func)
         fit, duration,_ = run_RHC_2(problem, init_state)
@@ -911,7 +914,6 @@ if __name__ == "__main__":
 
     print()
     problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    plt.figure()
     plt.title(problem_name)
     plt.xlabel("problem size")
     plt.ylabel("fitness")
@@ -941,6 +943,7 @@ if __name__ == "__main__":
 
     # plot fitness over problem sizes
     lens = [len(init_state) for init_state in init_states]
+    plt.figure()
     RHC_vals = []
     SA_vals = []
     GA_vals = []
@@ -962,7 +965,6 @@ if __name__ == "__main__":
 
     print()
     problem_name = str(fit_func).split('.')[-1].split(' ')[0]
-    plt.figure()
     plt.title(problem_name)
     plt.xlabel("problem size")
     plt.ylabel("fitness")
@@ -981,4 +983,5 @@ if __name__ == "__main__":
     plt.legend()
     plt.savefig("charts/ann_compare")
     plt.close('all')
+    print(time.time()-s)
     print()
