@@ -21,6 +21,7 @@ DATASET_1_NAME = "Wine"
 DATASET_2_NAME = "Wine Quality"
 
 
+# these plots are only really necessary for ann tuning
 def plot_learning_curve(estimator, title, X, y, axes=None, ylim=None, cv=None,
                         scoring="accuracy", n_jobs=None, train_sizes=np.linspace(.1, 1.0, 5)):
     """
@@ -348,6 +349,53 @@ def run_ann_2(fig_name = None, show_plots = False):
 
 
 if __name__ == '__main__':
+
+    # clustering
+    run_k_means_1()
+    run_k_means_2()
+    run_em_1()
+    run_em_2()
+
+    # dimensionality reduction
+    run_pca_1()
+    run_pca_2()
+    run_ica_1()
+    run_ica_2()
+    run_rca_1()
+    run_rca_2()
+    run_lda_1()
+    run_lda_2()
+
+    # ANN work can just be done in the calls
+    # no sense making another place to do the work with one more step
+
+    # combination experiments, DR + clustering
+
+    # PCA
+    run_pca_kmeans_1()
+    run_pca_kmeans_2()
+    run_pca_em_1()
+    run_pca_em_2()
+
+    # ICA
+    run_ica_kmeans_1()
+    run_ica_kmeans_2()
+    run_ica_em_1()
+    run_ica_em_2()
+
+    # RCA
+    run_rca_kmeans_1()
+    run_rca_kmeans_2()
+    run_rca_em_1()
+    run_rca_em_2()
+
+    # LDA
+    run_lda_kmeans_1()
+    run_lda_kmeans_2()
+    run_lda_em_1()
+    run_lda_em_2()
+
+
     # dataset 1
     run_ann_1("charts/ann_1_final", show_plots=False)
 
