@@ -50,3 +50,81 @@
 - kertosis for ICA
 - randomized projection would use reconstruction error
 - 4th - use whatever makes sense
+
+
+# OH 8
+
+- describing clusters
+  - TSNE
+  - could also use a feature plot of features and normalized values going to clusters
+    - each row is one feature and the x axis is the value to see how points are spread with different clusters
+  - just some way to visualize it to give some intuition
+- DR is projecting the data into a new space, try to visualize that space and see if it makes sense connecting it to the data
+  - PCA maximizes variance along axes, we know what they mean, could plot the first few and see if they connect in any way to the dataset
+  - ICA tries to find independent components in the data, see if there is anything about those independent components that connects with the data
+- using clustering for the features in NN
+  - would have k clusters, could one hot encode the clusters as features
+  - could also add them to the existing features or whatever else you want to do
+  - take the cluster centers and add the closest one to each data point as a new feature or a vector of distances to each center
+  - need to understand how they will contribute, if it is just DR, then it is clear, it is reducing the number of features
+    - if they are added as additional features, what is it adding to the performance of the NN
+- selecting number of components for RCA/ICA
+  - may not elbow in the graph, may need to define some threshold and justify it
+  - from assignment kurtosis for ICA and reconstruction error for RCA
+    - reconstruction error should be calculated by the error between the original and reconstructed data, use the pseudo inverse of the projection matrix
+  - not every DR method suits every dataset
+- you can use prediction datasets, but you don't know the targets
+  - cannot use labels to determine optimal number of clusters
+  - have to approach it as an unsupervised problem
+  - check connection to dataset, this can be done via the actual labels
+  - optimal number of clusters may not match the labels
+    - looks at features in a certain way that may not line up with the labels
+- cannot use labels to find optimal k or number of dimensions, but can use them for validation
+- can, but don't *have* to, look at labels, can look at cohesiveness and separation of clusters
+- can not focus about visualization if the dataset is too complicated, or can use domain knowledge to visualize a subset of important features with something like pair plots and coloring based on cluster labels
+  - can also use TSNE
+  - should validate your clusters
+  - might be aided by something like a silhouette score
+- number of components for ICA
+  - simple way is to choose solutions that are more kurtotic
+  - choose the solution that is better then look into that solution and choose the dimensions that give the most nonguassian, for instance
+    - can pretty much use anything for the first step, simple way is to use average kurtosis, then choose the most kutotic solution
+- for PCA, include some kind of eigenvalue analysis and some kind of kurtosis analysis for ICA
+- average kurtosis is just average of the kurtosis across each component, which you can calculate the kurtosis of each
+- it is important to normalize when there is distance involved, so it is recommended here
+- be sure to split into training and test, since a NN is still run at the end
+  - for clustering and DR, don't really need to worry about the test set, could be used for validation though
+- Choosing k for clustering
+  - can use elbow method or silhouette score (be careful as it does not penalize complexity, so best score is points-1), sum of squared distances
+  - something that gives a plot, then choose best based on lowest error or elbow method, etc.
+- TSNE can mislead you, it is basically just a tool to help visualize your data in a smaller number of dimensions, would need to do research about what it is doing and how it may mislead you
+  - Don't really need to visualize it in fewer dimensions, just need to be able to connect it to the dataset
+- determining if ICA is capturing something meaningful
+  - can visualize the data after ICA using a pair plot or TSNE or something similar
+  - and/or can look at how features are contributing to the components generated
+  - no objective answer, just exploration depending on the dataset
+- dont need to do cross validation, but need to validate the clustering
+  - can use the training data and use some metric, e.g., sum of squared distances, to get k, then use some other metric and see if it agrees with the k found
+- don't need to dig deep for which cutoff threshold is going to give the best result, there are already enough experiments to run, just use one
+- validation for DR
+  - not a set per se, but look at the components selected and see how they link back to the original data
+- ICA
+  - choose solution with highest average kurtosis, then look at that solution and find the components with highest kurtosis
+- TSNE plot throws away information about features
+  - mainly use it to see spread of points in cluster, separation, etc.
+- can retune NN in background, don't need to report LC/MCC
+- reconstruction error
+  - something like
+  ```python
+transformed_data = (...).fit_transform(X)
+inverse_data = np.linalg.pinv((...).components_.T)
+reconstructed_data = transformed_data.dot(inverse_data)
+  ```
+  - use MSE as error metric
+- LDA is a better choice in terms of multiclass, but can be used on binary in theory, just may not be good
+- can iterate over a large number of k's to narrow down optimal range for target number of clusters
+  - e.g., 2 to 100, and if you see a good elbow between 2 and 20, you can narrow the search
+  - also necessary to define what "best" is for the comparison
+- not necessary to run a simple classifier after DR, it is just another dimension to verify the results
+  - should do at least one of the discussed items to verify
+  - basic requirements: eigenvalues, kurtosis, reconstruction error
