@@ -2,8 +2,10 @@ import warnings
 
 import matplotlib
 import numpy as np
+from scipy.spatial.distance import cdist
+from sklearn.cluster import KMeans
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import plot_confusion_matrix, rand_score
 from sklearn.neural_network import MLPClassifier
 from sklearn.experimental import enable_halving_search_cv  # noqa
 from sklearn.model_selection import learning_curve, train_test_split
@@ -178,6 +180,47 @@ def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, para
     plt.legend(loc="best")
 
 
+# taken from https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
+def plot_elbow(X, k_range = range(1, 10)):
+    distortions = []
+    inertias = []
+    mapping1 = {}
+    mapping2 = {}
+
+    for k in k_range:
+        # Building and fitting the model
+        kmeanModel = KMeans(n_clusters=k, random_state=0).fit(X)
+        kmeanModel.fit(X)
+
+        distortions.append(sum(np.min(cdist(X, kmeanModel.cluster_centers_,
+                                            'euclidean'), axis=1)) / X.shape[0])
+        inertias.append(kmeanModel.inertia_)
+
+        mapping1[k] = sum(np.min(cdist(X, kmeanModel.cluster_centers_,
+                                       'euclidean'), axis=1)) / X.shape[0]
+        mapping2[k] = kmeanModel.inertia_
+
+    for key, val in mapping1.items():
+        print(f'{key} : {val}')
+
+    plt.figure()
+    plt.plot(k_range, distortions, 'bx-')
+    plt.xlabel('Values of K')
+    plt.ylabel('Distortion')
+    plt.title('The Elbow Method using Distortion')
+    plt.show()
+
+    for key, val in mapping2.items():
+        print(f'{key} : {val}')
+
+    plt.figure()
+    plt.plot(k_range, inertias, 'bx-')
+    plt.xlabel('Values of K')
+    plt.ylabel('Inertia')
+    plt.title('The Elbow Method using Inertia')
+    plt.show()
+
+
 def run_ann_1(fig_name = None, show_plots = False):
     # read in dataset from file
     with open(DATASET_1, 'r') as f:
@@ -346,6 +389,34 @@ def run_ann_2(fig_name = None, show_plots = False):
 
     if show_plots:
         plt.show()
+
+
+def run_k_means_1():
+    # plot "score" over range of k
+    #   sum of squared distances
+    # treat like MCC to narrow down optimal cluster number
+    with open(DATASET_1, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:,:-1], data[:,-1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    plot_elbow(data_train, range(1,10))
+
+    # with tuned number of clusters
+    label_pred = KMeans(n_clusters=2, random_state=0).fit_predict(data_train)
+
+    # check score
+    print(rand_score(label_train, label_pred))
+
+    label_pred = KMeans(n_clusters=3, random_state=0).fit_predict(data_train)
+
+    # check score
+    print(rand_score(label_train, label_pred))
 
 
 if __name__ == '__main__':
