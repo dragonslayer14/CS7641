@@ -405,18 +405,40 @@ def run_k_means_1():
         data, labels, test_size=0.4, random_state=0, stratify=labels
     )
 
-    plot_elbow(data_train, range(1,10))
+    # plot_elbow(data_train, range(1,10))
 
     # with tuned number of clusters
-    label_pred = KMeans(n_clusters=2, random_state=0).fit_predict(data_train)
-
-    # check score
-    print(rand_score(label_train, label_pred))
-
     label_pred = KMeans(n_clusters=3, random_state=0).fit_predict(data_train)
 
     # check score
     print(rand_score(label_train, label_pred))
+
+    # TODO feed into ANN
+
+
+def run_k_means_2():
+    # plot "score" over range of k
+    #   sum of squared distances
+    # treat like MCC to narrow down optimal cluster number
+    with open(DATASET_2, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:,:-1], data[:,-1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    # plot_elbow(data_train, range(1,10))
+
+    # with tuned number of clusters
+    label_pred = KMeans(n_clusters=5, random_state=0).fit_predict(data_train)
+
+    # check score
+    print(rand_score(label_train, label_pred))
+
+    # TODO feed into ANN
 
 
 if __name__ == '__main__':
@@ -424,18 +446,20 @@ if __name__ == '__main__':
     # clustering
     run_k_means_1()
     run_k_means_2()
-    run_em_1()
-    run_em_2()
+    # run_em_1()
+    # run_em_2()
+
+    print()
 
     # dimensionality reduction
-    run_pca_1()
-    run_pca_2()
-    run_ica_1()
-    run_ica_2()
-    run_rca_1()
-    run_rca_2()
-    run_lda_1()
-    run_lda_2()
+    # run_pca_1()
+    # run_pca_2()
+    # run_ica_1()
+    # run_ica_2()
+    # run_rca_1()
+    # run_rca_2()
+    # run_lda_1()
+    # run_lda_2()
 
     # ANN work can just be done in the calls
     # no sense making another place to do the work with one more step
@@ -443,28 +467,28 @@ if __name__ == '__main__':
     # combination experiments, DR + clustering
 
     # PCA
-    run_pca_kmeans_1()
-    run_pca_kmeans_2()
-    run_pca_em_1()
-    run_pca_em_2()
+    # run_pca_kmeans_1()
+    # run_pca_kmeans_2()
+    # run_pca_em_1()
+    # run_pca_em_2()
 
     # ICA
-    run_ica_kmeans_1()
-    run_ica_kmeans_2()
-    run_ica_em_1()
-    run_ica_em_2()
+    # run_ica_kmeans_1()
+    # run_ica_kmeans_2()
+    # run_ica_em_1()
+    # run_ica_em_2()
 
     # RCA
-    run_rca_kmeans_1()
-    run_rca_kmeans_2()
-    run_rca_em_1()
-    run_rca_em_2()
+    # run_rca_kmeans_1()
+    # run_rca_kmeans_2()
+    # run_rca_em_1()
+    # run_rca_em_2()
 
     # LDA
-    run_lda_kmeans_1()
-    run_lda_kmeans_2()
-    run_lda_em_1()
-    run_lda_em_2()
+    # run_lda_kmeans_1()
+    # run_lda_kmeans_2()
+    # run_lda_em_1()
+    # run_lda_em_2()
 
 
     # dataset 1

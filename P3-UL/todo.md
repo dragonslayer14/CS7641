@@ -2,8 +2,8 @@
 
 ## Clustering
 
-- [ ] k means on dataset 1
-- [ ] k means on dataset 2
+- [x] k means on dataset 1
+- [x] k means on dataset 2
 - [ ] ann over k means on dataset 1
 - [ ] ann over k means on dataset 2
 - [ ] em on dataset 1
