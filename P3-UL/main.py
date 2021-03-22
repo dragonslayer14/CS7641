@@ -5,12 +5,24 @@ import numpy as np
 from scipy.spatial.distance import cdist
 from sklearn.cluster import KMeans
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.metrics import plot_confusion_matrix, rand_score
+from sklearn.manifold import TSNE
+from sklearn.metrics import plot_confusion_matrix, rand_score, davies_bouldin_score
+from sklearn.mixture import GaussianMixture
 from sklearn.neural_network import MLPClassifier
 from sklearn.experimental import enable_halving_search_cv  # noqa
 from sklearn.model_selection import learning_curve, train_test_split
 from sklearn.model_selection import validation_curve
 from datetime import datetime
+import numpy as np
+import itertools
+
+from scipy import linalg
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
+from sklearn import mixture
+
+import seaborn as sns
 # show popup for graphs on mac
 
 matplotlib.use("TKAgg")
@@ -408,10 +420,21 @@ def run_k_means_1():
     # plot_elbow(data_train, range(1,10))
 
     # with tuned number of clusters
-    label_pred = KMeans(n_clusters=3, random_state=0).fit_predict(data_train)
+    kmeans = KMeans(n_clusters=3, random_state=0).fit(data_train)
 
-    # check score
+    label_pred = kmeans.predict(data_train)
+
+    # check score to get an idea how well the clusters capture true values
     print(rand_score(label_train, label_pred))
+    labels = kmeans.labels_
+    print(davies_bouldin_score(data_train, labels))
+
+    tsne = TSNE()
+    X_embedded = tsne.fit_transform(data_train)
+
+    sns.scatterplot(X_embedded[:, 0], X_embedded[:, 1], hue=label_train, legend='full',
+                    palette=sns.color_palette("bright", 3))
+    print()
 
     # TODO feed into ANN
 
@@ -435,18 +458,127 @@ def run_k_means_2():
     # with tuned number of clusters
     label_pred = KMeans(n_clusters=5, random_state=0).fit_predict(data_train)
 
-    # check score
+    # check score to get an idea how well the clusters capture true values
     print(rand_score(label_train, label_pred))
 
     # TODO feed into ANN
 
 
+def run_em_1():
+
+    with open(DATASET_1, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:,:-1], data[:,-1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    lowest_bic = np.infty
+    bic = []
+    n_components_range = range(1, 21)
+    cv_types = ['spherical', 'tied', 'diag', 'full']
+    for cv_type in cv_types:
+        for n_components in n_components_range:
+            # Fit a Gaussian mixture with EM
+            gmm = GaussianMixture(n_components=n_components, covariance_type=cv_type, random_state=0)
+            gmm.fit(data_train)
+            bic.append(gmm.bic(data_train))
+            if bic[-1] < lowest_bic:
+                lowest_bic = bic[-1]
+                best_gmm = gmm
+
+    bic = np.array(bic)
+    color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
+                                  'darkorange'])
+    clf = best_gmm
+    bars = []
+
+    # Plot the BIC scores
+    plt.figure()
+    for i, (cv_type, color) in enumerate(zip(cv_types, color_iter)):
+        xpos = np.array(n_components_range) + .2 * (i - 2)
+        bars.append(plt.bar(xpos, bic[i * len(n_components_range):
+                                      (i + 1) * len(n_components_range)],
+                            width=.2, color=color))
+    plt.xticks(n_components_range)
+    plt.ylim([bic.min() * 1.01 - .01 * bic.max(), bic.max()])
+    plt.title('BIC score per model')
+    xpos = np.mod(bic.argmin(), len(n_components_range)) + .65 + \
+           .2 * np.floor(bic.argmin() / len(n_components_range))
+    plt.text(xpos, bic.min() * 0.97 + .03 * bic.max(), '*', fontsize=14)
+    plt.xlabel('Number of components')
+    plt.legend([b[0] for b in bars], cv_types)
+
+    plt.title(f'Selected GMM: {best_gmm.covariance_type} model, '
+              f'{best_gmm.n_components} components')
+    plt.show()
+
+    # TODO feed into ANN
+
+
+def run_em_2():
+
+    with open(DATASET_2, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:,:-1], data[:,-1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    lowest_bic = np.infty
+    bic = []
+    n_components_range = range(1, 21)
+    cv_types = ['spherical', 'tied', 'diag', 'full']
+    for cv_type in cv_types:
+        for n_components in n_components_range:
+            # Fit a Gaussian mixture with EM
+            gmm = GaussianMixture(n_components=n_components, covariance_type=cv_type, random_state=0)
+            gmm.fit(data_train)
+            bic.append(gmm.bic(data_train))
+            if bic[-1] < lowest_bic:
+                lowest_bic = bic[-1]
+                best_gmm = gmm
+
+    bic = np.array(bic)
+    color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
+                                  'darkorange'])
+    clf = best_gmm
+    bars = []
+
+    # Plot the BIC scores
+    plt.figure()
+    for i, (cv_type, color) in enumerate(zip(cv_types, color_iter)):
+        xpos = np.array(n_components_range) + .2 * (i - 2)
+        bars.append(plt.bar(xpos, bic[i * len(n_components_range):
+                                      (i + 1) * len(n_components_range)],
+                            width=.2, color=color))
+    plt.xticks(n_components_range)
+    plt.ylim([bic.min() * 1.01 - .01 * bic.max(), bic.max()])
+    plt.title('BIC score per model')
+    xpos = np.mod(bic.argmin(), len(n_components_range)) + .65 + \
+           .2 * np.floor(bic.argmin() / len(n_components_range))
+    plt.text(xpos, bic.min() * 0.97 + .03 * bic.max(), '*', fontsize=14)
+    plt.xlabel('Number of components')
+    plt.legend([b[0] for b in bars], cv_types)
+
+    plt.title(f'Selected GMM: {best_gmm.covariance_type} model, '
+              f'{best_gmm.n_components} components')
+    plt.show()
+
+    # TODO feed into ANN
+
 if __name__ == '__main__':
 
     # clustering
-    run_k_means_1()
-    run_k_means_2()
-    # run_em_1()
+    # run_k_means_1()
+    # run_k_means_2()
+    run_em_1()
     # run_em_2()
 
     print()
