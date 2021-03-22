@@ -2,12 +2,20 @@
 
 ## Clustering
 
-- [x] k means on dataset 1
-- [x] k means on dataset 2
+- [ ] k means on dataset 1
+    - [x] run clustering
+    - [ ] dump charts for visualization
+- [ ] k means on dataset 2
+    - [x] run clustering
+    - [ ] dump charts for visualization
 - [ ] ann over k means on dataset 1
 - [ ] ann over k means on dataset 2
 - [ ] em on dataset 1
+    - [x] run clustering
+    - [ ] dump charts for visualization
 - [ ] em on dataset 2
+    - [x] run clustering
+    - [ ] dump charts for visualization
 - [ ] ann over em on dataset 1
 - [ ] ann over em on dataset 2
 
