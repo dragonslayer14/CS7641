@@ -14,4 +14,4 @@
     - extended it will choose 18, but it's not too much lower to justify 6x
 - plot for dataset 2 puts it around 9-12 components
     - 12 isn't unreasonable
-    - extend to 50 and low 20's is picked, but not enough lower to justify doubling
+    - extend to 50 and 12 is still picked, so a good fit and not terribly large
