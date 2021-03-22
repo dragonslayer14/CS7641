@@ -464,28 +464,16 @@ def run_k_means_2():
     # TODO feed into ANN
 
 
-def run_em_1():
-
-    with open(DATASET_1, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
-
-    data, labels = data[:,:-1], data[:,-1]
-
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-
+def plot_bic_scores(data, n_components_range = range(1, 21)):
     lowest_bic = np.infty
     bic = []
-    n_components_range = range(1, 21)
     cv_types = ['spherical', 'tied', 'diag', 'full']
     for cv_type in cv_types:
         for n_components in n_components_range:
             # Fit a Gaussian mixture with EM
             gmm = GaussianMixture(n_components=n_components, covariance_type=cv_type, random_state=0)
-            gmm.fit(data_train)
-            bic.append(gmm.bic(data_train))
+            gmm.fit(data)
+            bic.append(gmm.bic(data))
             if bic[-1] < lowest_bic:
                 lowest_bic = bic[-1]
                 best_gmm = gmm
@@ -515,6 +503,26 @@ def run_em_1():
     plt.title(f'Selected GMM: {best_gmm.covariance_type} model, '
               f'{best_gmm.n_components} components')
     plt.show()
+
+
+def run_em_1():
+
+    with open(DATASET_1, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:,:-1], data[:,-1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    plot_bic_scores(data_train)
+
+    label_pred = GaussianMixture(n_components=3, covariance_type="diag", random_state=0).fit_predict(data_train)
+
+    # check score to get an idea how well the clusters capture true values
+    print(rand_score(label_train, label_pred))
 
     # TODO feed into ANN
 
@@ -531,47 +539,15 @@ def run_em_2():
         data, labels, test_size=0.4, random_state=0, stratify=labels
     )
 
-    lowest_bic = np.infty
-    bic = []
-    n_components_range = range(1, 21)
-    cv_types = ['spherical', 'tied', 'diag', 'full']
-    for cv_type in cv_types:
-        for n_components in n_components_range:
-            # Fit a Gaussian mixture with EM
-            gmm = GaussianMixture(n_components=n_components, covariance_type=cv_type, random_state=0)
-            gmm.fit(data_train)
-            bic.append(gmm.bic(data_train))
-            if bic[-1] < lowest_bic:
-                lowest_bic = bic[-1]
-                best_gmm = gmm
+    plot_bic_scores(data_train)
 
-    bic = np.array(bic)
-    color_iter = itertools.cycle(['navy', 'turquoise', 'cornflowerblue',
-                                  'darkorange'])
-    clf = best_gmm
-    bars = []
+    label_pred = GaussianMixture(n_components=12, covariance_type="full", random_state=0).fit_predict(data_train)
 
-    # Plot the BIC scores
-    plt.figure()
-    for i, (cv_type, color) in enumerate(zip(cv_types, color_iter)):
-        xpos = np.array(n_components_range) + .2 * (i - 2)
-        bars.append(plt.bar(xpos, bic[i * len(n_components_range):
-                                      (i + 1) * len(n_components_range)],
-                            width=.2, color=color))
-    plt.xticks(n_components_range)
-    plt.ylim([bic.min() * 1.01 - .01 * bic.max(), bic.max()])
-    plt.title('BIC score per model')
-    xpos = np.mod(bic.argmin(), len(n_components_range)) + .65 + \
-           .2 * np.floor(bic.argmin() / len(n_components_range))
-    plt.text(xpos, bic.min() * 0.97 + .03 * bic.max(), '*', fontsize=14)
-    plt.xlabel('Number of components')
-    plt.legend([b[0] for b in bars], cv_types)
-
-    plt.title(f'Selected GMM: {best_gmm.covariance_type} model, '
-              f'{best_gmm.n_components} components')
-    plt.show()
+    # check score to get an idea how well the clusters capture true values
+    print(rand_score(label_train, label_pred))
 
     # TODO feed into ANN
+
 
 if __name__ == '__main__':
 
@@ -644,7 +620,7 @@ if __name__ == '__main__':
 
         # random state makes this the same split
         # split for training and testing
-        data_train, data_test, label_train, label_test = train_test_split(
+        data, data_test, label_train, label_test = train_test_split(
             data, labels, test_size=0.4, random_state=0, stratify=labels
         )
 
@@ -658,7 +634,7 @@ if __name__ == '__main__':
         ]:
             start = time.time()
             # train on all of training set, no cv or curves here
-            clf.fit(data_train, label_train)
+            clf.fit(data, label_train)
 
             # just score test set
             print(f"{clf}\t{clf.score(data_test, label_test):.2f}\t{time.time() - start:.2f}")
@@ -673,7 +649,7 @@ if __name__ == '__main__':
 
         # random state makes this the same split
         # split for training and testing
-        data_train, data_test, label_train, label_test = train_test_split(
+        data, data_test, label_train, label_test = train_test_split(
             data, labels, test_size=0.4, random_state=0, stratify=labels
         )
 
@@ -686,7 +662,7 @@ if __name__ == '__main__':
         ]:
             start = time.time()
             # train on all of training set, no cv or curves here
-            clf.fit(data_train, label_train)
+            clf.fit(data, label_train)
 
             # just score test set
             print(f"{clf}\t{clf.score(data_test, label_test):.2f}\t{time.time() - start:.2f}")
