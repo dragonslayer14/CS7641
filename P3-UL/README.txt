@@ -4,6 +4,7 @@ Running code:
 - Project code in folder `P3-UL`
 - elbow method code adapted from from https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
 - Requirements were pip frozen to requirements.txt
+- data labels in wine.csv were modified to be 0 based, rather than 1, for the sake of comparison
 - `python main.py` // update as needed
     - run all algorithms for all problems
     - creates fitness vs problem size chart, stored in the charts folder, by the name of the problem which
