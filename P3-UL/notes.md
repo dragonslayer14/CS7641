@@ -44,7 +44,7 @@
     - really simple features
     - can negatively affect performance
 - probably want some kind of visualization to understand what the new projection looks like
-  - can use another algo like TSNE or pair-wse plots for specific features
+  - can use another algo like TSNE or pair-wise plots for specific features
 - same with clustering, same kinds of visuals if you like, or just include metrics about how dense and separated the clusters are
 - eigenvalues for PCA
 - kertosis for ICA
