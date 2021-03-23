@@ -15,3 +15,12 @@
 - plot for dataset 2 puts it around 9-12 components
     - 12 isn't unreasonable
     - extend to 50 and 12 is still picked, so a good fit and not terribly large
+
+## PCA
+
+- data set 1 gets to about 90% with 6 features and 95 at 8
+    - 90 is probably good enough, plus it's a nice round halving
+- data set 2 does about the same, but 95 at 7
+
+## ICA
+

@@ -4,6 +4,7 @@ import matplotlib
 import numpy as np
 from scipy.spatial.distance import cdist
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.manifold import TSNE
 from sklearn.metrics import plot_confusion_matrix, rand_score, davies_bouldin_score
@@ -24,6 +25,7 @@ from sklearn import mixture
 
 import seaborn as sns
 # show popup for graphs on mac
+from sklearn.preprocessing import StandardScaler
 
 matplotlib.use("TKAgg")
 
@@ -517,7 +519,7 @@ def run_em_1():
         data, labels, test_size=0.4, random_state=0, stratify=labels
     )
 
-    plot_bic_scores(data_train)
+    # plot_bic_scores(data_train)
 
     label_pred = GaussianMixture(n_components=3, covariance_type="diag", random_state=0).fit_predict(data_train)
 
@@ -539,7 +541,7 @@ def run_em_2():
         data, labels, test_size=0.4, random_state=0, stratify=labels
     )
 
-    plot_bic_scores(data_train)
+    # plot_bic_scores(data_train)
 
     label_pred = GaussianMixture(n_components=12, covariance_type="full", random_state=0).fit_predict(data_train)
 
@@ -549,25 +551,78 @@ def run_em_2():
     # TODO feed into ANN
 
 
+# taken from https://www.kaggle.com/lonewolf95/classification-tutorial-with-pca-and-gridsearchcv
+def plot_pca_curve(data):
+    scaler = StandardScaler()
+    scaler.fit(data)
+    x_train_scaler = scaler.transform(data)
+    pca = PCA()
+    pca.fit(x_train_scaler)
+    cumsum = np.cumsum(pca.explained_variance_ratio_) * 100
+    d = [n for n in range(len(cumsum))]
+    plt.figure(figsize=(10, 10))
+    plt.plot(d, cumsum, color='red', label='cumulative explained variance')
+    plt.title('Cumulative Explained Variance as a Function of the Number of Components')
+    plt.ylabel('Cumulative Explained variance')
+    plt.xlabel('Principal components')
+    plt.axhline(y=95, color='k', linestyle='--', label='95% Explained Variance')
+    plt.legend(loc='best')
+    plt.show()
+
+
+def run_pca_1():
+    with open(DATASET_1, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:,:-1], data[:,-1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    plot_pca_curve(data_train)
+    print()
+
+    pca = PCA(0.90)
+
+
+def run_pca_2():
+    with open(DATASET_2, 'r') as f:
+        data = np.genfromtxt(f, delimiter=',')
+
+    data, labels = data[:,:-1], data[:,-1]
+
+    # split for training and testing
+    data_train, data_test, label_train, label_test = train_test_split(
+        data, labels, test_size=0.4, random_state=0, stratify=labels
+    )
+
+    plot_pca_curve(data_train)
+    print()
+    pca = PCA(0.90)
+
+
 if __name__ == '__main__':
 
     # clustering
+    # TODO plots for description
     # run_k_means_1()
     # run_k_means_2()
-    run_em_1()
+    # run_em_1()
     # run_em_2()
 
-    print()
-
     # dimensionality reduction
-    # run_pca_1()
-    # run_pca_2()
+    run_pca_1()
+    run_pca_2()
     # run_ica_1()
     # run_ica_2()
     # run_rca_1()
     # run_rca_2()
     # run_lda_1()
     # run_lda_2()
+
+    print()
 
     # ANN work can just be done in the calls
     # no sense making another place to do the work with one more step
