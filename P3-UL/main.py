@@ -17,7 +17,7 @@ from datetime import datetime
 import numpy as np
 import itertools
 
-from scipy import linalg
+from numpy import linalg
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
@@ -405,63 +405,28 @@ def run_ann_2(fig_name = None, show_plots = False):
         plt.show()
 
 
-def run_k_means_1():
+def run_k_means(data_train, label_train, n_clusters = None):
     # plot "score" over range of k
     #   sum of squared distances
     # treat like MCC to narrow down optimal cluster number
-    with open(DATASET_1, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
-
-    data, labels = data[:,:-1], data[:,-1]
-
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-
-    # plot_elbow(data_train, range(1,10))
+    if n_clusters is None:
+        plot_elbow(data_train, range(1,10))
+        return data_train
 
     # with tuned number of clusters
-    kmeans = KMeans(n_clusters=3, random_state=0).fit(data_train)
-
-    label_pred = kmeans.predict(data_train)
+    label_pred = KMeans(n_clusters=n_clusters, random_state=0).fit_predict(data_train)
 
     # check score to get an idea how well the clusters capture true values
     print(rand_score(label_train, label_pred))
-    labels = kmeans.labels_
-    print(davies_bouldin_score(data_train, labels))
+    return label_pred
 
+    # TODO figure out TSNE
     tsne = TSNE()
     X_embedded = tsne.fit_transform(data_train)
 
     sns.scatterplot(X_embedded[:, 0], X_embedded[:, 1], hue=label_train, legend='full',
                     palette=sns.color_palette("bright", 3))
     print()
-
-    # TODO feed into ANN
-
-
-def run_k_means_2():
-    # plot "score" over range of k
-    #   sum of squared distances
-    # treat like MCC to narrow down optimal cluster number
-    with open(DATASET_2, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
-
-    data, labels = data[:,:-1], data[:,-1]
-
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-
-    # plot_elbow(data_train, range(1,10))
-
-    # with tuned number of clusters
-    label_pred = KMeans(n_clusters=5, random_state=0).fit_predict(data_train)
-
-    # check score to get an idea how well the clusters capture true values
-    print(rand_score(label_train, label_pred))
 
     # TODO feed into ANN
 
@@ -507,46 +472,18 @@ def plot_bic_scores(data, n_components_range = range(1, 21)):
     plt.show()
 
 
-def run_em_1():
+def run_em(data_train, label_train, n_components=None, covariance_type=None):
 
-    with open(DATASET_1, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
+    if n_components is None or covariance_type is None:
+        plot_bic_scores(data_train)
+        return data_train
 
-    data, labels = data[:,:-1], data[:,-1]
-
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-
-    # plot_bic_scores(data_train)
-
-    label_pred = GaussianMixture(n_components=3, covariance_type="diag", random_state=0).fit_predict(data_train)
+    label_pred = GaussianMixture(n_components=n_components, covariance_type=covariance_type, random_state=0).fit_predict(data_train)
 
     # check score to get an idea how well the clusters capture true values
     print(rand_score(label_train, label_pred))
 
-    # TODO feed into ANN
-
-
-def run_em_2():
-
-    with open(DATASET_2, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
-
-    data, labels = data[:,:-1], data[:,-1]
-
-    # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-
-    # plot_bic_scores(data_train)
-
-    label_pred = GaussianMixture(n_components=12, covariance_type="full", random_state=0).fit_predict(data_train)
-
-    # check score to get an idea how well the clusters capture true values
-    print(rand_score(label_train, label_pred))
+    return label_pred
 
     # TODO feed into ANN
 
@@ -556,7 +493,7 @@ def plot_pca_curve(data):
     scaler = StandardScaler()
     scaler.fit(data)
     x_train_scaler = scaler.transform(data)
-    pca = PCA()
+    pca = PCA(random_state=0)
     pca.fit(x_train_scaler)
     cumsum = np.cumsum(pca.explained_variance_ratio_) * 100
     d = [n for n in range(len(cumsum))]
@@ -567,60 +504,91 @@ def plot_pca_curve(data):
     plt.xlabel('Principal components')
     plt.axhline(y=95, color='k', linestyle='--', label='95% Explained Variance')
     plt.legend(loc='best')
+    # plt.show()
+
+    # reconstruction error by components
+    recon_errs = []
+    sizes = range(1,12)
+    for size in sizes:
+        pca = PCA(n_components=size, random_state=0)
+        transformed_data = pca.fit_transform(x_train_scaler)
+        inverse_data = np.linalg.pinv(pca.components_.T)
+        reconstructed_data = transformed_data.dot(inverse_data)
+        loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
+        recon_errs.append(loss)
+
+    plt.figure()
+    plt.title('recon error by Number of Components')
+    plt.ylabel('recon error')
+    plt.xlabel('Principal components')
+    plt.plot(sizes, recon_errs)
     plt.show()
 
 
-def run_pca_1():
+def run_pca(data_train, threshold = None):
+    # tuning
+    if threshold is None:
+        plot_pca_curve(data_train)
+        print()
+        return data_train
+
+    else:
+        pca = PCA(0.10)
+
+        # get reconstruction error score
+        transformed_data = pca.fit_transform(data_train)
+        inverse_data = np.linalg.pinv(pca.components_.T)
+        reconstructed_data = transformed_data.dot(inverse_data)
+        # MSE with original? data
+        loss = ((data_train - reconstructed_data) ** 2).mean()
+        print(loss)
+        return transformed_data
+
+
+if __name__ == '__main__':
+    # TODO plots for description
+
+    # todo change kmeans, em, pca to take in data and optional tuned value to run scoring, dumping tuning charts otherwise
+        # return labels or transformed data for ease of "piping"
+    # todo track tuned values by comments for now/commented out calls
+    # todo run pca data through clusters
+    # todo tune ica with average kurtosis plot, lowest? then sort columns by value
+
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
     data, labels = data[:,:-1], data[:,-1]
 
     # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
+    data_train_1, data_test_1, label_train_1, label_test_1 = train_test_split(
         data, labels, test_size=0.4, random_state=0, stratify=labels
     )
 
-    plot_pca_curve(data_train)
-    print()
-
-    pca = PCA(0.90)
-
-
-def run_pca_2():
     with open(DATASET_2, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
     data, labels = data[:,:-1], data[:,-1]
 
     # split for training and testing
-    data_train, data_test, label_train, label_test = train_test_split(
+    data_train_2, data_test_2, label_train_2, label_test_2 = train_test_split(
         data, labels, test_size=0.4, random_state=0, stratify=labels
     )
 
-    plot_pca_curve(data_train)
-    print()
-    pca = PCA(0.90)
-
-
-if __name__ == '__main__':
-
     # clustering
-    # TODO plots for description
-    # run_k_means_1()
-    # run_k_means_2()
-    # run_em_1()
-    # run_em_2()
+    # run_k_means(data_train_1, label_train_1, k=3)
+    # run_k_means(data_train_2, label_train_2, k=5)
+    # run_em(data_train_1, label_train_1, components=, type=)
+    # run_em(data_train_2, label_train_2, components=12, type=full)
 
     # dimensionality reduction
-    run_pca_1()
-    run_pca_2()
-    # run_ica_1()
-    # run_ica_2()
-    # run_rca_1()
-    # run_rca_2()
-    # run_lda_1()
-    # run_lda_2()
+    run_pca(data_train_1, threshold=0.9)
+    run_pca(data_train_2, threshold=0.9)
+    # run_ica(data_train_1)
+    # run_ica(data_train_2)
+    # run_rca(data_train_1)
+    # run_rca(data_train_2)
+    # run_lda(data_train_1)
+    # run_lda(data_train_2)
 
     print()
 
@@ -663,62 +631,4 @@ if __name__ == '__main__':
     run_ann_2("charts/ann_2_final", show_plots=False)
 
     plt.close('all')
-
-    if False:
-        print("scoring")
-        print(DATASET_1_NAME)
-        # read in dataset from file
-        with open(DATASET_1, 'r') as f:
-            data = np.genfromtxt(f, delimiter=',')
-
-        data, labels = data[:, :-1], data[:, -1]
-
-        # random state makes this the same split
-        # split for training and testing
-        data, data_test, label_train, label_test = train_test_split(
-            data, labels, test_size=0.4, random_state=0, stratify=labels
-        )
-
-        for clf in [
-            DecisionTreeClassifier(criterion="entropy", random_state=0),
-            DecisionTreeClassifier(criterion="entropy", max_depth=3, random_state=0),
-            AdaBoostClassifier(DecisionTreeClassifier(max_depth=2, ccp_alpha=0.1),n_estimators=10, random_state=0),
-            SVC(kernel="linear", random_state=0),
-            neighbors.KNeighborsClassifier(n_neighbors=3, weights='distance', p=1),
-            MLPClassifier(hidden_layer_sizes=(85,), random_state=0)
-        ]:
-            start = time.time()
-            # train on all of training set, no cv or curves here
-            clf.fit(data, label_train)
-
-            # just score test set
-            print(f"{clf}\t{clf.score(data_test, label_test):.2f}\t{time.time() - start:.2f}")
-
-        print()
-        print(DATASET_2_NAME)
-
-        with open(DATASET_2, 'r') as f:
-            data = np.genfromtxt(f, delimiter=',')
-
-        data, labels = data[:, :-1], data[:, -1]
-
-        # random state makes this the same split
-        # split for training and testing
-        data, data_test, label_train, label_test = train_test_split(
-            data, labels, test_size=0.4, random_state=0, stratify=labels
-        )
-
-        for clf in [
-            DecisionTreeClassifier(criterion="entropy", max_depth=18, random_state=0),
-            AdaBoostClassifier(base_estimator=DecisionTreeClassifier(max_depth=5), n_estimators=500, random_state=0),
-            SVC(gamma=0.001, C=10000, random_state=0),
-            neighbors.KNeighborsClassifier(leaf_size=10, n_neighbors=14, p=1, weights='distance'),
-            MLPClassifier(hidden_layer_sizes=(290,), max_iter=110, random_state=0)
-        ]:
-            start = time.time()
-            # train on all of training set, no cv or curves here
-            clf.fit(data, label_train)
-
-            # just score test set
-            print(f"{clf}\t{clf.score(data_test, label_test):.2f}\t{time.time() - start:.2f}")
 
