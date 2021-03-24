@@ -3,8 +3,9 @@ import warnings
 import matplotlib
 import numpy as np
 from scipy.spatial.distance import cdist
+from scipy.stats import kurtosis
 from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, FastICA
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.manifold import TSNE
 from sklearn.metrics import plot_confusion_matrix, rand_score, davies_bouldin_score
@@ -550,6 +551,73 @@ def run_pca(data_train, components = None):
         return transformed_data
 
 
+def plot_ica_curve(data, n_components_range = None):
+
+    if n_components_range is None:
+        n_components_range = range(1, data.shape[1])
+
+    highest_kurtosis = -1*10**4
+    kurtosis_vals = []
+    plt.figure()
+
+    for n_components in n_components_range:
+        # Fit a Gaussian mixture with EM
+        ica = FastICA(n_components=n_components, max_iter=500, random_state=0)
+        transformed = ica.fit_transform(data)
+        mixed = ica.mixing_
+        kurt_values = kurtosis(mixed, axis=1)
+        kurtosis_vals.append(np.mean(kurt_values))
+        if kurtosis_vals[-1] > highest_kurtosis:
+            highest_kurtosis = kurtosis_vals[-1]
+            best_gmm = ica
+
+    kurtosis_vals = np.array(kurtosis_vals)
+
+    bars = []
+
+    # this probably doesn't work as is
+
+    # Plot the BIC scores
+    plt.plot(n_components_range, kurtosis_vals, label="kurtosis")
+    plt.title('average kurtosis per model')
+    xpos = np.mod(kurtosis_vals.argmin(), len(n_components_range)) + .65 + \
+           .2 * np.floor(kurtosis_vals.argmin() / len(n_components_range))
+    plt.text(xpos, 1.03 * kurtosis_vals.max(), '*', fontsize=14)
+    plt.xlabel('Number of components')
+    plt.xticks(n_components_range)
+    plt.legend()
+
+    plt.title(f'Selected ica: {best_gmm.n_components} components')
+
+    kurtosis_vals = kurtosis(best_gmm.mixing_, axis=1)
+
+    plt.figure()
+    bars = []
+    plt.plot(kurtosis_vals, label="kurtosis")
+
+    plt.xticks(range(n_components_range.stop))
+    plt.title('kurtosis per component')
+    xpos = np.mod(kurtosis_vals.argmin(), len(n_components_range)) + .65 + \
+           .2 * np.floor(kurtosis_vals.argmin() / len(n_components_range))
+    plt.text(xpos, 1.03 * kurtosis_vals.max(), '*', fontsize=14)
+    plt.xlabel('Component number')
+    plt.legend()
+
+
+def run_ica(data_train, n_components = None, n_components_range = None):
+
+    if n_components is None:
+        plot_ica_curve(data_train, n_components_range)
+        print()
+        return data_train
+    else:
+        ica = FastICA(n_components=3)
+        S_ = ica.fit_transform(data_train)  # Reconstruct signals
+        A_ = ica.mixing_  # Get estimated mixing matrix
+        # something something kurtosis and reconstruction error
+    pass
+
+
 if __name__ == '__main__':
     # TODO plots for description
 
@@ -586,8 +654,8 @@ if __name__ == '__main__':
     # dimensionality reduction
     pca_1 = run_pca(data_train_1, components=6)
     pca_2 = run_pca(data_train_2, components=6)
-    # ica_1 = run_ica(data_train_1)
-    # ica_2 = run_ica(data_train_2)
+    ica_1 = run_ica(data_train_1, n_components=11)
+    ica_2 = run_ica(data_train_2, n_components=10)
     # rca_1 = run_rca(data_train_1)
     # rca_2 = run_rca(data_train_2)
     # lda_1 = run_lda(data_train_1)
@@ -599,28 +667,28 @@ if __name__ == '__main__':
     # combination experiments, DR + clustering
 
     # PCA
-    pca_kmeans_1 = run_k_means(pca_1, label_train_1, n_clusters=3)
-    pca_kmeans_2 = run_k_means(pca_2, label_train_2, n_clusters=5)
-    pca_em_1 = run_em(pca_1, label_train_1, n_components=14)
-    pca_em_2 = run_em(pca_2, label_train_2, n_components=12)
+    # pca_kmeans_1 = run_k_means(pca_1, label_train_1, n_clusters=3)
+    # pca_kmeans_2 = run_k_means(pca_2, label_train_2, n_clusters=5)
+    # pca_em_1 = run_em(pca_1, label_train_1, n_components=14)
+    # pca_em_2 = run_em(pca_2, label_train_2, n_components=12)
 
     # ICA
-    # run_k_means(ica_1)
-    # run_k_means(ica_2)
-    # run_em(ica_1)
-    # run_em(ica_2)
+    # ica_kmeans_1 = run_k_means(ica_1)
+    # ica_kmeans_2 = run_k_means(ica_2)
+    # ica_em_1 = run_em(ica_1)
+    # ica_em_2 = run_em(ica_2)
 
     # RCA
-    # run_k_means(rca_1)
-    # run_k_means(rca_2)
-    # run_em(rca_1)
-    # run_em(rca_2)
+    # rca_kmeans_1 = run_k_means(rca_1)
+    # rca_kmeans_2 = run_k_means(rca_2)
+    # rca_em_1 = run_em(rca_1)
+    # rca_em_2 = run_em(rca_2)
 
     # LDA
-    # run_k_means(lda_1)
-    # run_k_means(lda_2)
-    # run_em(lda_1)
-    # run_em(lda_2)
+    # lda_kmeans_1 = run_k_means(lda_1)
+    # lda_kmeans_2 = run_k_means(lda_2)
+    # lda_em_1 = run_em(lda_1)
+    # lda_em_2 = run_em(lda_2)
 
     plt.show()
     print()

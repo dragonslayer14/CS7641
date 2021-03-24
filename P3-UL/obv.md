@@ -33,3 +33,5 @@
 
 ## ICA
 
+- dataset 1, max kurtosis at 10 components, max components 7, 9, 11
+- dataset 2, max kurtosis at 10 components, max components 0, 4, 10
