@@ -20,7 +20,16 @@
 
 - data set 1 gets to about 90% with 6 features and 95 at 8
     - 90 is probably good enough, plus it's a nice round halving
+    - 8 seems to get to 95% and 6% recon error as opposed to 13
 - data set 2 does about the same, but 95 at 7
+    - 14% recon at 6, 10 at 7, about 5 at 8
+
+- kmeans seems to have similar values, 3 for 1 and 5 for 2
+- em is a little more varied, up to 20, 14 for 1 and 12 for 2
+    - up to 50, 2 stays at 12, so that is a good level, but 1 goes to 50 
+    - up to 100, 2 stays at 12, but 1 goes to 100 with negative bic
+        - 1's behavior is likely due to getting close to 1 generator per point, which is not great
+            - 14 is probably a fine place
 
 ## ICA
 

@@ -195,7 +195,9 @@ def plot_validation_curve(estimator, title, X, y, x_lab, y_lab, param_name, para
 
 
 # taken from https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
-def plot_elbow(X, k_range = range(1, 10)):
+def plot_elbow(X, k_range = None):
+    if k_range is None:
+        k_range = range(1, 10)
     distortions = []
     inertias = []
     mapping1 = {}
@@ -222,7 +224,6 @@ def plot_elbow(X, k_range = range(1, 10)):
     plt.xlabel('Values of K')
     plt.ylabel('Distortion')
     plt.title('The Elbow Method using Distortion')
-    plt.show()
 
     for key, val in mapping2.items():
         print(f'{key} : {val}')
@@ -232,7 +233,6 @@ def plot_elbow(X, k_range = range(1, 10)):
     plt.xlabel('Values of K')
     plt.ylabel('Inertia')
     plt.title('The Elbow Method using Inertia')
-    plt.show()
 
 
 def run_ann_1(fig_name = None, show_plots = False):
@@ -405,19 +405,19 @@ def run_ann_2(fig_name = None, show_plots = False):
         plt.show()
 
 
-def run_k_means(data_train, label_train, n_clusters = None):
+def run_k_means(data_train, label_train, k_range = None, n_clusters = None):
     # plot "score" over range of k
     #   sum of squared distances
     # treat like MCC to narrow down optimal cluster number
     if n_clusters is None:
-        plot_elbow(data_train, range(1,10))
+        plot_elbow(data_train, k_range)
         return data_train
 
     # with tuned number of clusters
     label_pred = KMeans(n_clusters=n_clusters, random_state=0).fit_predict(data_train)
 
     # check score to get an idea how well the clusters capture true values
-    print(rand_score(label_train, label_pred))
+    print(f"kmeans score: {rand_score(label_train, label_pred)}")
     return label_pred
 
     # TODO figure out TSNE
@@ -431,7 +431,11 @@ def run_k_means(data_train, label_train, n_clusters = None):
     # TODO feed into ANN
 
 
-def plot_bic_scores(data, n_components_range = range(1, 21)):
+def plot_bic_scores(data, n_components_range = None):
+
+    if n_components_range is None:
+        n_components_range = range(1, 21)
+
     lowest_bic = np.infty
     bic = []
     cv_types = ['spherical', 'tied', 'diag', 'full']
@@ -469,19 +473,18 @@ def plot_bic_scores(data, n_components_range = range(1, 21)):
 
     plt.title(f'Selected GMM: {best_gmm.covariance_type} model, '
               f'{best_gmm.n_components} components')
-    plt.show()
 
 
-def run_em(data_train, label_train, n_components=None, covariance_type=None):
+def run_em(data_train, label_train, n_components_range = None, n_components=None, covariance_type=None):
 
     if n_components is None or covariance_type is None:
-        plot_bic_scores(data_train)
+        plot_bic_scores(data_train, n_components_range)
         return data_train
 
     label_pred = GaussianMixture(n_components=n_components, covariance_type=covariance_type, random_state=0).fit_predict(data_train)
 
     # check score to get an idea how well the clusters capture true values
-    print(rand_score(label_train, label_pred))
+    print(f"em score: {rand_score(label_train, label_pred)}")
 
     return label_pred
 
@@ -504,7 +507,6 @@ def plot_pca_curve(data):
     plt.xlabel('Principal components')
     plt.axhline(y=95, color='k', linestyle='--', label='95% Explained Variance')
     plt.legend(loc='best')
-    # plt.show()
 
     # reconstruction error by components
     recon_errs = []
@@ -522,37 +524,38 @@ def plot_pca_curve(data):
     plt.ylabel('recon error')
     plt.xlabel('Principal components')
     plt.plot(sizes, recon_errs)
-    plt.show()
 
 
-def run_pca(data_train, threshold = None):
+def run_pca(data_train, components = None):
     # tuning
-    if threshold is None:
+    if components is None:
         plot_pca_curve(data_train)
         print()
         return data_train
 
     else:
-        pca = PCA(0.10)
+        pca = PCA(n_components=components, random_state=0)
+
+        scaler = StandardScaler()
+        scaler.fit(data_train)
+        x_train_scaler = scaler.transform(data_train)
 
         # get reconstruction error score
-        transformed_data = pca.fit_transform(data_train)
+        transformed_data = pca.fit_transform(x_train_scaler)
         inverse_data = np.linalg.pinv(pca.components_.T)
         reconstructed_data = transformed_data.dot(inverse_data)
-        # MSE with original? data
-        loss = ((data_train - reconstructed_data) ** 2).mean()
-        print(loss)
+
+        loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
+        print(f"PCA loss: {loss}")
         return transformed_data
 
 
 if __name__ == '__main__':
     # TODO plots for description
 
-    # todo change kmeans, em, pca to take in data and optional tuned value to run scoring, dumping tuning charts otherwise
-        # return labels or transformed data for ease of "piping"
-    # todo track tuned values by comments for now/commented out calls
     # todo run pca data through clusters
     # todo tune ica with average kurtosis plot, lowest? then sort columns by value
+    # todo change ann to take in data and tuning params
 
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
@@ -575,22 +578,20 @@ if __name__ == '__main__':
     )
 
     # clustering
-    # run_k_means(data_train_1, label_train_1, k=3)
-    # run_k_means(data_train_2, label_train_2, k=5)
-    # run_em(data_train_1, label_train_1, components=, type=)
-    # run_em(data_train_2, label_train_2, components=12, type=full)
+    # k_means_1 = run_k_means(data_train_1, label_train_1, k=3)
+    # k_means_2 = run_k_means(data_train_2, label_train_2, k=5)
+    # em_1 = run_em(data_train_1, label_train_1, components=3, type="diag")
+    # em_2 = run_em(data_train_2, label_train_2, components=12, type="full")
 
     # dimensionality reduction
-    run_pca(data_train_1, threshold=0.9)
-    run_pca(data_train_2, threshold=0.9)
-    # run_ica(data_train_1)
-    # run_ica(data_train_2)
-    # run_rca(data_train_1)
-    # run_rca(data_train_2)
-    # run_lda(data_train_1)
-    # run_lda(data_train_2)
-
-    print()
+    pca_1 = run_pca(data_train_1, components=6)
+    pca_2 = run_pca(data_train_2, components=6)
+    # ica_1 = run_ica(data_train_1)
+    # ica_2 = run_ica(data_train_2)
+    # rca_1 = run_rca(data_train_1)
+    # rca_2 = run_rca(data_train_2)
+    # lda_1 = run_lda(data_train_1)
+    # lda_2 = run_lda(data_train_2)
 
     # ANN work can just be done in the calls
     # no sense making another place to do the work with one more step
@@ -598,29 +599,31 @@ if __name__ == '__main__':
     # combination experiments, DR + clustering
 
     # PCA
-    # run_pca_kmeans_1()
-    # run_pca_kmeans_2()
-    # run_pca_em_1()
-    # run_pca_em_2()
+    pca_kmeans_1 = run_k_means(pca_1, label_train_1, n_clusters=3)
+    pca_kmeans_2 = run_k_means(pca_2, label_train_2, n_clusters=5)
+    pca_em_1 = run_em(pca_1, label_train_1, n_components=14)
+    pca_em_2 = run_em(pca_2, label_train_2, n_components=12)
 
     # ICA
-    # run_ica_kmeans_1()
-    # run_ica_kmeans_2()
-    # run_ica_em_1()
-    # run_ica_em_2()
+    # run_k_means(ica_1)
+    # run_k_means(ica_2)
+    # run_em(ica_1)
+    # run_em(ica_2)
 
     # RCA
-    # run_rca_kmeans_1()
-    # run_rca_kmeans_2()
-    # run_rca_em_1()
-    # run_rca_em_2()
+    # run_k_means(rca_1)
+    # run_k_means(rca_2)
+    # run_em(rca_1)
+    # run_em(rca_2)
 
     # LDA
-    # run_lda_kmeans_1()
-    # run_lda_kmeans_2()
-    # run_lda_em_1()
-    # run_lda_em_2()
+    # run_k_means(lda_1)
+    # run_k_means(lda_2)
+    # run_em(lda_1)
+    # run_em(lda_2)
 
+    plt.show()
+    print()
 
     # dataset 1
     run_ann_1("charts/ann_1_final", show_plots=False)
