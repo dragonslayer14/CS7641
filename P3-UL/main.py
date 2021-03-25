@@ -637,6 +637,8 @@ def run_ica(data_train, n_components = None, n_components_range = None):
         # 4 from visual on graph
         top_n = [x[1] for x in kurtosis_vals[:4]]
 
+        print(f"pulling components {top_n}")
+
         return transformed[:,top_n]
     pass
 
