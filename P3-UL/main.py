@@ -560,10 +560,14 @@ def plot_ica_curve(data, n_components_range = None):
     kurtosis_vals = []
     plt.figure()
 
+    scaler = StandardScaler()
+    scaler.fit(data)
+    x_train_scaler = scaler.transform(data)
+
     for n_components in n_components_range:
         # Fit a Gaussian mixture with EM
         ica = FastICA(n_components=n_components, max_iter=500, random_state=0)
-        transformed = ica.fit_transform(data)
+        transformed = ica.fit_transform(x_train_scaler)
         kurt_values = kurtosis(transformed, axis=0)
         kurtosis_vals.append(np.mean(kurt_values))
         if kurtosis_vals[-1] > highest_kurtosis:
@@ -588,7 +592,7 @@ def plot_ica_curve(data, n_components_range = None):
 
     plt.title(f'Selected ica: {best_gmm.n_components} components')
 
-    kurtosis_vals = kurtosis(best_gmm.fit_transform(data), axis=0)
+    kurtosis_vals = kurtosis(best_gmm.fit_transform(x_train_scaler), axis=0)
 
     plt.figure()
     bars = []
@@ -610,22 +614,36 @@ def run_ica(data_train, n_components = None, n_components_range = None):
         print()
         return data_train
     else:
+        scaler = StandardScaler()
+        scaler.fit(data_train)
+        x_train_scaler = scaler.transform(data_train)
+
         ica = FastICA(n_components=n_components, max_iter=500, random_state=0)
-        transformed = ica.fit_transform(data_train)
+        transformed = ica.fit_transform(x_train_scaler)
 
         # get reconstruction error
+        inverse_data = np.linalg.pinv(ica.components_.T)
+        reconstructed_data = transformed.dot(inverse_data)
+
+        loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
+        print(f"ICA loss: {loss}")
 
         # pull the identified components out of full data
+        # pull top n components with highest kurtosis as the subset
+        kurtosis_vals = [(val,i) for val,i in zip(kurtosis(transformed, axis=0),range(0,data.shape[1]))]
 
-        return transformed
+        kurtosis_vals.sort(key=lambda x:-x[0])
+
+        # 4 from visual on graph
+        top_n = [x[1] for x in kurtosis_vals[:4]]
+
+        return transformed[:,top_n]
     pass
 
 
 if __name__ == '__main__':
     # TODO plots for description
 
-    # todo run pca data through clusters
-    # todo tune ica with average kurtosis plot, lowest? then sort columns by value
     # todo change ann to take in data and tuning params
 
     with open(DATASET_1, 'r') as f:
@@ -657,8 +675,8 @@ if __name__ == '__main__':
     # dimensionality reduction
     # pca_1 = run_pca(data_train_1, components=6)
     # pca_2 = run_pca(data_train_2, components=6)
-    ica_1 = run_ica(data_train_1)#, n_components=11)
-    ica_2 = run_ica(data_train_2)#, n_components=10)
+    ica_1 = run_ica(data_train_1, n_components=12)
+    ica_2 = run_ica(data_train_2, n_components=10)
     # rca_1 = run_rca(data_train_1)
     # rca_2 = run_rca(data_train_2)
     # lda_1 = run_lda(data_train_1)
