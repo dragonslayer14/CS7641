@@ -564,8 +564,7 @@ def plot_ica_curve(data, n_components_range = None):
         # Fit a Gaussian mixture with EM
         ica = FastICA(n_components=n_components, max_iter=500, random_state=0)
         transformed = ica.fit_transform(data)
-        mixed = ica.mixing_
-        kurt_values = kurtosis(mixed, axis=1)
+        kurt_values = kurtosis(transformed, axis=0)
         kurtosis_vals.append(np.mean(kurt_values))
         if kurtosis_vals[-1] > highest_kurtosis:
             highest_kurtosis = kurtosis_vals[-1]
@@ -589,7 +588,7 @@ def plot_ica_curve(data, n_components_range = None):
 
     plt.title(f'Selected ica: {best_gmm.n_components} components')
 
-    kurtosis_vals = kurtosis(best_gmm.mixing_, axis=1)
+    kurtosis_vals = kurtosis(best_gmm.fit_transform(data), axis=0)
 
     plt.figure()
     bars = []
@@ -611,10 +610,14 @@ def run_ica(data_train, n_components = None, n_components_range = None):
         print()
         return data_train
     else:
-        ica = FastICA(n_components=3)
-        S_ = ica.fit_transform(data_train)  # Reconstruct signals
-        A_ = ica.mixing_  # Get estimated mixing matrix
-        # something something kurtosis and reconstruction error
+        ica = FastICA(n_components=n_components, max_iter=500, random_state=0)
+        transformed = ica.fit_transform(data_train)
+
+        # get reconstruction error
+
+        # pull the identified components out of full data
+
+        return transformed
     pass
 
 
@@ -652,10 +655,10 @@ if __name__ == '__main__':
     # em_2 = run_em(data_train_2, label_train_2, components=12, type="full")
 
     # dimensionality reduction
-    pca_1 = run_pca(data_train_1, components=6)
-    pca_2 = run_pca(data_train_2, components=6)
-    ica_1 = run_ica(data_train_1, n_components=11)
-    ica_2 = run_ica(data_train_2, n_components=10)
+    # pca_1 = run_pca(data_train_1, components=6)
+    # pca_2 = run_pca(data_train_2, components=6)
+    ica_1 = run_ica(data_train_1)#, n_components=11)
+    ica_2 = run_ica(data_train_2)#, n_components=10)
     # rca_1 = run_rca(data_train_1)
     # rca_2 = run_rca(data_train_2)
     # lda_1 = run_lda(data_train_1)
@@ -673,22 +676,22 @@ if __name__ == '__main__':
     # pca_em_2 = run_em(pca_2, label_train_2, n_components=12)
 
     # ICA
-    # ica_kmeans_1 = run_k_means(ica_1)
-    # ica_kmeans_2 = run_k_means(ica_2)
-    # ica_em_1 = run_em(ica_1)
-    # ica_em_2 = run_em(ica_2)
+    # ica_kmeans_1 = run_k_means(ica_1, label_train_1)
+    # ica_kmeans_2 = run_k_means(ica_2, label_train_2)
+    # ica_em_1 = run_em(ica_1, label_train_1)
+    # ica_em_2 = run_em(ica_2, label_train_2)
 
     # RCA
-    # rca_kmeans_1 = run_k_means(rca_1)
-    # rca_kmeans_2 = run_k_means(rca_2)
-    # rca_em_1 = run_em(rca_1)
-    # rca_em_2 = run_em(rca_2)
+    # rca_kmeans_1 = run_k_means(rca_1, label_train_1)
+    # rca_kmeans_2 = run_k_means(rca_2, label_train_2)
+    # rca_em_1 = run_em(rca_1, label_train_1)
+    # rca_em_2 = run_em(rca_2, label_train_2)
 
     # LDA
-    # lda_kmeans_1 = run_k_means(lda_1)
-    # lda_kmeans_2 = run_k_means(lda_2)
-    # lda_em_1 = run_em(lda_1)
-    # lda_em_2 = run_em(lda_2)
+    # lda_kmeans_1 = run_k_means(lda_1, label_train_1)
+    # lda_kmeans_2 = run_k_means(lda_2, label_train_2)
+    # lda_em_1 = run_em(lda_1, label_train_1)
+    # lda_em_2 = run_em(lda_2, label_train_2)
 
     plt.show()
     print()
