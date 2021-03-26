@@ -35,3 +35,75 @@
 
 - dataset 1, max kurtosis at 12 components, max components 2,5,8,10
 - dataset 2, max kurtosis at 10 components, max components 2,5,3,8
+
+- kmeans, seems to elbow slightly around 10 for 1 and 13 for 2
+- em, spherical 5 components for 1 and diagonal 9 for 2 
+    - only negative values, but it is only the relative scores that matter, not absolutes
+
+## scores
+
+K-means
+1: 0.7286612758310872
+2: 0.5991071001848128
+
+EM
+1: 0.9502246181491465
+2: 0.6341011945224208
+
+PCA
+1: 0.13368620486872015
+2: 0.14808237812267594
+
++ Kmeans
+1: 0.9141060197663972
+2: 0.6095320327051647
++ EM
+1: 0.732973944294699
+2: 0.6416253678448894
+
+ICA
+1: 0.007344952143856595
+pulling components [4, 1, 0, 3]
+2: 0.0031265702751792374
+pulling components [2, 8, 3, 9]
+
++kmeans 
+1: 0.6165318957771788
+2: 0.6353606654050892
++EM
+1: 0.3786163522012579
+2: 0.5808616250176262
+
+RCA
+1:
+2:
+
++kmeans
+1:
+2:
+
++em
+1:
+2:
+
+LDA
+1:
+2:
+
+kmeans
+1:
+2:
+
+em
+1:
+2:
+
+ANN
+
+kmeans
+1:
+2:
+
+em
+1:
+2:

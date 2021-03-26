@@ -640,7 +640,28 @@ def run_ica(data_train, n_components = None, n_components_range = None):
         print(f"pulling components {top_n}")
 
         return transformed[:,top_n]
-    pass
+
+
+def run_rca(data_train, n_components = None, n_components_range = None):
+    if n_components is None:
+        plot_rca_curve(data_train, n_components_range)
+        print()
+        return data_train
+    else:
+        rca = RandomizedProjection(n_components=n_components, random_state=0)
+
+        scaler = StandardScaler()
+        scaler.fit(data_train)
+        x_train_scaler = scaler.transform(data_train)
+
+        # get reconstruction error score
+        transformed_data = pca.fit_transform(x_train_scaler)
+        inverse_data = np.linalg.pinv(pca.components_.T)
+        reconstructed_data = transformed_data.dot(inverse_data)
+
+        loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
+        print(f"PCA loss: {loss}")
+        return transformed_data
 
 
 if __name__ == '__main__':
@@ -669,18 +690,18 @@ if __name__ == '__main__':
     )
 
     # clustering
-    # k_means_1 = run_k_means(data_train_1, label_train_1, k=3)
-    # k_means_2 = run_k_means(data_train_2, label_train_2, k=5)
-    # em_1 = run_em(data_train_1, label_train_1, components=3, type="diag")
-    # em_2 = run_em(data_train_2, label_train_2, components=12, type="full")
+    # k_means_1 = run_k_means(data_train_1, label_train_1, n_clusters=3)
+    # k_means_2 = run_k_means(data_train_2, label_train_2, n_clusters=5)
+    # em_1 = run_em(data_train_1, label_train_1, n_components=3, covariance_type="diag")
+    # em_2 = run_em(data_train_2, label_train_2, n_components=12, covariance_type="full")
 
     # dimensionality reduction
     # pca_1 = run_pca(data_train_1, components=6)
     # pca_2 = run_pca(data_train_2, components=6)
-    ica_1 = run_ica(data_train_1, n_components=12)
-    ica_2 = run_ica(data_train_2, n_components=10)
-    # rca_1 = run_rca(data_train_1)
-    # rca_2 = run_rca(data_train_2)
+    # ica_1 = run_ica(data_train_1, n_components=12)
+    # ica_2 = run_ica(data_train_2, n_components=10)
+    rca_1 = run_rca(data_train_1)
+    rca_2 = run_rca(data_train_2)
     # lda_1 = run_lda(data_train_1)
     # lda_2 = run_lda(data_train_2)
 
@@ -692,14 +713,14 @@ if __name__ == '__main__':
     # PCA
     # pca_kmeans_1 = run_k_means(pca_1, label_train_1, n_clusters=3)
     # pca_kmeans_2 = run_k_means(pca_2, label_train_2, n_clusters=5)
-    # pca_em_1 = run_em(pca_1, label_train_1, n_components=14)
-    # pca_em_2 = run_em(pca_2, label_train_2, n_components=12)
+    # pca_em_1 = run_em(pca_1, label_train_1, n_components=14, covariance_type="spherical")
+    # pca_em_2 = run_em(pca_2, label_train_2, n_components=12, covariance_type="full")
 
     # ICA
-    # ica_kmeans_1 = run_k_means(ica_1, label_train_1)
-    # ica_kmeans_2 = run_k_means(ica_2, label_train_2)
-    # ica_em_1 = run_em(ica_1, label_train_1)
-    # ica_em_2 = run_em(ica_2, label_train_2)
+    # ica_kmeans_1 = run_k_means(ica_1, label_train_1, n_clusters=10)
+    # ica_kmeans_2 = run_k_means(ica_2, label_train_2, n_clusters=13)
+    # ica_em_1 = run_em(ica_1, label_train_1, n_components=5, covariance_type="spherical")
+    # ica_em_2 = run_em(ica_2, label_train_2, n_components=9, covariance_type="diag")
 
     # RCA
     # rca_kmeans_1 = run_k_means(rca_1, label_train_1)

@@ -23,17 +23,21 @@
 
 - [ ] PCA on dataset 1
 - [ ] PCA on dataset 2
+    - [ ] eigen values?
 - [ ] ann over PCA on dataset 1
 - [ ] ann over PCA on dataset 2
 - [ ] ICA on dataset 1
+    - [ ] actual kutosis numbers
 - [ ] ICA on dataset 2
 - [ ] ann over ICA on dataset 1
 - [ ] ann over ICA on dataset 2
 - [ ] RCA on dataset 1
+    - [ ] recon error
 - [ ] RCA on dataset 2
 - [ ] ann over RCA on dataset 1
 - [ ] ann over RCA on dataset 2
 - [ ] LDA on dataset 1
+    - [ ] ? recon error?
 - [ ] LDA on dataset 2
 - [ ] ann over LDA on dataset 1
 - [ ] ann over LDA on dataset 2
