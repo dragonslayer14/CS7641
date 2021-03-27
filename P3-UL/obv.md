@@ -40,6 +40,19 @@
 - em, spherical 5 components for 1 and diagonal 9 for 2 
     - only negative values, but it is only the relative scores that matter, not absolutes
 
+# RCA
+
+- both perform pretty poorly on recon error all through, cutting to about 20% error
+    - 10 for 1, 9 for 2
+- kmeans 3 on 1 and 4 on 2
+- em full 10 on 2 and 20 on 1 (up to 50)
+- from lecture: m is likely not as small as m from PCA or ICA, since it is not targeted
+
+## LDA
+
+- should perform poorly on dataset 1, since it only have 3 classes
+    - should be better on 2 since there are technically 7-ish
+
 ## scores
 
 K-means

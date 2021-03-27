@@ -27,6 +27,7 @@ from sklearn import mixture
 import seaborn as sns
 # show popup for graphs on mac
 from sklearn.preprocessing import StandardScaler
+from sklearn.random_projection import GaussianRandomProjection
 
 matplotlib.use("TKAgg")
 
@@ -642,25 +643,48 @@ def run_ica(data_train, n_components = None, n_components_range = None):
         return transformed[:,top_n]
 
 
-def run_rca(data_train, n_components = None, n_components_range = None):
+def plot_rca_curve(data):
+    scaler = StandardScaler()
+    scaler.fit(data)
+    x_train_scaler = scaler.transform(data)
+
+    # reconstruction error by components
+    recon_errs = []
+    sizes = range(1,12)
+    for size in sizes:
+        rca = GaussianRandomProjection(n_components=size, random_state=0)
+        transformed_data = rca.fit_transform(x_train_scaler)
+        inverse_data = np.linalg.pinv(rca.components_.T)
+        reconstructed_data = transformed_data.dot(inverse_data)
+        loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
+        recon_errs.append(loss)
+
+    plt.figure()
+    plt.title('recon error by Number of Components')
+    plt.ylabel('recon error')
+    plt.xlabel('Components')
+    plt.plot(sizes, recon_errs)
+
+
+def run_rca(data_train, n_components = None):
     if n_components is None:
-        plot_rca_curve(data_train, n_components_range)
+        plot_rca_curve(data_train)
         print()
         return data_train
     else:
-        rca = RandomizedProjection(n_components=n_components, random_state=0)
+        rca = GaussianRandomProjection(n_components=n_components, random_state=0)
 
         scaler = StandardScaler()
         scaler.fit(data_train)
         x_train_scaler = scaler.transform(data_train)
 
         # get reconstruction error score
-        transformed_data = pca.fit_transform(x_train_scaler)
-        inverse_data = np.linalg.pinv(pca.components_.T)
+        transformed_data = rca.fit_transform(x_train_scaler)
+        inverse_data = np.linalg.pinv(rca.components_.T)
         reconstructed_data = transformed_data.dot(inverse_data)
 
         loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
-        print(f"PCA loss: {loss}")
+        print(f"RCA loss: {loss}")
         return transformed_data
 
 
@@ -700,8 +724,8 @@ if __name__ == '__main__':
     # pca_2 = run_pca(data_train_2, components=6)
     # ica_1 = run_ica(data_train_1, n_components=12)
     # ica_2 = run_ica(data_train_2, n_components=10)
-    rca_1 = run_rca(data_train_1)
-    rca_2 = run_rca(data_train_2)
+    rca_1 = run_rca(data_train_1, n_components=10)
+    rca_2 = run_rca(data_train_2, n_components=9)
     # lda_1 = run_lda(data_train_1)
     # lda_2 = run_lda(data_train_2)
 
@@ -723,10 +747,10 @@ if __name__ == '__main__':
     # ica_em_2 = run_em(ica_2, label_train_2, n_components=9, covariance_type="diag")
 
     # RCA
-    # rca_kmeans_1 = run_k_means(rca_1, label_train_1)
-    # rca_kmeans_2 = run_k_means(rca_2, label_train_2)
-    # rca_em_1 = run_em(rca_1, label_train_1)
-    # rca_em_2 = run_em(rca_2, label_train_2)
+    rca_kmeans_1 = run_k_means(rca_1, label_train_1, n_clusters=3)
+    rca_kmeans_2 = run_k_means(rca_2, label_train_2, n_clusters=4)
+    rca_em_1 = run_em(rca_1, label_train_1, n_components=20, covariance_type="full")
+    rca_em_2 = run_em(rca_2, label_train_2, n_components=10, covariance_type="full")
 
     # LDA
     # lda_kmeans_1 = run_k_means(lda_1, label_train_1)
@@ -736,6 +760,11 @@ if __name__ == '__main__':
 
     plt.show()
     print()
+
+    # one hot encode clusters for kmeans
+    # probability of each cluster for em
+
+    #can create table of final model performance
 
     # dataset 1
     run_ann_1("charts/ann_1_final", show_plots=False)
