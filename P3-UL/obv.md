@@ -52,6 +52,7 @@
 
 - should perform poorly on dataset 1, since it only have 3 classes
     - should be better on 2 since there are technically 7-ish
+- not using the same variance cutoff graph as pca since the number of classes < features, so there is already reduction
 
 ## scores
 
@@ -99,17 +100,18 @@ RCA
 1: 0.7132075471698113
 2: 0.6354058251910766
 
+
 LDA
-1:
-2:
+1: 0.9861111111111112
+2: 0.5278953443632166
 
 kmeans
-1:
-2:
+1: 1.0
+2: 0.6341904608049265
 
 em
-1:
-2:
+1: 0.8880503144654088
+2: 0.6223479323203586
 
 ANN
 
