@@ -726,6 +726,8 @@ if __name__ == '__main__':
     # ica_2 = run_ica(data_train_2, n_components=10)
     rca_1 = run_rca(data_train_1, n_components=10)
     rca_2 = run_rca(data_train_2, n_components=9)
+    # projects based on label
+    # works well in simple cases where data can be linearly discriminated
     # lda_1 = run_lda(data_train_1)
     # lda_2 = run_lda(data_train_2)
 
