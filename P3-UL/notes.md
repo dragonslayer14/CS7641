@@ -128,3 +128,49 @@ reconstructed_data = transformed_data.dot(inverse_data)
 - not necessary to run a simple classifier after DR, it is just another dimension to verify the results
   - should do at least one of the discussed items to verify
   - basic requirements: eigenvalues, kurtosis, reconstruction error
+
+## OH 9
+
+- designed to compare DR methods, so it can be good to structure report in such a way as to make them clumped to make it easier to compare
+- kurtosis is vulernable to noise and outliers in the data
+  - make sure to plot components where you are getting a higher kurtosis to find more non-gaussian ones
+- make sure ICA kurtosis is done on ICA components, not reconstructed values
+- lda makes number of features less than number of classes, which can lead to an aggressive reduction
+- clustering as DR is simplistic, that is fine
+  - using the clusters as the features, either just cluster or one hot encoded, so 1 for the cluster it is in, 0 else
+- convergence criteria is student defined
+  - generally, performance is not changing, it has the value it is going to have
+  - cannot improve, or cannot significantly, without a much larger number of iterations
+- it is ok to not spend a long time on kmeans if it doesn't make sense and it is better to use a variation, like with gower distance, just explain why it doesn't make sense and why this other one does that you will be using
+- plots for DR can be hard, since you are not working with the original data, it's projected into new dimensions
+  - we really care about the new features and what they mean
+  - plot the best 2-3 dimensions and see if there is anything else that pops out
+    - pca will have the highest variance, but is there anything else that you see
+    - many not be trivial
+  - just try to provide some intuition about the new dimensions
+- NN
+  - need performance and convergence behavior
+  - don't need the learning curve, but could be used to show convergence
+- linear decline for reconstruction error is fine, it just means that each defines the same amount of your data
+  - especially for RCA
+  - should be doing some tuning for rca to make sure it is the best version of projection
+- all DR methods are not expected to work well
+  - depends on assumptions of algo and how data conforms
+- look at all pair plots for experimenting, but only interesting ones are needed in the report
+- ideally the NN should be tuned for each method, but it is not penalized if you don't
+  - if you have time
+  - if you are not throwing away a lot of information
+  - mainly for architecture of the network, like height and width, but others should still be tuned per
+- elbow method and silhouette score may not agree on k, that is fine
+  - silhouette is better defined though, so it may be the one to trust
+  - silhouette will give best score for clusters == points, so avoid that trap
+- need to provide results for all dr -> cluster combos, but not visualizations
+  - should be able to give optimal number of clusters and difference to part 1
+- for clustering
+  - find best k
+  - validate clusters with some score supervised or not
+  - trying to understand how the clusters look
+- it is possible to have more or fewer cluster than features
+- AIC and BIC make more sense for EM than silhouette wince they work better for probabilistic
+- kurtosis is the measure of non-gaussian-ity
+  - law of large numbers, when you add a bunch of signals together they will become a gaussian , so maximize non-gaussian-ness
