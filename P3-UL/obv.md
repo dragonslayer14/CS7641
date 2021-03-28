@@ -54,6 +54,11 @@
     - should be better on 2 since there are technically 7-ish
 - not using the same variance cutoff graph as pca since the number of classes < features, so there is already reduction
 
+## ANN
+dataset 1
+MLPClassifier(alpha=0.001, hidden_layer_sizes=(85,), learning_rate_init=0.01,
+              max_iter=350, momentum=0.5, random_state=0)
+
 ## scores
 
 K-means
@@ -102,8 +107,8 @@ RCA
 
 
 LDA
-1: 0.9861111111111112
-2: 0.5278953443632166
+1: 1.0
+2: 0.5469471523858389
 
 kmeans
 1: 1.0

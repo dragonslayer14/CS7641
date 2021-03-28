@@ -255,14 +255,14 @@ def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name
         "momentum": np.linspace(.1,1.0,10),
         "max_iter": range(100,550,50)
     }
-    clf = MLPClassifier(hidden_layer_sizes=(85,), **kwargs, random_state=0)
+    clf = MLPClassifier(hidden_layer_sizes=(85,), **kwargs, early_stopping=True, random_state=0)
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
         sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = MLPClassifier(hidden_layer_sizes=(85,), **kwargs).fit(data_train, label_train)
+    clf = MLPClassifier(hidden_layer_sizes=(85,), early_stopping=True, **kwargs).fit(data_train, label_train)
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
@@ -306,98 +306,7 @@ def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name
         print(f"ANN ({algo_name}) score: {clf.score(data_test, label_test)}")
 
 
-def run_ann_2(fig_name = None, show_plots = False):
-    # read in dataset from file
-    with open(DATASET_2, 'r') as f:
-        data = np.genfromtxt(f, delimiter=',')
-
-    data, labels = data[:,:-1], data[:,-1]
-
-    # split for training and testing
-    data_train,data_test, label_train, label_test = train_test_split(
-        data, labels, test_size=0.4, random_state=0, stratify=labels
-    )
-
-    # define model
-    # fix hyperparameters as needed to avoid unneeded grid search
-    clf = MLPClassifier(hidden_layer_sizes=(290,), max_iter=110, random_state=0)
-
-    # pulled from sklearn plot mnist example
-    # this example won't converge because of CI's time constraints, so we catch the
-    # warning and are ignore it here
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=ConvergenceWarning,
-                                module="sklearn")
-
-    # based off sklearn example for hp tuning
-    # https://scikit-learn.org/stable/modules/grid_search.html#
-
-    # define hyper parameter space to check over
-    # param_grid = {
-    #     # hidden layers?
-    #     "hidden_layer_sizes": [(i,j,) for i in range(10,210,10) for j in range(10,210,10)],
-    #     # alpha
-    #     # "alpha": [1e-3,1e-4,1e-5],
-    #     # learning rate
-    #     # "learning_rate_init": [1e-2,1e-3,1e-4],
-    #     # momentum
-    #     # "momentum": np.linspace(.1,1.0,10)
-    #     # solver
-    # }
-    #
-    basic = MLPClassifier().fit(data_train, label_train)
-    #
-    # sh = GridSearchCV(clf, param_grid, scoring="f1_weighted", cv=5, verbose=3).fit(data_train, label_train)
-    # print(sh.best_estimator_)
-    # clf = sh.best_estimator_
-
-    # based on sklearn learning curve example
-    # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
-
-    # plot learning curve for current model
-    title = f"Learning Curves (ANN) ({DATASET_2_NAME})"
-
-    plot_learning_curve(basic, title, data_train, label_train, ylim=(0, 1.01),scoring="f1_weighted",
-                        cv=5, n_jobs=4)
-    plot_learning_curve(clf, title, data_train, label_train, ylim=(0, 1.01),scoring="f1_weighted",
-                        cv=5, n_jobs=4)
-
-    if fig_name is not None:
-        now = datetime.now()
-        dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
-        plt.savefig(f"{fig_name}_learn_{dt_string}")
-
-
-    # based off sklearn validation curve example
-    # https://scikit-learn.org/stable/auto_examples/model_selection/plot_validation_curve.html
-
-    # plot validation curve
-    title = f"Validation Curve with ANN ({DATASET_2_NAME})"
-    x_lab = "Iterations"
-    y_lab = "Score"
-
-    plot_validation_curve(clf, title, data_train, label_train, x_lab, y_lab, scoring="f1_weighted", cv=5,
-                          param_name="max_iter", param_range=range(10,160,10), ylim=(0.0, 1.1))
-
-    if fig_name is not None:
-        plt.savefig(f"{fig_name}_val_{dt_string}")
-
-    # split and retrain to do a validation confusion matrix
-    t = MLPClassifier(hidden_layer_sizes=(290,), random_state=0)
-    t_train, t_test, l_train, l_test = train_test_split(data_train, label_train, random_state=0)
-
-    t.fit(t_train, l_train)
-
-    plot_confusion_matrix(t, t_test, l_test)
-
-    if fig_name is not None:
-        plt.savefig(f"{fig_name}_conf_matrix_{dt_string}")
-
-    if show_plots:
-        plt.show()
-
-
-def run_k_means(data_train, label_train, k_range = None, n_clusters = None):
+def run_k_means(data_train, label_train, data_test=None, k_range = None, n_clusters = None):
     # plot "score" over range of k
     #   sum of squared distances
     # treat like MCC to narrow down optimal cluster number
@@ -406,11 +315,22 @@ def run_k_means(data_train, label_train, k_range = None, n_clusters = None):
         return data_train
 
     # with tuned number of clusters
-    label_pred = KMeans(n_clusters=n_clusters, random_state=0).fit_predict(data_train)
+    kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(data_train)
+    label_pred = kmeans.predict(data_train)
 
     # check score to get an idea how well the clusters capture true values
     print(f"kmeans score: {rand_score(label_train, label_pred)}")
-    return label_pred
+
+    train_transform = kmeans.transform(data_train)
+    transform_with_pred = np.append(train_transform, [[x] for x in label_pred], axis=1)
+
+    if data_test is None:
+        return transform_with_pred
+    else:
+        test_transform = kmeans.transform(data_test)
+        test_predict = kmeans.predict(data_test)
+        return transform_with_pred,\
+               np.append(test_transform, [[x] for x in test_predict], axis=1)
 
     # TODO figure out TSNE
     tsne = TSNE()
@@ -418,9 +338,6 @@ def run_k_means(data_train, label_train, k_range = None, n_clusters = None):
 
     sns.scatterplot(X_embedded[:, 0], X_embedded[:, 1], hue=label_train, legend='full',
                     palette=sns.color_palette("bright", 3))
-    print()
-
-    # TODO feed into ANN
 
 
 def plot_bic_scores(data, n_components_range = None):
@@ -467,20 +384,27 @@ def plot_bic_scores(data, n_components_range = None):
               f'{best_gmm.n_components} components')
 
 
-def run_em(data_train, label_train, n_components_range = None, n_components=None, covariance_type=None):
+def run_em(data_train, label_train, data_test=None, n_components_range = None, n_components=None, covariance_type=None):
 
     if n_components is None or covariance_type is None:
         plot_bic_scores(data_train, n_components_range)
         return data_train
 
-    label_pred = GaussianMixture(n_components=n_components, covariance_type=covariance_type, random_state=0).fit_predict(data_train)
+    gmm = GaussianMixture(n_components=n_components, covariance_type=covariance_type, random_state=0).fit(data_train)
+    label_pred = gmm.predict(data_train)
 
     # check score to get an idea how well the clusters capture true values
     print(f"em score: {rand_score(label_train, label_pred)}")
 
-    return label_pred
+    prediction = np.append(gmm.predict_proba(data_train), [[x] for x in label_pred], axis=1)
 
-    # TODO feed into ANN
+    if data_test is None:
+        return prediction
+    else:
+        test_predict_prob = gmm.predict_proba(data_test)
+        test_predict = gmm.predict(data_test)
+
+        return prediction, np.append(test_predict_prob, [[x] for x in test_predict], axis=1)
 
 
 # taken from https://www.kaggle.com/lonewolf95/classification-tutorial-with-pca-and-gridsearchcv
@@ -518,7 +442,7 @@ def plot_pca_curve(data):
     plt.plot(sizes, recon_errs)
 
 
-def run_pca(data_train, components = None):
+def run_pca(data_train, data_test, components = None):
     # tuning
     if components is None:
         plot_pca_curve(data_train)
@@ -539,7 +463,10 @@ def run_pca(data_train, components = None):
 
         loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
         print(f"PCA loss: {loss}")
-        return transformed_data
+        x_test_scaler = scaler.transform(data_test)
+        transformed_test = pca.transform(x_test_scaler)
+
+        return transformed_data, transformed_test
 
 
 def plot_ica_curve(data, n_components_range = None):
@@ -598,7 +525,7 @@ def plot_ica_curve(data, n_components_range = None):
     plt.legend()
 
 
-def run_ica(data_train, n_components = None, n_components_range = None):
+def run_ica(data_train, data_test, n_components = None, n_components_range = None):
 
     if n_components is None:
         plot_ica_curve(data_train, n_components_range)
@@ -630,7 +557,10 @@ def run_ica(data_train, n_components = None, n_components_range = None):
 
         print(f"pulling components {top_n}")
 
-        return transformed[:,top_n]
+        x_test_scaler = scaler.transform(data_test)
+        transformed_test = ica.transform(x_test_scaler)
+
+        return transformed[:,top_n], transformed_test[:,top_n]
 
 
 def plot_rca_curve(data):
@@ -656,7 +586,7 @@ def plot_rca_curve(data):
     plt.plot(sizes, recon_errs)
 
 
-def run_rca(data_train, n_components = None):
+def run_rca(data_train, data_test, n_components = None):
     if n_components is None:
         plot_rca_curve(data_train)
         print()
@@ -675,22 +605,34 @@ def run_rca(data_train, n_components = None):
 
         loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
         print(f"RCA loss: {loss}")
-        return transformed_data
+        x_test_scaler = scaler.transform(data_test)
+        transformed_test = rca.transform(x_test_scaler)
+
+        return transformed_data, transformed_test
 
 
-def run_lda(data_train, label_train, data_test, label_test, **kwargs):
+def run_lda(data_train, label_train, data_test, **kwargs):
+    scaler = StandardScaler()
+    scaler.fit(data_train)
+    x_train_scaler = scaler.transform(data_train)
+
+    x_test_scaler = scaler.transform(data_test)
+
     if len(kwargs) == 0:
-        plot_validation_curve(LinearDiscriminantAnalysis(solver="svd"), "LDA tolerance", data_train, label_train,
+        plot_validation_curve(LinearDiscriminantAnalysis(solver="svd"), "LDA tolerance", x_train_scaler, label_train,
                               param_name="tol", param_range=np.linspace(1.0e-6,1.0e-3),
                               x_lab="tolerance", y_lab="accuracy")
-        plot_learning_curve(LinearDiscriminantAnalysis(solver="svd"), "LDA learning curve", data_train, label_train)
-        return data_train
+        plot_learning_curve(LinearDiscriminantAnalysis(solver="svd"), "LDA learning curve", x_train_scaler, label_train)
+        return x_train_scaler, x_test_scaler
 
-    model = LinearDiscriminantAnalysis(**kwargs).fit(data_train, label_train)
-    transformed = model.transform(data_train)
+    lda = LinearDiscriminantAnalysis(**kwargs)
+    transformed_data = lda.fit_transform(x_train_scaler, label_train)
 
-    print(f"LDA score: {model.score(data_test, label_test)}")
-    return transformed
+    print(f"LDA score: {lda.score(x_train_scaler, label_train)}")
+
+    transformed_test = lda.transform(x_test_scaler)
+
+    return transformed_data, transformed_test
 
 
 if __name__ == '__main__':
@@ -719,73 +661,77 @@ if __name__ == '__main__':
     )
 
     # clustering
-    k_means_1 = run_k_means(data_train_1, label_train_1, n_clusters=3)
-    k_means_2 = run_k_means(data_train_2, label_train_2, n_clusters=5)
-    # em_1 = run_em(data_train_1, label_train_1, n_components=3, covariance_type="diag")
-    # em_2 = run_em(data_train_2, label_train_2, n_components=12, covariance_type="full")
+    k_means_1_train, k_means_1_test = run_k_means(data_train_1, label_train_1, data_test_1, n_clusters=3)
+    k_means_2_train, k_means_2_test = run_k_means(data_train_2, label_train_2, data_test_2, n_clusters=5)
+    em_1_train, em_1_test = run_em(data_train_1, label_train_1, data_test_1, n_components=3, covariance_type="diag")
+    em_2_train, em_2_test = run_em(data_train_2, label_train_2, data_test_2, n_components=12, covariance_type="full")
 
     # dimensionality reduction
-    # pca_1 = run_pca(data_train_1, components=6)
-    # pca_2 = run_pca(data_train_2, components=6)
-    # ica_1 = run_ica(data_train_1, n_components=12)
-    # ica_2 = run_ica(data_train_2, n_components=10)
-    # rca_1 = run_rca(data_train_1, n_components=10)
-    # rca_2 = run_rca(data_train_2, n_components=9)
-    # projects based on label
-    # works well in simple cases where data can be linearly discriminated
-    lda_1 = run_lda(data_train_1, label_train_1, data_test_1, label_test_1, solver="svd")
-    lda_2 = run_lda(data_train_2, label_train_2, data_test_2, label_test_2, solver="svd")
-
-    # ANN work can just be done in the calls
-    # no sense making another place to do the work with one more step
+    pca_1_train, pca_1_test = run_pca(data_train_1, data_test_1, components=6)
+    pca_2_train, pca_2_test = run_pca(data_train_2, data_test_2, components=6)
+    ica_1_train, ica_1_test = run_ica(data_train_1, data_test_1, n_components=12)
+    ica_2_train, ica_2_test = run_ica(data_train_2, data_test_2, n_components=10)
+    rca_1_train, rca_1_test = run_rca(data_train_1, data_test_1, n_components=10)
+    rca_2_train, rca_2_test = run_rca(data_train_2, data_test_2, n_components=9)
+    lda_1_train, lda_1_test = run_lda(data_train_1, label_train_1, data_test_1, solver="svd")
+    lda_2_train, lda_2_test = run_lda(data_train_2, label_train_2, data_test_2, solver="svd")
 
     # combination experiments, DR + clustering
 
     # PCA
-    # pca_kmeans_1 = run_k_means(pca_1, label_train_1, n_clusters=3)
-    # pca_kmeans_2 = run_k_means(pca_2, label_train_2, n_clusters=5)
-    # pca_em_1 = run_em(pca_1, label_train_1, n_components=14, covariance_type="spherical")
-    # pca_em_2 = run_em(pca_2, label_train_2, n_components=12, covariance_type="full")
+    # pca_kmeans_1 = run_k_means(pca_1_train, label_train_1, n_clusters=3)
+    # pca_kmeans_2 = run_k_means(pca_2_train, label_train_2, n_clusters=5)
+    # pca_em_1 = run_em(pca_1_train, label_train_1, n_components=14, covariance_type="spherical")
+    # pca_em_2 = run_em(pca_2_train, label_train_2, n_components=12, covariance_type="full")
 
     # ICA
-    # ica_kmeans_1 = run_k_means(ica_1, label_train_1, n_clusters=10)
-    # ica_kmeans_2 = run_k_means(ica_2, label_train_2, n_clusters=13)
-    # ica_em_1 = run_em(ica_1, label_train_1, n_components=5, covariance_type="spherical")
-    # ica_em_2 = run_em(ica_2, label_train_2, n_components=9, covariance_type="diag")
+    # ica_kmeans_1 = run_k_means(ica_1_train, label_train_1, n_clusters=10)
+    # ica_kmeans_2 = run_k_means(ica_2_train, label_train_2, n_clusters=13)
+    # ica_em_1 = run_em(ica_1_train, label_train_1, n_components=5, covariance_type="spherical")
+    # ica_em_2 = run_em(ica_2_train, label_train_2, n_components=9, covariance_type="diag")
 
     # RCA
-    # rca_kmeans_1 = run_k_means(rca_1, label_train_1, n_clusters=3)
-    # rca_kmeans_2 = run_k_means(rca_2, label_train_2, n_clusters=4)
-    # rca_em_1 = run_em(rca_1, label_train_1, n_components=20, covariance_type="full")
-    # rca_em_2 = run_em(rca_2, label_train_2, n_components=10, covariance_type="full")
+    # rca_kmeans_1 = run_k_means(rca_1_train, label_train_1, n_clusters=3)
+    # rca_kmeans_2 = run_k_means(rca_2_train, label_train_2, n_clusters=4)
+    # rca_em_1 = run_em(rca_1_train, label_train_1, n_components=20, covariance_type="full")
+    # rca_em_2 = run_em(rca_2_train, label_train_2, n_components=10, covariance_type="full")
 
     # LDA
-    lda_kmeans_1 = run_k_means(lda_1, label_train_1, n_clusters=3)
-    lda_kmeans_2 = run_k_means(lda_2, label_train_2, n_clusters=7)
-    lda_em_1 = run_em(lda_1, label_train_1, covariance_type="tied", n_components=6)
-    lda_em_2 = run_em(lda_2, label_train_2, covariance_type="full", n_components=7)
-
-    plt.show()
-    print()
+    # lda_kmeans_1 = run_k_means(lda_1_train, label_train_1, n_clusters=3)
+    # lda_kmeans_2 = run_k_means(lda_2_train, label_train_2, n_clusters=7)
+    # lda_em_1 = run_em(lda_1_train, label_train_1, covariance_type="tied", n_components=6)
+    # lda_em_2 = run_em(lda_2_train, label_train_2, covariance_type="full", n_components=7)
 
     # one hot encode clusters for kmeans
     # probability of each cluster for em
     # dr will just be the transformed data and original labels
 
-    #can create table of final model performance
-
-    # TODO update calls to return back transformed/reduced test data
-    #   fit and transform training, but also return transform of test
-    #   this will reduce the test data/reduce/transform/project it into the same space
-    #   so that it actually makes sense
+    # can create table of final model performance
 
     # dataset 1
-    run_ann_1("charts/ann_1_final", show_plots=False)
 
+    run_ann(k_means_2_train, label_train_2, k_means_2_test, label_test_2, algo_name="kmeans", data_name=DATASET_2_NAME,
+            plot_learning=True, fig_name="charts/ann_kmeans_2",
+            show_plots=False)
+    run_ann(em_2_train, label_train_2, em_2_test, label_test_2, algo_name="em", data_name=DATASET_2_NAME,
+            plot_learning=True, fig_name="charts/ann_em_2",
+            show_plots=False)
+    run_ann(pca_2_train, label_train_2, pca_2_test, label_test_2, algo_name="pca", data_name=DATASET_2_NAME,
+            plot_learning=True, fig_name="charts/ann_pca_2",
+            show_plots=False)
+    run_ann(ica_2_train, label_train_2, ica_2_test, label_test_2, algo_name="ica", data_name=DATASET_2_NAME,
+            plot_learning=True, fig_name="charts/ann_ica_2",
+            show_plots=False)
+    run_ann(rca_2_train, label_train_2, rca_2_test, label_test_2, algo_name="rca", data_name=DATASET_2_NAME,
+            plot_learning=True, fig_name="charts/ann_rca_2",
+            show_plots=False)
+    run_ann(lda_2_train, label_train_2, lda_2_test, label_test_2, algo_name="lda", data_name=DATASET_2_NAME,
+            plot_learning=True, fig_name="charts/ann_lda_2",
+            show_plots=False)
+
+
+    plt.show()
+    print()
     plt.close('all')
-
-    # dataset 2
-    run_ann_2("charts/ann_2_final", show_plots=False)
-
-    plt.close('all')
+    # TODO set up passing plot names to methods to save
 
