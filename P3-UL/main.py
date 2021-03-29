@@ -712,29 +712,23 @@ if __name__ == '__main__':
 
     # dataset 1
 
-    print("kmeans: ", end='')
     run_ann(k_means_2_train, label_train_2, k_means_2_test, label_test_2, algo_name="kmeans", data_name=DATASET_2_NAME,
             plot_learning=False, fig_name="charts/ann_kmeans_2_alpha", show_plots=False, alpha=1e-05,
             learning_rate_init=0.01,
             test=True)
-    print("em: ", end='')
     run_ann(em_2_train, label_train_2, em_2_test, label_test_2, algo_name="em", data_name=DATASET_2_NAME,
             plot_learning=False, fig_name="charts/ann_em_2_alpha", show_plots=False, learning_rate_init=0.01,
             test=True)
-    print("pca: ", end='')
     run_ann(pca_2_train, label_train_2, pca_2_test, label_test_2, algo_name="pca", data_name=DATASET_2_NAME,
             plot_learning=False, fig_name="charts/ann_pca_2_alpha", show_plots=False, alpha=0.001,
             learning_rate_init=0.01,
             test=True)
-    print("ica: ", end='')
     run_ann(ica_2_train, label_train_2, ica_2_test, label_test_2, algo_name="ica", data_name=DATASET_2_NAME,
             plot_learning=False, fig_name="charts/ann_ica_2_alpha", show_plots=False, learning_rate_init=0.01,
             test=True)
-    print("rca: ", end='')
     run_ann(rca_2_train, label_train_2, rca_2_test, label_test_2, algo_name="rca", data_name=DATASET_2_NAME,
             plot_learning=False, fig_name="charts/ann_rca_2_alpha", show_plots=False, learning_rate_init=0.01,
             test=True)
-    print("lda: ", end='')
     run_ann(lda_2_train, label_train_2, lda_2_test, label_test_2, algo_name="lda", data_name=DATASET_2_NAME,
             plot_learning=False, fig_name="charts/ann_lda_2_alpha", show_plots=False, learning_rate_init=0.01,
             test=True)
