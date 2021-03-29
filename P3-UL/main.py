@@ -241,27 +241,27 @@ def plot_elbow(X, k_range = None):
 
 def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name, fig_name = None, show_plots = False,
             plot_learning = False, plot_val=False, val_param="max_iter",val_range=range(10,210,10), test=False,
-            val_lab = "Iterations", **kwargs):
+            val_lab = "Iterations", grid_search=False, **kwargs):
 
-    # based off sklearn example for hp tuning
-    # https://scikit-learn.org/stable/modules/grid_search.html#
+    if grid_search:
+        # based off sklearn example for hp tuning
+        # https://scikit-learn.org/stable/modules/grid_search.html#
 
-    # define hyper parameter space to check over
-    param_grid = {
-        # alpha
-        "alpha": [1e-3,1e-4,1e-5],
-        # learning rate
-        "learning_rate_init": [1e-2,1e-3,1e-4]
-    }
-    clf = MLPClassifier(hidden_layer_sizes=(85,), **kwargs, max_iter=500, early_stopping=True, random_state=0)
+        # define hyper parameter space to check over
+        param_grid = {
+            # alpha
+            "alpha": [1e-3,1e-4,1e-5],
+            # learning rate
+            "learning_rate_init": [1e-2,1e-3,1e-4]
+        }
+        clf = MLPClassifier(hidden_layer_sizes=(85,), **kwargs, max_iter=1000, early_stopping=True, random_state=0)
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore", category=ConvergenceWarning,
-                                module="sklearn")
-        sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
-    print(sh.best_estimator_)
-    clf = MLPClassifier(hidden_layer_sizes=(85,), max_iter=500, early_stopping=True, **kwargs).fit(data_train, label_train)
-
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=ConvergenceWarning,
+                                    module="sklearn")
+            sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
+        print(sh.best_estimator_)
+    clf = MLPClassifier(hidden_layer_sizes=(85,), max_iter=500, random_state=0, early_stopping=True, **kwargs).fit(data_train, label_train)
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
 
