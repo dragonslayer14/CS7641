@@ -55,9 +55,8 @@
 - not using the same variance cutoff graph as pca since the number of classes < features, so there is already reduction
 
 ## ANN
-dataset 1
-MLPClassifier(alpha=0.001, hidden_layer_sizes=(85,), learning_rate_init=0.01,
-              max_iter=350, momentum=0.5, random_state=0)
+
+- kmeans 
 
 ## scores
 
@@ -121,25 +120,14 @@ em
 ANN
 
 kmeans
-1:
-2:
-
+0.4390150057714506
 em
-1:
-2:
-
+0.4974990380915737
 PCA
-1:
-2:
-
+0.5244324740284725
 ICA
-1:
-2:
-
+0.43709118891881493
 RCA
-1:
-2:
-
+0.5267410542516352
 LDA
-1:
-2:
+0.5467487495190458

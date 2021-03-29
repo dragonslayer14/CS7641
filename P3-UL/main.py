@@ -1,3 +1,4 @@
+import time
 import warnings
 
 import matplotlib
@@ -250,19 +251,16 @@ def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name
         # alpha
         "alpha": [1e-3,1e-4,1e-5],
         # learning rate
-        "learning_rate_init": [1e-2,1e-3,1e-4],
-        # momentum
-        "momentum": np.linspace(.1,1.0,10),
-        "max_iter": range(100,550,50)
+        "learning_rate_init": [1e-2,1e-3,1e-4]
     }
-    clf = MLPClassifier(hidden_layer_sizes=(85,), **kwargs, early_stopping=True, random_state=0)
+    clf = MLPClassifier(hidden_layer_sizes=(85,), **kwargs, max_iter=500, early_stopping=True, random_state=0)
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=ConvergenceWarning,
                                 module="sklearn")
         sh = HalvingGridSearchCV(clf, param_grid, cv=5, factor=2).fit(data_train, label_train)
     print(sh.best_estimator_)
-    clf = MLPClassifier(hidden_layer_sizes=(85,), early_stopping=True, **kwargs).fit(data_train, label_train)
+    clf = MLPClassifier(hidden_layer_sizes=(85,), max_iter=500, early_stopping=True, **kwargs).fit(data_train, label_train)
 
     # based on sklearn learning curve example
     # https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
@@ -297,6 +295,8 @@ def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name
                               param_name=val_param, param_range=val_range, ylim=(0.0, 1.1))
 
         if fig_name is not None:
+            now = datetime.now()
+            dt_string = now.strftime("%Y-%m-%d-%H-%M-%S")
             plt.savefig(f"{fig_name}_val_{dt_string}")
 
     if show_plots:
@@ -640,6 +640,8 @@ if __name__ == '__main__':
 
     # todo change ann to take in data and tuning params
 
+    start = time.time()
+
     with open(DATASET_1, 'r') as f:
         data = np.genfromtxt(f, delimiter=',')
 
@@ -710,26 +712,34 @@ if __name__ == '__main__':
 
     # dataset 1
 
+    print("kmeans: ", end='')
     run_ann(k_means_2_train, label_train_2, k_means_2_test, label_test_2, algo_name="kmeans", data_name=DATASET_2_NAME,
-            plot_learning=True, fig_name="charts/ann_kmeans_2",
-            show_plots=False)
+            plot_learning=False, fig_name="charts/ann_kmeans_2_alpha", show_plots=False, alpha=1e-05,
+            learning_rate_init=0.01,
+            test=True)
+    print("em: ", end='')
     run_ann(em_2_train, label_train_2, em_2_test, label_test_2, algo_name="em", data_name=DATASET_2_NAME,
-            plot_learning=True, fig_name="charts/ann_em_2",
-            show_plots=False)
+            plot_learning=False, fig_name="charts/ann_em_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
+    print("pca: ", end='')
     run_ann(pca_2_train, label_train_2, pca_2_test, label_test_2, algo_name="pca", data_name=DATASET_2_NAME,
-            plot_learning=True, fig_name="charts/ann_pca_2",
-            show_plots=False)
+            plot_learning=False, fig_name="charts/ann_pca_2_alpha", show_plots=False, alpha=0.001,
+            learning_rate_init=0.01,
+            test=True)
+    print("ica: ", end='')
     run_ann(ica_2_train, label_train_2, ica_2_test, label_test_2, algo_name="ica", data_name=DATASET_2_NAME,
-            plot_learning=True, fig_name="charts/ann_ica_2",
-            show_plots=False)
+            plot_learning=False, fig_name="charts/ann_ica_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
+    print("rca: ", end='')
     run_ann(rca_2_train, label_train_2, rca_2_test, label_test_2, algo_name="rca", data_name=DATASET_2_NAME,
-            plot_learning=True, fig_name="charts/ann_rca_2",
-            show_plots=False)
+            plot_learning=False, fig_name="charts/ann_rca_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
+    print("lda: ", end='')
     run_ann(lda_2_train, label_train_2, lda_2_test, label_test_2, algo_name="lda", data_name=DATASET_2_NAME,
-            plot_learning=True, fig_name="charts/ann_lda_2",
-            show_plots=False)
+            plot_learning=False, fig_name="charts/ann_lda_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
 
-
+    print(f"took {time.time() - start:.2f} seconds")
     plt.show()
     print()
     plt.close('all')
