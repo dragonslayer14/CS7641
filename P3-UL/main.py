@@ -3,6 +3,7 @@ import warnings
 
 import matplotlib
 import numpy as np
+from mpl_toolkits.mplot3d import Axes3D
 from scipy.spatial.distance import cdist
 from scipy.stats import kurtosis
 from sklearn.cluster import KMeans
@@ -635,6 +636,18 @@ def run_lda(data_train, label_train, data_test, **kwargs):
     return transformed_data, transformed_test
 
 
+def plot_first_2_dim(data, true_labels, algo_name):
+    plt.figure()
+    lw = 2
+    label_space = [int(x) for x in set(true_labels)]
+    colors = ['navy', 'turquoise', 'darkorange', 'red', 'green', 'purple', 'gold', 'cyan']
+    for color, i in zip(colors, label_space):
+        plt.scatter(data[true_labels == i, 0], data[true_labels == i, 1], alpha=.8, lw=lw,
+                    label=i)
+    plt.legend(loc='best', shadow=False, scatterpoints=1)
+    plt.title(algo_name)
+
+
 if __name__ == '__main__':
     # TODO plots for description
 
@@ -663,10 +676,10 @@ if __name__ == '__main__':
     )
 
     # clustering
-    k_means_1_train, k_means_1_test = run_k_means(data_train_1, label_train_1, data_test_1, n_clusters=3)
-    k_means_2_train, k_means_2_test = run_k_means(data_train_2, label_train_2, data_test_2, n_clusters=5)
-    em_1_train, em_1_test = run_em(data_train_1, label_train_1, data_test_1, n_components=3, covariance_type="diag")
-    em_2_train, em_2_test = run_em(data_train_2, label_train_2, data_test_2, n_components=12, covariance_type="full")
+    # k_means_1_train, k_means_1_test = run_k_means(data_train_1, label_train_1, data_test_1, n_clusters=3)
+    # k_means_2_train, k_means_2_test = run_k_means(data_train_2, label_train_2, data_test_2, n_clusters=5)
+    # em_1_train, em_1_test = run_em(data_train_1, label_train_1, data_test_1, n_components=3, covariance_type="diag")
+    # em_2_train, em_2_test = run_em(data_train_2, label_train_2, data_test_2, n_components=12, covariance_type="full")
 
     # dimensionality reduction
     pca_1_train, pca_1_test = run_pca(data_train_1, data_test_1, components=6)
@@ -678,6 +691,22 @@ if __name__ == '__main__':
     lda_1_train, lda_1_test = run_lda(data_train_1, label_train_1, data_test_1, solver="svd")
     lda_2_train, lda_2_test = run_lda(data_train_2, label_train_2, data_test_2, solver="svd")
 
+    plot_first_2_dim(pca_1_train, label_train_1, "pca 1")
+    plt.savefig("charts/pca_1_first_2_dim")
+    plot_first_2_dim(pca_2_train, label_train_2, "pca 2")
+    plt.savefig("charts/pca_2_first_2_dim")
+    plot_first_2_dim(ica_1_train, label_train_1, "ica 1")
+    plt.savefig("charts/ica_1_first_2_dim")
+    plot_first_2_dim(ica_2_train, label_train_2, "ica 2")
+    plt.savefig("charts/ica_2_first_2_dim")
+    plot_first_2_dim(rca_1_train, label_train_1, "rca 1")
+    plt.savefig("charts/rca_1_first_2_dim")
+    plot_first_2_dim(rca_2_train, label_train_2, "rca 2")
+    plt.savefig("charts/rca_2_first_2_dim")
+    plot_first_2_dim(lda_1_train, label_train_1, "lda 1")
+    plt.savefig("charts/lda_1_first_2_dim")
+    plot_first_2_dim(lda_2_train, label_train_2, "lda 2")
+    plt.savefig("charts/lda_2_first_2_dim")
     # combination experiments, DR + clustering
 
     # PCA
@@ -712,26 +741,26 @@ if __name__ == '__main__':
 
     # dataset 1
 
-    run_ann(k_means_2_train, label_train_2, k_means_2_test, label_test_2, algo_name="kmeans", data_name=DATASET_2_NAME,
-            plot_learning=False, fig_name="charts/ann_kmeans_2_alpha", show_plots=False, alpha=1e-05,
-            learning_rate_init=0.01,
-            test=True)
-    run_ann(em_2_train, label_train_2, em_2_test, label_test_2, algo_name="em", data_name=DATASET_2_NAME,
-            plot_learning=False, fig_name="charts/ann_em_2_alpha", show_plots=False, learning_rate_init=0.01,
-            test=True)
-    run_ann(pca_2_train, label_train_2, pca_2_test, label_test_2, algo_name="pca", data_name=DATASET_2_NAME,
-            plot_learning=False, fig_name="charts/ann_pca_2_alpha", show_plots=False, alpha=0.001,
-            learning_rate_init=0.01,
-            test=True)
-    run_ann(ica_2_train, label_train_2, ica_2_test, label_test_2, algo_name="ica", data_name=DATASET_2_NAME,
-            plot_learning=False, fig_name="charts/ann_ica_2_alpha", show_plots=False, learning_rate_init=0.01,
-            test=True)
-    run_ann(rca_2_train, label_train_2, rca_2_test, label_test_2, algo_name="rca", data_name=DATASET_2_NAME,
-            plot_learning=False, fig_name="charts/ann_rca_2_alpha", show_plots=False, learning_rate_init=0.01,
-            test=True)
-    run_ann(lda_2_train, label_train_2, lda_2_test, label_test_2, algo_name="lda", data_name=DATASET_2_NAME,
-            plot_learning=False, fig_name="charts/ann_lda_2_alpha", show_plots=False, learning_rate_init=0.01,
-            test=True)
+    # run_ann(k_means_2_train, label_train_2, k_means_2_test, label_test_2, algo_name="kmeans", data_name=DATASET_2_NAME,
+    #         plot_learning=False, fig_name="charts/ann_kmeans_2_alpha", show_plots=False, alpha=1e-05,
+    #         learning_rate_init=0.01,
+    #         test=True)
+    # run_ann(em_2_train, label_train_2, em_2_test, label_test_2, algo_name="em", data_name=DATASET_2_NAME,
+    #         plot_learning=False, fig_name="charts/ann_em_2_alpha", show_plots=False, learning_rate_init=0.01,
+    #         test=True)
+    # run_ann(pca_2_train, label_train_2, pca_2_test, label_test_2, algo_name="pca", data_name=DATASET_2_NAME,
+    #         plot_learning=False, fig_name="charts/ann_pca_2_alpha", show_plots=False, alpha=0.001,
+    #         learning_rate_init=0.01,
+    #         test=True)
+    # run_ann(ica_2_train, label_train_2, ica_2_test, label_test_2, algo_name="ica", data_name=DATASET_2_NAME,
+    #         plot_learning=False, fig_name="charts/ann_ica_2_alpha", show_plots=False, learning_rate_init=0.01,
+    #         test=True)
+    # run_ann(rca_2_train, label_train_2, rca_2_test, label_test_2, algo_name="rca", data_name=DATASET_2_NAME,
+    #         plot_learning=False, fig_name="charts/ann_rca_2_alpha", show_plots=False, learning_rate_init=0.01,
+    #         test=True)
+    # run_ann(lda_2_train, label_train_2, lda_2_test, label_test_2, algo_name="lda", data_name=DATASET_2_NAME,
+    #         plot_learning=False, fig_name="charts/ann_lda_2_alpha", show_plots=False, learning_rate_init=0.01,
+    #         test=True)
 
     print(f"took {time.time() - start:.2f} seconds")
     plt.show()
