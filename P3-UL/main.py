@@ -31,7 +31,7 @@ import seaborn as sns
 # show popup for graphs on mac
 from sklearn.preprocessing import StandardScaler
 from sklearn.random_projection import GaussianRandomProjection
-
+from yellowbrick.text.tsne import tsne
 matplotlib.use("TKAgg")
 
 import matplotlib.pyplot as plt
@@ -307,7 +307,11 @@ def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name
         print(f"ANN ({algo_name}) score: {clf.score(data_test, label_test)}")
 
 
-def run_k_means(data_train, label_train, data_test=None, k_range = None, n_clusters = None):
+def plot_tsne(data, labels):
+    tsne(data, labels, decompose_by=data.shape[1]-1, random_state=0)
+
+
+def run_k_means(data_train, label_train, data_test=None, k_range = None, n_clusters = None, tsne_lab = ""):
     # plot "score" over range of k
     #   sum of squared distances
     # treat like MCC to narrow down optimal cluster number
@@ -324,6 +328,9 @@ def run_k_means(data_train, label_train, data_test=None, k_range = None, n_clust
 
     train_transform = kmeans.transform(data_train)
     transform_with_pred = np.append(train_transform, [[x] for x in label_pred], axis=1)
+
+    plot_tsne(train_transform, label_pred)
+    plt.savefig(f"kmeans_tsne_{tsne_lab}")
 
     if data_test is None:
         return transform_with_pred
@@ -385,7 +392,8 @@ def plot_bic_scores(data, n_components_range = None):
               f'{best_gmm.n_components} components')
 
 
-def run_em(data_train, label_train, data_test=None, n_components_range = None, n_components=None, covariance_type=None):
+def run_em(data_train, label_train, data_test=None, n_components_range = None, n_components=None, covariance_type=None,
+           tsne_lab=""):
 
     if n_components is None or covariance_type is None:
         plot_bic_scores(data_train, n_components_range)
@@ -398,6 +406,9 @@ def run_em(data_train, label_train, data_test=None, n_components_range = None, n
     print(f"em score: {rand_score(label_train, label_pred)}")
 
     prediction = np.append(gmm.predict_proba(data_train), [[x] for x in label_pred], axis=1)
+
+    plot_tsne(data_train, label_pred)
+    plt.savefig(f"em_tsne_{tsne_lab}")
 
     if data_test is None:
         return prediction
@@ -676,10 +687,10 @@ if __name__ == '__main__':
     )
 
     # clustering
-    # k_means_1_train, k_means_1_test = run_k_means(data_train_1, label_train_1, data_test_1, n_clusters=3)
-    # k_means_2_train, k_means_2_test = run_k_means(data_train_2, label_train_2, data_test_2, n_clusters=5)
-    # em_1_train, em_1_test = run_em(data_train_1, label_train_1, data_test_1, n_components=3, covariance_type="diag")
-    # em_2_train, em_2_test = run_em(data_train_2, label_train_2, data_test_2, n_components=12, covariance_type="full")
+    k_means_1_train, k_means_1_test = run_k_means(data_train_1, label_train_1, data_test_1, n_clusters=3, tsne_lab="1")
+    k_means_2_train, k_means_2_test = run_k_means(data_train_2, label_train_2, data_test_2, n_clusters=5, tsne_lab="2")
+    em_1_train, em_1_test = run_em(data_train_1, label_train_1, data_test_1, n_components=3, covariance_type="diag", tsne_lab="1")
+    em_2_train, em_2_test = run_em(data_train_2, label_train_2, data_test_2, n_components=12, covariance_type="full", tsne_lab="2")
 
     # dimensionality reduction
     pca_1_train, pca_1_test = run_pca(data_train_1, data_test_1, components=6)
@@ -710,28 +721,28 @@ if __name__ == '__main__':
     # combination experiments, DR + clustering
 
     # PCA
-    # pca_kmeans_1 = run_k_means(pca_1_train, label_train_1, n_clusters=3)
-    # pca_kmeans_2 = run_k_means(pca_2_train, label_train_2, n_clusters=5)
-    # pca_em_1 = run_em(pca_1_train, label_train_1, n_components=14, covariance_type="spherical")
-    # pca_em_2 = run_em(pca_2_train, label_train_2, n_components=12, covariance_type="full")
+    pca_kmeans_1 = run_k_means(pca_1_train, label_train_1, n_clusters=3, tsne_lab="pca_1")
+    pca_kmeans_2 = run_k_means(pca_2_train, label_train_2, n_clusters=5, tsne_lab="pca_2")
+    pca_em_1 = run_em(pca_1_train, label_train_1, n_components=14, covariance_type="spherical", tsne_lab="pca_1")
+    pca_em_2 = run_em(pca_2_train, label_train_2, n_components=12, covariance_type="full", tsne_lab="pca_2")
 
     # ICA
-    # ica_kmeans_1 = run_k_means(ica_1_train, label_train_1, n_clusters=10)
-    # ica_kmeans_2 = run_k_means(ica_2_train, label_train_2, n_clusters=13)
-    # ica_em_1 = run_em(ica_1_train, label_train_1, n_components=5, covariance_type="spherical")
-    # ica_em_2 = run_em(ica_2_train, label_train_2, n_components=9, covariance_type="diag")
+    ica_kmeans_1 = run_k_means(ica_1_train, label_train_1, n_clusters=10, tsne_lab="ica_1")
+    ica_kmeans_2 = run_k_means(ica_2_train, label_train_2, n_clusters=13, tsne_lab="ica_2")
+    ica_em_1 = run_em(ica_1_train, label_train_1, n_components=5, covariance_type="spherical", tsne_lab="ica_1")
+    ica_em_2 = run_em(ica_2_train, label_train_2, n_components=9, covariance_type="diag", tsne_lab="ica_2")
 
     # RCA
-    # rca_kmeans_1 = run_k_means(rca_1_train, label_train_1, n_clusters=3)
-    # rca_kmeans_2 = run_k_means(rca_2_train, label_train_2, n_clusters=4)
-    # rca_em_1 = run_em(rca_1_train, label_train_1, n_components=20, covariance_type="full")
-    # rca_em_2 = run_em(rca_2_train, label_train_2, n_components=10, covariance_type="full")
+    rca_kmeans_1 = run_k_means(rca_1_train, label_train_1, n_clusters=3, tsne_lab="rca_1")
+    rca_kmeans_2 = run_k_means(rca_2_train, label_train_2, n_clusters=4, tsne_lab="rca_2")
+    rca_em_1 = run_em(rca_1_train, label_train_1, n_components=20, covariance_type="full", tsne_lab="rca_1")
+    rca_em_2 = run_em(rca_2_train, label_train_2, n_components=10, covariance_type="full", tsne_lab="rca_2")
 
     # LDA
-    # lda_kmeans_1 = run_k_means(lda_1_train, label_train_1, n_clusters=3)
-    # lda_kmeans_2 = run_k_means(lda_2_train, label_train_2, n_clusters=7)
-    # lda_em_1 = run_em(lda_1_train, label_train_1, covariance_type="tied", n_components=6)
-    # lda_em_2 = run_em(lda_2_train, label_train_2, covariance_type="full", n_components=7)
+    lda_kmeans_1 = run_k_means(lda_1_train, label_train_1, n_clusters=3, tsne_lab="lda_1")
+    lda_kmeans_2 = run_k_means(lda_2_train, label_train_2, n_clusters=7, tsne_lab="lda_2")
+    lda_em_1 = run_em(lda_1_train, label_train_1, covariance_type="tied", n_components=6, tsne_lab="lda_1")
+    lda_em_2 = run_em(lda_2_train, label_train_2, covariance_type="full", n_components=7, tsne_lab="lda_2")
 
     # one hot encode clusters for kmeans
     # probability of each cluster for em
