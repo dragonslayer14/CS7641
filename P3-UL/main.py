@@ -311,7 +311,7 @@ def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name
 
 
 def plot_tsne(data, labels):
-    plt.xlim((data.min()*2, data.max()*2))
+    plt.figure()
     tsne(data, labels, decompose_by=data.shape[1]-1, random_state=0, show=False)
 
 
