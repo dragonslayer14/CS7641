@@ -243,6 +243,7 @@ def plot_elbow(X, k_range = None):
 def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name, fig_name = None, show_plots = False,
             plot_learning = False, plot_val=False, val_param="max_iter",val_range=range(10,210,10), test=False,
             val_lab = "Iterations", grid_search=False, **kwargs):
+    start = time.time()
 
     if grid_search:
         # based off sklearn example for hp tuning
@@ -306,9 +307,12 @@ def run_ann(data_train, label_train, data_test, label_test, algo_name, data_name
     if test:
         print(f"ANN ({algo_name}) score: {clf.score(data_test, label_test)}")
 
+    print(f"ANN ({algo_name}) time: {time.time()-start:.2f}")
+
 
 def plot_tsne(data, labels):
-    tsne(data, labels, decompose_by=data.shape[1]-1, random_state=0)
+    plt.xlim((data.min()*2, data.max()*2))
+    tsne(data, labels, decompose_by=data.shape[1]-1, random_state=0, show=False)
 
 
 def run_k_means(data_train, label_train, data_test=None, k_range = None, n_clusters = None, tsne_lab = ""):
@@ -317,7 +321,7 @@ def run_k_means(data_train, label_train, data_test=None, k_range = None, n_clust
     # treat like MCC to narrow down optimal cluster number
     if n_clusters is None:
         plot_elbow(data_train, k_range)
-        return data_train
+        return data_train, data_test
 
     # with tuned number of clusters
     kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(data_train)
@@ -331,21 +335,16 @@ def run_k_means(data_train, label_train, data_test=None, k_range = None, n_clust
 
     plot_tsne(train_transform, label_pred)
     plt.savefig(f"kmeans_tsne_{tsne_lab}")
+    plot_tsne(train_transform, label_train)
+    plt.savefig(f"kmeans_tsne_{tsne_lab}_true")
 
     if data_test is None:
-        return transform_with_pred
+        return transform_with_pred, data_test
     else:
         test_transform = kmeans.transform(data_test)
         test_predict = kmeans.predict(data_test)
         return transform_with_pred,\
                np.append(test_transform, [[x] for x in test_predict], axis=1)
-
-    # TODO figure out TSNE
-    tsne = TSNE()
-    X_embedded = tsne.fit_transform(data_train)
-
-    sns.scatterplot(X_embedded[:, 0], X_embedded[:, 1], hue=label_train, legend='full',
-                    palette=sns.color_palette("bright", 3))
 
 
 def plot_bic_scores(data, n_components_range = None):
@@ -397,7 +396,7 @@ def run_em(data_train, label_train, data_test=None, n_components_range = None, n
 
     if n_components is None or covariance_type is None:
         plot_bic_scores(data_train, n_components_range)
-        return data_train
+        return data_train, data_test
 
     gmm = GaussianMixture(n_components=n_components, covariance_type=covariance_type, random_state=0).fit(data_train)
     label_pred = gmm.predict(data_train)
@@ -409,9 +408,11 @@ def run_em(data_train, label_train, data_test=None, n_components_range = None, n
 
     plot_tsne(data_train, label_pred)
     plt.savefig(f"em_tsne_{tsne_lab}")
+    plot_tsne(data_train, label_train)
+    plt.savefig(f"em_tsne_{tsne_lab}_true")
 
     if data_test is None:
-        return prediction
+        return prediction, None
     else:
         test_predict_prob = gmm.predict_proba(data_test)
         test_predict = gmm.predict(data_test)
@@ -702,24 +703,24 @@ if __name__ == '__main__':
     lda_1_train, lda_1_test = run_lda(data_train_1, label_train_1, data_test_1, solver="svd")
     lda_2_train, lda_2_test = run_lda(data_train_2, label_train_2, data_test_2, solver="svd")
 
-    plot_first_2_dim(pca_1_train, label_train_1, "pca 1")
-    plt.savefig("charts/pca_1_first_2_dim")
-    plot_first_2_dim(pca_2_train, label_train_2, "pca 2")
-    plt.savefig("charts/pca_2_first_2_dim")
-    plot_first_2_dim(ica_1_train, label_train_1, "ica 1")
-    plt.savefig("charts/ica_1_first_2_dim")
-    plot_first_2_dim(ica_2_train, label_train_2, "ica 2")
-    plt.savefig("charts/ica_2_first_2_dim")
-    plot_first_2_dim(rca_1_train, label_train_1, "rca 1")
-    plt.savefig("charts/rca_1_first_2_dim")
-    plot_first_2_dim(rca_2_train, label_train_2, "rca 2")
-    plt.savefig("charts/rca_2_first_2_dim")
-    plot_first_2_dim(lda_1_train, label_train_1, "lda 1")
-    plt.savefig("charts/lda_1_first_2_dim")
-    plot_first_2_dim(lda_2_train, label_train_2, "lda 2")
-    plt.savefig("charts/lda_2_first_2_dim")
-    # combination experiments, DR + clustering
-
+    # plot_first_2_dim(pca_1_train, label_train_1, "pca 1")
+    # plt.savefig("charts/pca_1_first_2_dim")
+    # plot_first_2_dim(pca_2_train, label_train_2, "pca 2")
+    # plt.savefig("charts/pca_2_first_2_dim")
+    # plot_first_2_dim(ica_1_train, label_train_1, "ica 1")
+    # plt.savefig("charts/ica_1_first_2_dim")
+    # plot_first_2_dim(ica_2_train, label_train_2, "ica 2")
+    # plt.savefig("charts/ica_2_first_2_dim")
+    # plot_first_2_dim(rca_1_train, label_train_1, "rca 1")
+    # plt.savefig("charts/rca_1_first_2_dim")
+    # plot_first_2_dim(rca_2_train, label_train_2, "rca 2")
+    # plt.savefig("charts/rca_2_first_2_dim")
+    # plot_first_2_dim(lda_1_train, label_train_1, "lda 1")
+    # plt.savefig("charts/lda_1_first_2_dim")
+    # plot_first_2_dim(lda_2_train, label_train_2, "lda 2")
+    # plt.savefig("charts/lda_2_first_2_dim")
+    # # combination experiments, DR + clustering
+    #
     # PCA
     pca_kmeans_1 = run_k_means(pca_1_train, label_train_1, n_clusters=3, tsne_lab="pca_1")
     pca_kmeans_2 = run_k_means(pca_2_train, label_train_2, n_clusters=5, tsne_lab="pca_2")
@@ -777,5 +778,4 @@ if __name__ == '__main__':
     plt.show()
     print()
     plt.close('all')
-    # TODO set up passing plot names to methods to save
 
