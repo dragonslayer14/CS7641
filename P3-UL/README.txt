@@ -3,7 +3,7 @@ Running code:
 
 - Project code in folder `P3-UL`
 - kmeans elbow method code adapted from from https://www.geeksforgeeks.org/elbow-method-for-optimal-value-of-k-in-kmeans/
-    - pca elbow code from https://www.kaggle.com/lonewolf95/classification-tutorial-with-pca-and-gridsearchcv
+- pca elbow code from https://www.kaggle.com/lonewolf95/classification-tutorial-with-pca-and-gridsearchcv
 - EM BIC model selection code from https://scikit-learn.org/stable/auto_examples/mixture/plot_gmm_selection.html#sphx-glr-auto-examples-mixture-plot-gmm-selection-py
 - Requirements were pip frozen to requirements.txt
 - data labels in wine.csv were modified to be 0 based, rather than 1, for the sake of comparison
