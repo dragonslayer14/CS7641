@@ -784,7 +784,7 @@ if __name__ == '__main__':
             test=True)
 
     print(f"took {time.time() - start:.2f} seconds")
-    plt.show()
+    # plt.show()
     print()
     plt.close('all')
 

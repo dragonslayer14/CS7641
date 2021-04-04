@@ -9,8 +9,6 @@ Running code:
 - data labels in wine.csv were modified to be 0 based, rather than 1, for the sake of comparison
 - tsne used the base call in yellowbrick to avoid needing to manually fiddle with parameters
     - https://www.scikit-yb.org/en/latest/api/text/tsne.html#t-sne-corpus-visualization
-- `python main.py` // update as needed
+- `python main.py`
     - run all algorithms for all problems
-    - creates fitness vs problem size chart, stored in the charts folder, by the name of the problem which
-    contains all algos for comparison
-    - ANN comparison step generates a chart named ann_compare.png and outputs fit times to the console for the table
+    - ANN comparison dumps scores and times to console for making the necessary table
