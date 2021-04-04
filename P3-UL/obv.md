@@ -56,7 +56,19 @@
 
 ## ANN
 
-- kmeans 
+scores/times
+ANN (kmeans) score: 0.4390150057714506
+ANN (kmeans) time: 0.79
+ANN (em) score: 0.49595998460946517
+ANN (em) time: 1.42
+ANN (pca) score: 0.5263562908811081
+ANN (pca) time: 0.82
+ANN (ica) score: 0.4367064255482878
+ANN (ica) time: 0.69
+ANN (rca) score: 0.5236629472874182
+ANN (rca) time: 0.64
+ANN (lda) score: 0.5390534821085032
+ANN (lda) time: 0.57
 
 ## scores
 
@@ -126,7 +138,8 @@ em
 PCA
 0.5244324740284725
 ICA
-0.43709118891881493
+ANN (ica) score: 0.5298191612158523
+ANN (ica) time: 1.00
 RCA
 0.5267410542516352
 LDA

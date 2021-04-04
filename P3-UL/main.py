@@ -499,7 +499,7 @@ def plot_ica_curve(data, n_components_range = None):
         # Fit a Gaussian mixture with EM
         ica = FastICA(n_components=n_components, max_iter=500, random_state=0)
         transformed = ica.fit_transform(x_train_scaler)
-        kurt_values = kurtosis(transformed, axis=0)
+        kurt_values = kurtosis(x_train_scaler, axis=0)
         kurtosis_vals.append(np.mean(kurt_values))
         if kurtosis_vals[-1] > highest_kurtosis:
             highest_kurtosis = kurtosis_vals[-1]
@@ -523,11 +523,11 @@ def plot_ica_curve(data, n_components_range = None):
 
     plt.title(f'Selected ica: {best_gmm.n_components} components')
 
-    kurtosis_vals = kurtosis(best_gmm.fit_transform(x_train_scaler), axis=0)
+    kurtosis_vals = kurtosis(x_train_scaler, axis=0)
 
     plt.figure()
     bars = []
-    plt.plot(kurtosis_vals, label="kurtosis")
+    plt.plot(abs(kurtosis_vals), label="kurtosis")
 
     plt.xticks(range(n_components_range.stop))
     plt.title('kurtosis per component')
@@ -538,12 +538,12 @@ def plot_ica_curve(data, n_components_range = None):
     plt.legend()
 
 
-def run_ica(data_train, data_test, n_components = None, n_components_range = None):
+def run_ica(data_train, data_test, n_components = None, n_components_range = None, take_top=None):
 
     if n_components is None:
         plot_ica_curve(data_train, n_components_range)
         print()
-        return data_train
+        return data_train, data_test
     else:
         scaler = StandardScaler()
         scaler.fit(data_train)
@@ -561,12 +561,14 @@ def run_ica(data_train, data_test, n_components = None, n_components_range = Non
 
         # pull the identified components out of full data
         # pull top n components with highest kurtosis as the subset
-        kurtosis_vals = [(val,i) for val,i in zip(kurtosis(transformed, axis=0),range(0,data.shape[1]))]
+        kurtosis_vals = [(val,i) for val,i in zip(kurtosis(x_train_scaler, axis=0),range(0,data.shape[1]))]
 
         kurtosis_vals.sort(key=lambda x:-x[0])
 
-        # 4 from visual on graph
-        top_n = [x[1] for x in kurtosis_vals[:4]]
+        if take_top is None:
+            take_top = data_train.shape[1]//2
+
+        top_n = [x[1] for x in kurtosis_vals[:take_top]]
 
         print(f"pulling components {top_n}")
 
@@ -584,13 +586,20 @@ def plot_rca_curve(data):
     # reconstruction error by components
     recon_errs = []
     sizes = range(1,12)
+    stds=[]
     for size in sizes:
-        rca = GaussianRandomProjection(n_components=size, random_state=0)
-        transformed_data = rca.fit_transform(x_train_scaler)
-        inverse_data = np.linalg.pinv(rca.components_.T)
-        reconstructed_data = transformed_data.dot(inverse_data)
-        loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
+        losses=[]
+        for state in [5,30,50,200, 0]:
+            rca = GaussianRandomProjection(n_components=size, random_state=state)
+            transformed_data = rca.fit_transform(x_train_scaler)
+            inverse_data = np.linalg.pinv(rca.components_.T)
+            reconstructed_data = transformed_data.dot(inverse_data)
+            loss = ((x_train_scaler - reconstructed_data) ** 2).mean()
+            losses.append(loss)
         recon_errs.append(loss)
+        stds.append(np.std(losses))
+
+    print(f"rca avg std: {np.mean(stds)}")
 
     plt.figure()
     plt.title('recon error by Number of Components')
@@ -696,31 +705,31 @@ if __name__ == '__main__':
     # dimensionality reduction
     pca_1_train, pca_1_test = run_pca(data_train_1, data_test_1, components=6)
     pca_2_train, pca_2_test = run_pca(data_train_2, data_test_2, components=6)
-    ica_1_train, ica_1_test = run_ica(data_train_1, data_test_1, n_components=12)
-    ica_2_train, ica_2_test = run_ica(data_train_2, data_test_2, n_components=10)
+    ica_1_train, ica_1_test = run_ica(data_train_1, data_test_1, n_components=12, take_top=6)
+    ica_2_train, ica_2_test = run_ica(data_train_2, data_test_2, n_components=10, take_top=4)
     rca_1_train, rca_1_test = run_rca(data_train_1, data_test_1, n_components=10)
     rca_2_train, rca_2_test = run_rca(data_train_2, data_test_2, n_components=9)
     lda_1_train, lda_1_test = run_lda(data_train_1, label_train_1, data_test_1, solver="svd")
     lda_2_train, lda_2_test = run_lda(data_train_2, label_train_2, data_test_2, solver="svd")
 
-    # plot_first_2_dim(pca_1_train, label_train_1, "pca 1")
-    # plt.savefig("charts/pca_1_first_2_dim")
-    # plot_first_2_dim(pca_2_train, label_train_2, "pca 2")
-    # plt.savefig("charts/pca_2_first_2_dim")
-    # plot_first_2_dim(ica_1_train, label_train_1, "ica 1")
-    # plt.savefig("charts/ica_1_first_2_dim")
-    # plot_first_2_dim(ica_2_train, label_train_2, "ica 2")
-    # plt.savefig("charts/ica_2_first_2_dim")
-    # plot_first_2_dim(rca_1_train, label_train_1, "rca 1")
-    # plt.savefig("charts/rca_1_first_2_dim")
-    # plot_first_2_dim(rca_2_train, label_train_2, "rca 2")
-    # plt.savefig("charts/rca_2_first_2_dim")
-    # plot_first_2_dim(lda_1_train, label_train_1, "lda 1")
-    # plt.savefig("charts/lda_1_first_2_dim")
-    # plot_first_2_dim(lda_2_train, label_train_2, "lda 2")
-    # plt.savefig("charts/lda_2_first_2_dim")
-    # # combination experiments, DR + clustering
-    #
+    plot_first_2_dim(pca_1_train, label_train_1, "pca 1")
+    plt.savefig("charts/pca_1_first_2_dim")
+    plot_first_2_dim(pca_2_train, label_train_2, "pca 2")
+    plt.savefig("charts/pca_2_first_2_dim")
+    plot_first_2_dim(ica_1_train, label_train_1, "ica 1")
+    plt.savefig("charts/ica_1_first_2_dim")
+    plot_first_2_dim(ica_2_train, label_train_2, "ica 2")
+    plt.savefig("charts/ica_2_first_2_dim")
+    plot_first_2_dim(rca_1_train, label_train_1, "rca 1")
+    plt.savefig("charts/rca_1_first_2_dim")
+    plot_first_2_dim(rca_2_train, label_train_2, "rca 2")
+    plt.savefig("charts/rca_2_first_2_dim")
+    plot_first_2_dim(lda_1_train, label_train_1, "lda 1")
+    plt.savefig("charts/lda_1_first_2_dim")
+    plot_first_2_dim(lda_2_train, label_train_2, "lda 2")
+    plt.savefig("charts/lda_2_first_2_dim")
+    # combination experiments, DR + clustering
+
     # PCA
     pca_kmeans_1 = run_k_means(pca_1_train, label_train_1, n_clusters=3, tsne_lab="pca_1")
     pca_kmeans_2 = run_k_means(pca_2_train, label_train_2, n_clusters=5, tsne_lab="pca_2")
@@ -728,10 +737,10 @@ if __name__ == '__main__':
     pca_em_2 = run_em(pca_2_train, label_train_2, n_components=12, covariance_type="full", tsne_lab="pca_2")
 
     # ICA
-    ica_kmeans_1 = run_k_means(ica_1_train, label_train_1, n_clusters=10, tsne_lab="ica_1")
-    ica_kmeans_2 = run_k_means(ica_2_train, label_train_2, n_clusters=13, tsne_lab="ica_2")
-    ica_em_1 = run_em(ica_1_train, label_train_1, n_components=5, covariance_type="spherical", tsne_lab="ica_1")
-    ica_em_2 = run_em(ica_2_train, label_train_2, n_components=9, covariance_type="diag", tsne_lab="ica_2")
+    ica_kmeans_1 = run_k_means(ica_1_train, label_train_1, n_clusters=2, tsne_lab="ica_1")
+    ica_kmeans_2 = run_k_means(ica_2_train, label_train_2, n_clusters=5, tsne_lab="ica_2")
+    ica_em_1 = run_em(ica_1_train, label_train_1, n_components=2, covariance_type="diag", tsne_lab="ica_1")
+    ica_em_2 = run_em(ica_2_train, label_train_2, n_components=13, covariance_type="diag", tsne_lab="ica_2")
 
     # RCA
     rca_kmeans_1 = run_k_means(rca_1_train, label_train_1, n_clusters=3, tsne_lab="rca_1")
@@ -753,26 +762,26 @@ if __name__ == '__main__':
 
     # dataset 1
 
-    # run_ann(k_means_2_train, label_train_2, k_means_2_test, label_test_2, algo_name="kmeans", data_name=DATASET_2_NAME,
-    #         plot_learning=False, fig_name="charts/ann_kmeans_2_alpha", show_plots=False, alpha=1e-05,
-    #         learning_rate_init=0.01,
-    #         test=True)
-    # run_ann(em_2_train, label_train_2, em_2_test, label_test_2, algo_name="em", data_name=DATASET_2_NAME,
-    #         plot_learning=False, fig_name="charts/ann_em_2_alpha", show_plots=False, learning_rate_init=0.01,
-    #         test=True)
-    # run_ann(pca_2_train, label_train_2, pca_2_test, label_test_2, algo_name="pca", data_name=DATASET_2_NAME,
-    #         plot_learning=False, fig_name="charts/ann_pca_2_alpha", show_plots=False, alpha=0.001,
-    #         learning_rate_init=0.01,
-    #         test=True)
-    # run_ann(ica_2_train, label_train_2, ica_2_test, label_test_2, algo_name="ica", data_name=DATASET_2_NAME,
-    #         plot_learning=False, fig_name="charts/ann_ica_2_alpha", show_plots=False, learning_rate_init=0.01,
-    #         test=True)
-    # run_ann(rca_2_train, label_train_2, rca_2_test, label_test_2, algo_name="rca", data_name=DATASET_2_NAME,
-    #         plot_learning=False, fig_name="charts/ann_rca_2_alpha", show_plots=False, learning_rate_init=0.01,
-    #         test=True)
-    # run_ann(lda_2_train, label_train_2, lda_2_test, label_test_2, algo_name="lda", data_name=DATASET_2_NAME,
-    #         plot_learning=False, fig_name="charts/ann_lda_2_alpha", show_plots=False, learning_rate_init=0.01,
-    #         test=True)
+    run_ann(k_means_2_train, label_train_2, k_means_2_test, label_test_2, algo_name="kmeans", data_name=DATASET_2_NAME,
+            plot_learning=False, fig_name="charts/ann_kmeans_2_alpha", show_plots=False, alpha=1e-05,
+            learning_rate_init=0.01,
+            test=True)
+    run_ann(em_2_train, label_train_2, em_2_test, label_test_2, algo_name="em", data_name=DATASET_2_NAME,
+            plot_learning=False, fig_name="charts/ann_em_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
+    run_ann(pca_2_train, label_train_2, pca_2_test, label_test_2, algo_name="pca", data_name=DATASET_2_NAME,
+            plot_learning=False, fig_name="charts/ann_pca_2_alpha", show_plots=False, alpha=0.001,
+            learning_rate_init=0.01,
+            test=True)
+    run_ann(ica_2_train, label_train_2, ica_2_test, label_test_2, algo_name="ica", data_name=DATASET_2_NAME,
+            plot_learning=False, fig_name="charts/ann_ica_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
+    run_ann(rca_2_train, label_train_2, rca_2_test, label_test_2, algo_name="rca", data_name=DATASET_2_NAME,
+            plot_learning=False, fig_name="charts/ann_rca_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
+    run_ann(lda_2_train, label_train_2, lda_2_test, label_test_2, algo_name="lda", data_name=DATASET_2_NAME,
+            plot_learning=False, fig_name="charts/ann_lda_2_alpha", show_plots=False, learning_rate_init=0.01,
+            test=True)
 
     print(f"took {time.time() - start:.2f} seconds")
     plt.show()

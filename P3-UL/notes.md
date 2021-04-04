@@ -173,4 +173,6 @@ reconstructed_data = transformed_data.dot(inverse_data)
 - it is possible to have more or fewer cluster than features
 - AIC and BIC make more sense for EM than silhouette wince they work better for probabilistic
 - kurtosis is the measure of non-gaussian-ity
-  - law of large numbers, when you add a bunch of signals together they will become a gaussian , so maximize non-gaussian-ness
+  - law of large numbers, when you add a bunch of signals together they will become a gaussian, so maximize non-gaussian-ness
+- only the absolute value of the kurtosis matter
+- kurtosis over the components, not the transformed data
