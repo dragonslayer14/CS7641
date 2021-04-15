@@ -1,6 +1,7 @@
-from hiive import mdptoolbox, examples
-P, R = examples.forest()
-vi = mdptoolbox.mdp.ValueIteration(P, R, 0.96)
+from hiive.mdptoolbox import example, mdp
+
+P, R = example.forest()
+vi = mdp.ValueIteration(P, R, 0.96)
 print(vi.verbose)
 
 vi.run()
