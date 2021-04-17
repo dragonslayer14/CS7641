@@ -15,6 +15,7 @@ if __name__ == '__main__':
     start = time.time()
     np.random.seed(0)
     
+    # TODO probably should make multiple sizes, will make tuning ql a pain because so many iterations will be needed
     # grid world, frozen lake, small 225 states
     random_map = generate_random_map(size=15, p=0.8)
 
@@ -140,39 +141,40 @@ if __name__ == '__main__':
     if tune_ql:
         
         # max iter
-        iter_range = [10**4, 5*(10**4), 10**5, 5*(10**5), 10**6]
-        ql_time = []
-        ql_max_v = []
-
-        for iter in iter_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=1.0, n_iter=iter)
-            ql.run()
-            ql_time.append(ql.time)
-            ql_max_v.append(np.max(ql.V))
-
-        plt.figure()
-        plt.plot(iter_range, ql_time, label="QL")
-        plt.xlabel('iterations')
-        plt.ylabel('time')
-        plt.title('iteration vs time')
-        plt.legend()
-        plt.savefig("charts/lake_ql_iter_time")
-
-        plt.figure()
-        plt.plot(iter_range, ql_max_v, label="QL")
-        plt.xlabel('iterations')
-        plt.ylabel('max v')
-        plt.title('iterations vs max v')
-        plt.legend()
-        plt.savefig("charts/lake_ql_iter_max_v")
-        plt.show()
+        if False:
+            iter_range = [10**4, 5*(10**4), 10**5, 5*(10**5), 10**6, 5*(10**6)]
+            ql_time = []
+            ql_max_v = []
+    
+            for iter in iter_range:
+                ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=1.0, n_iter=iter)
+                ql.run()
+                ql_time.append(ql.time)
+                ql_max_v.append(np.max(ql.V))
+    
+            plt.figure()
+            plt.plot(iter_range, ql_time, label="QL")
+            plt.xlabel('iterations')
+            plt.ylabel('time')
+            plt.title('iteration vs time')
+            plt.legend()
+            plt.savefig("charts/lake_ql_iter_time")
+    
+            plt.figure()
+            plt.plot(iter_range, ql_max_v, label="QL")
+            plt.xlabel('iterations')
+            plt.ylabel('max v')
+            plt.title('iterations vs max v')
+            plt.legend()
+            plt.savefig("charts/lake_ql_iter_max_v")
+            plt.show()
         
-        gamma_range = np.linspace(0.01, 0.99, 99)
+        gamma_range = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 0.99]
         ql_time = []
         ql_max_v = []
     
         for gamma in gamma_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=gamma, n_iter=100000)
+            ql = mdp.QLearning(transitions, rewards, gamma=gamma, n_iter=10**6)
             ql.run()
             ql_time.append(ql.time)
             ql_max_v.append(np.max(ql.V))
@@ -193,15 +195,15 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/lake_ql_gamma_max_v")
 
-        plt.show()
+        # plt.show()
         
         # epsilon
-        epsilon_range = np.arange(0.1, 1.01, 0.01)
+        epsilon_range = np.arange(0.1, 1.1, 0.1)
         ql_time = []
         ql_max_v = []
     
         for epsilon in epsilon_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=epsilon, n_iter=100000)
+            ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=epsilon, n_iter=10**6)
             ql.run()
             ql_time.append(ql.time)
             ql_max_v.append(np.max(ql.V))
@@ -222,7 +224,7 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/lake_ql_epsilon_max_v")
 
-        # plt.show()
+        plt.show()
 
     # solve with VI
     # run_vi(transition, reward, 0.96)
@@ -362,7 +364,7 @@ if __name__ == '__main__':
     if tune_ql:
     
         # max iter
-        iter_range = [10 ** 4, 5 * (10 ** 4), 10 ** 5, 5 * (10 ** 5), 10 ** 6]
+        iter_range = [10 ** 4, 5 * (10 ** 4), 10 ** 5, 5 * (10 ** 5), 10 ** 6, 5*(10**6)]
         ql_time = []
         ql_max_v = []
     
@@ -388,7 +390,7 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/forest_ql_iter_max_v")
         
-        gamma_range = np.linspace(0.01, 0.99, 99)
+        gamma_range = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 0.99]
         ql_time = []
         ql_max_v = []
     
@@ -417,7 +419,7 @@ if __name__ == '__main__':
         # plt.show()
     
         # epsilon
-        epsilon_range = np.arange(0.1, 1.01, 0.01)
+        epsilon_range = np.arange(0.1, 1.1, 0.1)
         ql_time = []
         ql_max_v = []
     
