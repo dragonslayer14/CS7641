@@ -363,7 +363,7 @@ if __name__ == '__main__':
 
         # plt.show()
 
-    tune_ql = True
+    tune_ql = False
     if tune_ql:
     
         # max iter
