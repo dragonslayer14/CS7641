@@ -137,7 +137,7 @@ if __name__ == '__main__':
 
         plt.show()
 
-    tune_ql = True
+    tune_ql = False
     if tune_ql:
         
         # max iter
@@ -169,33 +169,34 @@ if __name__ == '__main__':
             plt.savefig("charts/lake_ql_iter_max_v")
             plt.show()
         
-        gamma_range = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 0.99]
-        ql_time = []
-        ql_max_v = []
-    
-        for gamma in gamma_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=gamma, n_iter=10**6)
-            ql.run()
-            ql_time.append(ql.time)
-            ql_max_v.append(np.max(ql.V))
+        if False:
+            gamma_range = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 0.99]
+            ql_time = []
+            ql_max_v = []
         
-        plt.figure()
-        plt.plot(gamma_range, ql_time, label="QL")
-        plt.xlabel('gamma')
-        plt.ylabel('time')
-        plt.title('Gamma vs time')
-        plt.legend()
-        plt.savefig("charts/lake_ql_gamma_time")
-
-        plt.figure()
-        plt.plot(gamma_range, ql_max_v, label="QL")
-        plt.xlabel('gamma')
-        plt.ylabel('max v')
-        plt.title('Gamma vs max v')
-        plt.legend()
-        plt.savefig("charts/lake_ql_gamma_max_v")
-
-        # plt.show()
+            for gamma in gamma_range:
+                ql = mdp.QLearning(transitions, rewards, gamma=gamma, n_iter=10**6)
+                ql.run()
+                ql_time.append(ql.time)
+                ql_max_v.append(np.max(ql.V))
+            
+            plt.figure()
+            plt.plot(gamma_range, ql_time, label="QL")
+            plt.xlabel('gamma')
+            plt.ylabel('time')
+            plt.title('Gamma vs time')
+            plt.legend()
+            plt.savefig("charts/lake_ql_gamma_time")
+    
+            plt.figure()
+            plt.plot(gamma_range, ql_max_v, label="QL")
+            plt.xlabel('gamma')
+            plt.ylabel('max v')
+            plt.title('Gamma vs max v')
+            plt.legend()
+            plt.savefig("charts/lake_ql_gamma_max_v")
+    
+            # plt.show()
         
         # epsilon
         epsilon_range = np.arange(0.1, 1.1, 0.1)
@@ -203,7 +204,7 @@ if __name__ == '__main__':
         ql_max_v = []
     
         for epsilon in epsilon_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=epsilon, n_iter=10**6)
+            ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=epsilon, n_iter=10**6)
             ql.run()
             ql_time.append(ql.time)
             ql_max_v.append(np.max(ql.V))
@@ -226,30 +227,32 @@ if __name__ == '__main__':
 
         plt.show()
 
-    # solve with VI
-    # run_vi(transition, reward, 0.96)
-    vi = mdp.ValueIteration(transitions, rewards, gamma=0.99, epsilon=0.0001)
-    vi.run()
-    print(vi.policy)
-    print(vi.iter)
-
-    # solve with PI
-    # run_pi(transition, reward, 0.96, )
-    pi = mdp.PolicyIterationModified(transitions, rewards, gamma=0.99, max_iter=1000, epsilon=0.0001)
-    pi.run()
-    print(pi.policy)
-    print(pi.iter)
-
-    # solve with QL
-    # run_ql(transition, reward, 0.96, epsilon=.95, max_iter=100000)
-    ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=1.0, n_iter=100000)
-    res = ql.run()
-    # print(ql.Q)
-    print(ql.time)
-    print(ql.policy)
-    print(ql.V)
-    # print(ql.v_mean)
-    # (2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 1, 3, 0)
+    run_lake = False
+    if run_lake:
+        # solve with VI
+        # run_vi(transition, reward, 0.96)
+        vi = mdp.ValueIteration(transitions, rewards, gamma=0.99, epsilon=0.0001)
+        vi.run()
+        print(vi.policy)
+        print(vi.iter)
+    
+        # solve with PI
+        # run_pi(transition, reward, 0.96, )
+        pi = mdp.PolicyIterationModified(transitions, rewards, gamma=0.99, max_iter=1000, epsilon=0.0001)
+        pi.run()
+        print(pi.policy)
+        print(pi.iter)
+    
+        # solve with QL
+        # run_ql(transition, reward, 0.96, epsilon=.95, max_iter=100000)
+        ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=0.9, n_iter=10**6)
+        res = ql.run()
+        # print(ql.Q)
+        print(ql.time)
+        print(ql.policy)
+        print(ql.V)
+        # print(ql.v_mean)
+        # (2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 1, 3, 0)
 
     # non grid world, forest, large, 5000 states
     transitions, rewards = example.forest(S=5000, r1=10)
