@@ -67,3 +67,17 @@
 - BURLAP is, by far, the best option for this
 - plotting in java, probably easiest to dump to csv then plot in something else
 - it's ok if q learning doesn't converge after a lot of iterations, it's just part of the analysis
+
+## OH 12
+
+- don't need to describe how the algos work, but it will come up anyway as part of the comparison, since it is based heavily in how they are defined
+  - pi looking at the policy changes as opposed to vi looking at the utility of each state
+- ideally looking at multiple sizes for each problem to compare easy, medium, challenging setups
+  - comparing between two completely different problems is hard because so much changes
+  - two sizes should be sufficient
+- can use q values to track convergence
+  - not sure what this means or if this is in the context of rolling your own
+- for PI, if you are looking at more than the policy no longer changing, you are throwing away the advantage of policy iteration
+  - policy iteration looks at the point where the policy stops changing, rather than the utility of each state, which may not converge for a while, even without the policy changing
+- should have at least some visualization for the HP tuning, but it isn't necessary to show it for all sizes, if you do multiple
+- need something larger than 8x8 for frozen lake to call it a large problem
