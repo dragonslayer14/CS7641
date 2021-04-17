@@ -11,36 +11,6 @@ matplotlib.use("TKAgg")
 import matplotlib.pyplot as plt
 
 
-def run_pi(transition, reward, discount, epsilon = 0.01, max_iter=1000):
-    pi = mdp.PolicyIterationModified(transition, reward, discount, epsilon=epsilon, max_iter=max_iter)
-    pi.run()
-    print(pi.policy)
-    print(pi.iter)
-
-
-def run_vi(transition, reward, discount, epsilon=0.01, max_iter=1000):
-    # In verbose mode, at each iteration, displays the variation of V and the condition which stopped iterations:
-    # epsilon-optimum policy found or maximum number of iterations reached.
-    vi = mdp.ValueIteration(transition, reward, discount,epsilon,max_iter)
-    print(vi.verbose)
-
-    vi.run()
-
-    print(vi.policy)
-
-    print(vi.iter)
-
-
-def run_ql(transition, reward, discount, epsilon=1.0, epsilon_decay=0.99, epsilon_min=0.1, max_iter=10000):
-    ql = mdp.QLearning(transition, reward, discount, epsilon=epsilon, epsilon_decay=epsilon_decay,
-                       epsilon_min=epsilon_min, n_iter=max_iter, skip_check=False)
-    res = ql.run()
-    # print(ql.Q)
-    print(ql.policy)
-    print(ql.V)
-    # print(ql.v_mean)
-
-
 if __name__ == '__main__':
     start = time.time()
     np.random.seed(0)
