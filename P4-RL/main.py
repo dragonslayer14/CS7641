@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 rewards[state][action] += reward
 
     # tune PI/VI gamma values
-    tune_gamma = False
+    tune_gamma = True
     if tune_gamma:
         gamma_range = np.linspace(0.01, 0.99, 99)
         vi_iter = []
@@ -69,6 +69,7 @@ if __name__ == '__main__':
         plt.ylabel('Iterations')
         plt.title('Gamma vs iterations')
         plt.legend()
+        plt.savefig("charts/lake_gamma_iter")
 
         plt.figure()
         plt.plot(gamma_range, vi_time, label="VI")
@@ -77,6 +78,7 @@ if __name__ == '__main__':
         plt.ylabel('time')
         plt.title('Gamma vs time')
         plt.legend()
+        plt.savefig("charts/lake_gamma_time")
 
         plt.figure()
         plt.plot(gamma_range, vi_max_v, label="VI")
@@ -85,11 +87,12 @@ if __name__ == '__main__':
         plt.ylabel('max v')
         plt.title('Gamma vs max v')
         plt.legend()
-        
+        plt.savefig("charts/lake_gamma_max_v")
+
         plt.show()
     
     # tune VI/PI epsilon as stopping value
-    tune_epsilon = False
+    tune_epsilon = True
     if tune_epsilon:
         epsilon_range = np.arange(0.0001, 0.05, 0.005)
         vi_iter = []
@@ -119,6 +122,7 @@ if __name__ == '__main__':
         plt.ylabel('Iterations')
         plt.title('epsilon vs iterations')
         plt.legend()
+        plt.savefig("charts/lake_epsilon_iter")
 
         plt.figure()
         plt.plot(epsilon_range, vi_time, label="VI")
@@ -127,6 +131,7 @@ if __name__ == '__main__':
         plt.ylabel('time')
         plt.title('epsilon vs time')
         plt.legend()
+        plt.savefig("charts/lake_epsilon_time")
 
         plt.figure()
         plt.plot(epsilon_range, vi_max_v, label="VI")
@@ -135,6 +140,7 @@ if __name__ == '__main__':
         plt.ylabel('max v')
         plt.title('epsilon vs max v')
         plt.legend()
+        plt.savefig("charts/lake_epsilon_max_v")
 
         plt.show()
 
