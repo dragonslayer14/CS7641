@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 rewards[state][action] += reward
 
     # tune PI/VI gamma values
-    tune_gamma = True
+    tune_gamma = False
     if tune_gamma:
         gamma_range = np.linspace(0.01, 0.99, 99)
         vi_iter = []
@@ -90,7 +90,7 @@ if __name__ == '__main__':
         plt.savefig("charts/lake_gamma_max_v")
 
     # tune VI/PI epsilon as stopping value
-    tune_epsilon = True
+    tune_epsilon = False
     if tune_epsilon:
         epsilon_range = np.arange(0.0001, 0.05, 0.005)
         vi_iter = []
@@ -430,7 +430,7 @@ if __name__ == '__main__':
 
         # plt.show()
 
-    tune_ql = True
+    tune_ql = False
     if tune_ql:
     
         # max iter
@@ -530,11 +530,11 @@ if __name__ == '__main__':
     print(pi.iter)
 
     # solve with QL
-    ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=1.0, n_iter=100000)
+    ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=0.5, n_iter=10**6)
     res = ql.run()
     # print(ql.Q)
     print(ql.policy)
-    print(ql.V)
+    print(np.max(ql.V))
     print(ql.time)
     
     print(f"took {time.time()-start:.2f}")
