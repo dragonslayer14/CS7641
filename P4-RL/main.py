@@ -17,7 +17,8 @@ if __name__ == '__main__':
     
     # TODO probably should make multiple sizes, will make tuning ql a pain because so many iterations will be needed
     # grid world, frozen lake, small 225 states
-    random_map = generate_random_map(size=15, p=0.8)
+    lake_size = 15
+    random_map = generate_random_map(size=lake_size, p=0.8)
 
     env = gym.make("FrozenLake-v0", desc=random_map)
     env.reset()
@@ -227,22 +228,68 @@ if __name__ == '__main__':
 
         plt.show()
 
-    run_lake = False
+    run_lake = True
     if run_lake:
+        grid = np.array([c for row in random_map for c in row]).reshape((lake_size,lake_size)).astype(dtype=str)
+        
+        # set numbers for coloring
+        grid[grid == 'H'] = "0"
+        grid[grid == 'F'] = "1"
+        grid[grid == 'G'] = "2"
+        grid[grid == 'S'] = "3"
+        
+        grid = grid.astype(dtype=int)
+        
         # solve with VI
         # run_vi(transition, reward, 0.96)
         vi = mdp.ValueIteration(transitions, rewards, gamma=0.99, epsilon=0.0001)
         vi.run()
         print(vi.policy)
         print(vi.iter)
-    
+
+        pol_matrix = np.array(vi.policy).reshape((lake_size, lake_size)).astype(dtype='str')
+        
+        # use arrow unicode for easy of viewing
+        pol_matrix[pol_matrix == '0'] = '←'
+        pol_matrix[pol_matrix == '1'] = '↓'
+        pol_matrix[pol_matrix == '2'] = '→'
+        pol_matrix[pol_matrix == '3'] = '↑'
+
+        fig, ax = plt.subplots()
+        im = ax.imshow(grid)
+        for i in range(lake_size):
+            for j in range(lake_size):
+                text = ax.text(j, i, pol_matrix[i, j], ha="center", va="center", color="w")
+        
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title("VI policy")
+        plt.savefig("charts/lake_vi_viz")
         # solve with PI
         # run_pi(transition, reward, 0.96, )
         pi = mdp.PolicyIterationModified(transitions, rewards, gamma=0.99, max_iter=1000, epsilon=0.0001)
         pi.run()
         print(pi.policy)
         print(pi.iter)
-    
+
+        # grid is already made and colored, only have to change policy labeling
+        pol_matrix = np.array(pi.policy).reshape((lake_size, lake_size)).astype(dtype='str')
+
+        # use arrow unicode for easy of viewing
+        pol_matrix[pol_matrix == '0'] = '←'
+        pol_matrix[pol_matrix == '1'] = '↓'
+        pol_matrix[pol_matrix == '2'] = '→'
+        pol_matrix[pol_matrix == '3'] = '↑'
+
+        fig, ax = plt.subplots()
+        im = ax.imshow(grid)
+        for i in range(lake_size):
+            for j in range(lake_size):
+                text = ax.text(j, i, pol_matrix[i, j], ha="center", va="center", color="w")
+
+        ax.set_title("PI policy")
+        plt.savefig("charts/lake_pi_viz")
+        
         # solve with QL
         # run_ql(transition, reward, 0.96, epsilon=.95, max_iter=100000)
         ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=0.9, n_iter=10**6)
@@ -253,12 +300,30 @@ if __name__ == '__main__':
         print(ql.V)
         # print(ql.v_mean)
         # (2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 2, 1, 3, 0)
+        
+        # grid is already made and colored, only have to change policy labeling
+        pol_matrix = np.array(ql.policy).reshape((lake_size, lake_size)).astype(dtype='str')
+
+        # use arrow unicode for easy of viewing
+        pol_matrix[pol_matrix == '0'] = '←'
+        pol_matrix[pol_matrix == '1'] = '↓'
+        pol_matrix[pol_matrix == '2'] = '→'
+        pol_matrix[pol_matrix == '3'] = '↑'
+
+        fig, ax = plt.subplots()
+        im = ax.imshow(grid)
+        for i in range(lake_size):
+            for j in range(lake_size):
+                text = ax.text(j, i, pol_matrix[i, j], ha="center", va="center", color="w")
+
+        ax.set_title("QL policy")
+        plt.savefig("charts/lake_ql_viz")
 
     # non grid world, forest, large, 5000 states
-    transitions, rewards = example.forest(S=5000, r1=10)
+    transitions, rewards = example.forest(S=5000)
 
     # tune PI/VI gamma values
-    tune_gamma = True
+    tune_gamma = False
     if tune_gamma:
         gamma_range = np.linspace(0.01, 0.99, 99)
         vi_iter = []
@@ -311,7 +376,7 @@ if __name__ == '__main__':
         # plt.show()
 
     # tune VI/PI epsilon as stopping value
-    tune_epsilon = True
+    tune_epsilon = False
     if tune_epsilon:
         epsilon_range = np.arange(0.0001, 0.05, 0.005)
         vi_iter = []
@@ -363,7 +428,7 @@ if __name__ == '__main__':
 
         # plt.show()
 
-    tune_ql = False
+    tune_ql = True
     if tune_ql:
     
         # max iter
@@ -452,7 +517,6 @@ if __name__ == '__main__':
 
     # solve with VI
     vi = mdp.ValueIteration(transitions, rewards, gamma=0.99, epsilon=0.0001, max_iter=10000)
-    print(vi.verbose)
     vi.run()
     print(vi.policy)
     print(vi.iter)
