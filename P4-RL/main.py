@@ -89,8 +89,6 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/lake_gamma_max_v")
 
-        plt.show()
-    
     # tune VI/PI epsilon as stopping value
     tune_epsilon = True
     if tune_epsilon:
@@ -141,8 +139,6 @@ if __name__ == '__main__':
         plt.title('epsilon vs max v')
         plt.legend()
         plt.savefig("charts/lake_epsilon_max_v")
-
-        plt.show()
 
     tune_ql = False
     if tune_ql:
@@ -232,7 +228,7 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/lake_ql_epsilon_max_v")
 
-        plt.show()
+    plt.show()
 
     run_lake = True
     if run_lake:
