@@ -228,9 +228,9 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/lake_ql_epsilon_max_v")
 
-    plt.show()
+    # plt.show()
 
-    run_lake = True
+    run_lake = False
     if run_lake:
         grid = np.array([c for row in random_map for c in row]).reshape((lake_size,lake_size)).astype(dtype=str)
         
@@ -515,7 +515,7 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/forest_ql_epsilon_max_v")
     
-    plt.show()
+    # plt.show()
 
     # solve with VI
     vi = mdp.ValueIteration(transitions, rewards, gamma=0.99, epsilon=0.0001, max_iter=10000)
@@ -538,3 +538,4 @@ if __name__ == '__main__':
     print(ql.time)
     
     print(f"took {time.time()-start:.2f}")
+    plt.show()
