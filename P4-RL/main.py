@@ -201,36 +201,91 @@ if __name__ == '__main__':
     
             # plt.show()
         
-        # epsilon
+        if False:
+            # epsilon
+            epsilon_range = np.arange(0.1, 1.1, 0.1)
+            ql_time = []
+            ql_max_v = []
+        
+            for epsilon in epsilon_range:
+                ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=epsilon, n_iter=10**6)
+                ql.run()
+                ql_time.append(ql.time)
+                ql_max_v.append(np.max(ql.V))
+    
+            plt.figure()
+            plt.plot(epsilon_range, ql_time, label="QL")
+            plt.xlabel('epsilon')
+            plt.ylabel('time')
+            plt.title('epsilon vs time')
+            plt.legend()
+            plt.savefig("charts/lake_ql_epsilon_time")
+    
+            plt.figure()
+            plt.plot(epsilon_range, ql_max_v, label="QL")
+            plt.xlabel('epsilon')
+            plt.ylabel('max v')
+            plt.title('epsilon vs max v')
+            plt.legend()
+            plt.savefig("charts/lake_ql_epsilon_max_v")
+
+        # epsilon decay
         epsilon_range = np.arange(0.1, 1.1, 0.1)
         ql_time = []
         ql_max_v = []
-    
+
         for epsilon in epsilon_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=epsilon, n_iter=10**6)
+            ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=0.9, epsilon_decay=epsilon, n_iter=10 ** 6)
             ql.run()
             ql_time.append(ql.time)
             ql_max_v.append(np.max(ql.V))
 
         plt.figure()
         plt.plot(epsilon_range, ql_time, label="QL")
-        plt.xlabel('epsilon')
+        plt.xlabel('epsilon decay')
         plt.ylabel('time')
-        plt.title('epsilon vs time')
+        plt.title('epsilon decay vs time')
         plt.legend()
-        plt.savefig("charts/lake_ql_epsilon_time")
+        plt.savefig("charts/lake_ql_epsilon_decay_time")
 
         plt.figure()
         plt.plot(epsilon_range, ql_max_v, label="QL")
-        plt.xlabel('epsilon')
+        plt.xlabel('epsilon decay')
         plt.ylabel('max v')
-        plt.title('epsilon vs max v')
+        plt.title('epsilon decay vs max v')
         plt.legend()
-        plt.savefig("charts/lake_ql_epsilon_max_v")
+        plt.savefig("charts/lake_ql_epsilon_decay_max_v")
+
+        # epsilon
+        alpha_range = np.arange(0.1, 1.1, 0.1)
+        ql_time = []
+        ql_max_v = []
+
+        for alpha in alpha_range:
+            ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=0.9, alpha=alpha, n_iter=10 ** 6)
+            ql.run()
+            ql_time.append(ql.time)
+            ql_max_v.append(np.max(ql.V))
+
+        plt.figure()
+        plt.plot(epsilon_range, ql_time, label="QL")
+        plt.xlabel('alpha')
+        plt.ylabel('time')
+        plt.title('alpha vs time')
+        plt.legend()
+        plt.savefig("charts/lake_ql_alpha_time")
+
+        plt.figure()
+        plt.plot(epsilon_range, ql_max_v, label="QL")
+        plt.xlabel('alpha')
+        plt.ylabel('max v')
+        plt.title('alpha vs max v')
+        plt.legend()
+        plt.savefig("charts/lake_ql_alpha_max_v")
 
     # plt.show()
 
-    run_lake = False
+    run_lake = True
     if run_lake:
         grid = np.array([c for row in random_map for c in row]).reshape((lake_size,lake_size)).astype(dtype=str)
         
@@ -289,6 +344,8 @@ if __name__ == '__main__':
             for j in range(lake_size):
                 text = ax.text(j, i, pol_matrix[i, j], ha="center", va="center", color="w")
 
+        ax.set_xticks([])
+        ax.set_yticks([])
         ax.set_title("PI policy")
         plt.savefig("charts/lake_pi_viz")
         
@@ -318,6 +375,8 @@ if __name__ == '__main__':
             for j in range(lake_size):
                 text = ax.text(j, i, pol_matrix[i, j], ha="center", va="center", color="w")
 
+        ax.set_xticks([])
+        ax.set_yticks([])
         ax.set_title("QL policy")
         plt.savefig("charts/lake_ql_viz")
 
@@ -433,87 +492,142 @@ if __name__ == '__main__':
     tune_ql = False
     if tune_ql:
     
-        # max iter
-        iter_range = [10 ** 4, 5 * (10 ** 4), 10 ** 5, 5 * (10 ** 5), 10 ** 6, 5*(10**6)]
-        ql_time = []
-        ql_max_v = []
-    
-        for iter in iter_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=1.0, n_iter=iter)
-            ql.run()
-            ql_time.append(ql.time)
-            ql_max_v.append(np.max(ql.V))
-    
-        plt.figure()
-        plt.plot(iter_range, ql_time, label="QL")
-        plt.xlabel('iterations')
-        plt.ylabel('time')
-        plt.title('iteration vs time')
-        plt.legend()
-        plt.savefig("charts/forest_ql_iter_time")
-    
-        plt.figure()
-        plt.plot(iter_range, ql_max_v, label="QL")
-        plt.xlabel('iterations')
-        plt.ylabel('max v')
-        plt.title('iterations vs max v')
-        plt.legend()
-        plt.savefig("charts/forest_ql_iter_max_v")
+        if False:
+            # max iter
+            iter_range = [10 ** 4, 5 * (10 ** 4), 10 ** 5, 5 * (10 ** 5), 10 ** 6, 5*(10**6)]
+            ql_time = []
+            ql_max_v = []
         
-        gamma_range = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 0.99]
-        ql_time = []
-        ql_max_v = []
-    
-        for gamma in gamma_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=gamma, n_iter=100000)
-            ql.run()
-            ql_time.append(ql.time)
-            ql_max_v.append(np.max(ql.V))
-    
-        plt.figure()
-        plt.plot(gamma_range, ql_time, label="QL")
-        plt.xlabel('gamma')
-        plt.ylabel('time')
-        plt.title('Gamma vs time')
-        plt.legend()
-        plt.savefig("charts/forest_ql_gamma_time")
-    
-        plt.figure()
-        plt.plot(gamma_range, ql_max_v, label="QL")
-        plt.xlabel('gamma')
-        plt.ylabel('max v')
-        plt.title('Gamma vs max v')
-        plt.legend()
-        plt.savefig("charts/forest_ql_gamma_max_v")
-    
-        # plt.show()
-    
-        # epsilon
+            for iter in iter_range:
+                ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=1.0, n_iter=iter)
+                ql.run()
+                ql_time.append(ql.time)
+                ql_max_v.append(np.max(ql.V))
+        
+            plt.figure()
+            plt.plot(iter_range, ql_time, label="QL")
+            plt.xlabel('iterations')
+            plt.ylabel('time')
+            plt.title('iteration vs time')
+            plt.legend()
+            plt.savefig("charts/forest_ql_iter_time")
+        
+            plt.figure()
+            plt.plot(iter_range, ql_max_v, label="QL")
+            plt.xlabel('iterations')
+            plt.ylabel('max v')
+            plt.title('iterations vs max v')
+            plt.legend()
+            plt.savefig("charts/forest_ql_iter_max_v")
+            
+            gamma_range = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9, 0.99]
+            ql_time = []
+            ql_max_v = []
+        
+            for gamma in gamma_range:
+                ql = mdp.QLearning(transitions, rewards, gamma=gamma, n_iter=100000)
+                ql.run()
+                ql_time.append(ql.time)
+                ql_max_v.append(np.max(ql.V))
+        
+            plt.figure()
+            plt.plot(gamma_range, ql_time, label="QL")
+            plt.xlabel('gamma')
+            plt.ylabel('time')
+            plt.title('Gamma vs time')
+            plt.legend()
+            plt.savefig("charts/forest_ql_gamma_time")
+        
+            plt.figure()
+            plt.plot(gamma_range, ql_max_v, label="QL")
+            plt.xlabel('gamma')
+            plt.ylabel('max v')
+            plt.title('Gamma vs max v')
+            plt.legend()
+            plt.savefig("charts/forest_ql_gamma_max_v")
+        
+            # plt.show()
+        
+            # epsilon
+            epsilon_range = np.arange(0.1, 1.1, 0.1)
+            ql_time = []
+            ql_max_v = []
+        
+            for epsilon in epsilon_range:
+                ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=epsilon, n_iter=100000)
+                ql.run()
+                ql_time.append(ql.time)
+                ql_max_v.append(np.max(ql.V))
+        
+            plt.figure()
+            plt.plot(epsilon_range, ql_time, label="QL")
+            plt.xlabel('epsilon')
+            plt.ylabel('time')
+            plt.title('epsilon vs time')
+            plt.legend()
+            plt.savefig("charts/forest_ql_epsilon_time")
+        
+            plt.figure()
+            plt.plot(epsilon_range, ql_max_v, label="QL")
+            plt.xlabel('epsilon')
+            plt.ylabel('max v')
+            plt.title('epsilon vs max v')
+            plt.legend()
+            plt.savefig("charts/forest_ql_epsilon_max_v")
+
+        # epsilon decay
         epsilon_range = np.arange(0.1, 1.1, 0.1)
         ql_time = []
         ql_max_v = []
-    
+
         for epsilon in epsilon_range:
-            ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=epsilon, n_iter=100000)
+            ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=0.9, epsilon_decay=epsilon, n_iter=10 ** 6)
             ql.run()
             ql_time.append(ql.time)
             ql_max_v.append(np.max(ql.V))
-    
+
         plt.figure()
         plt.plot(epsilon_range, ql_time, label="QL")
-        plt.xlabel('epsilon')
+        plt.xlabel('epsilon decay')
         plt.ylabel('time')
-        plt.title('epsilon vs time')
+        plt.title('epsilon decay vs time')
         plt.legend()
-        plt.savefig("charts/forest_ql_epsilon_time")
-    
+        plt.savefig("charts/forest_ql_epsilon_decay_time")
+
         plt.figure()
         plt.plot(epsilon_range, ql_max_v, label="QL")
-        plt.xlabel('epsilon')
+        plt.xlabel('epsilon decay')
         plt.ylabel('max v')
-        plt.title('epsilon vs max v')
+        plt.title('epsilon decay vs max v')
         plt.legend()
-        plt.savefig("charts/forest_ql_epsilon_max_v")
+        plt.savefig("charts/forest_ql_epsilon_decay_max_v")
+
+        # epsilon
+        alpha_range = np.arange(0.1, 1.1, 0.1)
+        ql_time = []
+        ql_max_v = []
+
+        for alpha in alpha_range:
+            ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=0.9, alpha=alpha, n_iter=10 ** 6)
+            ql.run()
+            ql_time.append(ql.time)
+            ql_max_v.append(np.max(ql.V))
+
+        plt.figure()
+        plt.plot(epsilon_range, ql_time, label="QL")
+        plt.xlabel('alpha')
+        plt.ylabel('time')
+        plt.title('alpha vs time')
+        plt.legend()
+        plt.savefig("charts/forest_ql_alpha_time")
+
+        plt.figure()
+        plt.plot(epsilon_range, ql_max_v, label="QL")
+        plt.xlabel('alpha')
+        plt.ylabel('max v')
+        plt.title('alpha vs max v')
+        plt.legend()
+        plt.savefig("charts/forest_ql_alpha_max_v")
     
     # plt.show()
 
@@ -522,12 +636,14 @@ if __name__ == '__main__':
     vi.run()
     print(vi.policy)
     print(vi.iter)
+    print(re.sub(r"((.)\2+)",lambda x: f" {x.group(2)}*{len(x.group(0))}", ''.join([str(x) for x in vi.policy])))
 
     # solve with PI
     pi = mdp.PolicyIterationModified(transitions, rewards, gamma=0.99, epsilon=0.0001, max_iter=1000)
     pi.run()
     print(pi.policy)
     print(pi.iter)
+    re.sub(r"((.)\2+)", lambda x: f" {x.group(2)}*{len(x.group(0))}", ''.join([str(x) for x in pi.policy]))
 
     # solve with QL
     ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=0.5, n_iter=10**6)
