@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use("TKAgg")
 
 import matplotlib.pyplot as plt
+import re
 
 
 if __name__ == '__main__':
@@ -140,7 +141,7 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/lake_epsilon_max_v")
 
-    tune_ql = False
+    tune_ql = True
     if tune_ql:
         
         # max iter
@@ -285,7 +286,7 @@ if __name__ == '__main__':
 
     # plt.show()
 
-    run_lake = True
+    run_lake = False
     if run_lake:
         grid = np.array([c for row in random_map for c in row]).reshape((lake_size,lake_size)).astype(dtype=str)
         
@@ -351,7 +352,7 @@ if __name__ == '__main__':
         
         # solve with QL
         # run_ql(transition, reward, 0.96, epsilon=.95, max_iter=100000)
-        ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon=0.9, n_iter=10**6)
+        ql = mdp.QLearning(transitions, rewards, gamma=0.6, epsilon_decay=0.6, alpha=0.8, epsilon=0.9,  n_iter=10**6)
         res = ql.run()
         # print(ql.Q)
         print(ql.time)
@@ -489,7 +490,7 @@ if __name__ == '__main__':
 
         # plt.show()
 
-    tune_ql = False
+    tune_ql = True
     if tune_ql:
     
         if False:
@@ -646,7 +647,7 @@ if __name__ == '__main__':
     re.sub(r"((.)\2+)", lambda x: f" {x.group(2)}*{len(x.group(0))}", ''.join([str(x) for x in pi.policy]))
 
     # solve with QL
-    ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=0.5, n_iter=10**6)
+    ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=0.5, epsilon_decay=0.6, alpha=0.6, n_iter=10**6)
     res = ql.run()
     # print(ql.Q)
     print(ql.policy)
