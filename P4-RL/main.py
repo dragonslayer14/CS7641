@@ -141,7 +141,7 @@ if __name__ == '__main__':
         plt.legend()
         plt.savefig("charts/lake_epsilon_max_v")
 
-    tune_ql = True
+    tune_ql = False
     if tune_ql:
         
         # max iter
@@ -286,7 +286,7 @@ if __name__ == '__main__':
 
     # plt.show()
 
-    run_lake = False
+    run_lake = True
     if run_lake:
         grid = np.array([c for row in random_map for c in row]).reshape((lake_size,lake_size)).astype(dtype=str)
         
@@ -490,7 +490,7 @@ if __name__ == '__main__':
 
         # plt.show()
 
-    tune_ql = True
+    tune_ql = False
     if tune_ql:
     
         if False:
