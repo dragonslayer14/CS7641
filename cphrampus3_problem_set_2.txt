@@ -1,0 +1,21 @@
+1. 
+A = 0
+B = 10
+C = 11
+
+Expected message size: 1.5 bits
+2. EM can be converted to k means by allowing the gaussian positions to settle, then rounding the probabilities to make them binary instead, i.e., the highest probability Gaussian will be turned into a probability of 1 and all others will be turned into 0's, this takes us from soft to hard clustering by forcing the points to settle to a single cluster rather than probabilistically being in them all)
+3. 
+a. Along the downward slope of the points in the middle and directly perpendicular to that line
+b. Top to bottom and left to right, or just flipping dimensions 1 and 2
+4. 
+a. Hierarchical clustering Single. K means and EM would separate the points vertically, whereas HAC would keep grabbing the closest, assuming the two clusters started on opposite sides of the "chasm" and would continue without jumping over as the points are close enough
+b. KMeans, EM. These are the algorithms that perform closer to these kinds of "visually appealing" clusters, as opposed to some weird slanting that HAC SL can make. This is also assuming that the points that may be in either cluster in EM, the center 5-6, are not colored differently to display this, if these are absolute clusters, then kmeans is the most likely
+c. By process of elimination, HAC CL or AL. SL would not create this as there are instances of different colors being closer to each other than to another instance of the same color, EM would more likely find clusters on either side with the middle being items of overlap rather than this x pattern, and K-means would more likely find clusters on either side and would not create clusters that are mixed like this
+5. 
+6. 
+7. 
+8. 
+.1 2,1 and 1,2 assuming (reward a, reward b) format, these are the only reasonable choices as both get some reward. 0,0 if assuming pair is fully an a reward
+.2 2,1 and 1,2
+.3 2,2
