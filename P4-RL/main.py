@@ -653,6 +653,7 @@ if __name__ == '__main__':
     print(ql.policy)
     print(np.max(ql.V))
     print(ql.time)
-    
+    re.sub(r"((.)\2+)", lambda x: f" {x.group(2)}*{len(x.group(0))}", ''.join([str(x) for x in ql.policy]))
+
     print(f"took {time.time()-start:.2f}")
     plt.show()
