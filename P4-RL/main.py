@@ -637,14 +637,14 @@ if __name__ == '__main__':
     vi.run()
     print(vi.policy)
     print(vi.iter)
-    print(re.sub(r"((.)\2+)",lambda x: f" {x.group(2)}*{len(x.group(0))}", ''.join([str(x) for x in vi.policy])))
+    print(re.sub(r"((.)\2+)",lambda x: f" {x.group(2)}*{len(x.group(0))} ", ''.join([str(x) for x in vi.policy])))
 
     # solve with PI
     pi = mdp.PolicyIterationModified(transitions, rewards, gamma=0.99, epsilon=0.0001, max_iter=1000)
     pi.run()
     print(pi.policy)
     print(pi.iter)
-    re.sub(r"((.)\2+)", lambda x: f" {x.group(2)}*{len(x.group(0))}", ''.join([str(x) for x in pi.policy]))
+    re.sub(r"((.)\2+)", lambda x: f" {x.group(2)}*{len(x.group(0))} ", ''.join([str(x) for x in pi.policy]))
 
     # solve with QL
     ql = mdp.QLearning(transitions, rewards, gamma=0.99, epsilon=0.5, epsilon_decay=0.6, alpha=0.6, n_iter=10**6)
@@ -653,7 +653,7 @@ if __name__ == '__main__':
     print(ql.policy)
     print(np.max(ql.V))
     print(ql.time)
-    re.sub(r"((.)\2+)", lambda x: f" {x.group(2)}*{len(x.group(0))}", ''.join([str(x) for x in ql.policy]))
+    re.sub(r"((.)\2+)", lambda x: f" {x.group(2)}*{len(x.group(0))} ", ''.join([str(x) for x in ql.policy]))
 
     print(f"took {time.time()-start:.2f}")
-    plt.show()
+    # plt.show()
